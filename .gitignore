@@ -1,0 +1,59 @@
+
+# Place your private data, keys, etc. in this folder:
+private/
+
+# Various output/binary locations
+target/
+.out/
+out/
+build/
+classes/
+*.class
+*.jar
+
+# Various cache/temporary files
+*.pyc
+__pycache__/
+*.swp
+.ipynb_checkpoints
+
+# Generated files
+generated/
+*.generated
+.DS_Store
+_build/
+python/protos
+
+# Key Material is never a good candidate for source control.
+*.pub
+*.pem
+
+# Example project, doesn't need to be checked in.
+example-*/
+
+# Code Coverage
+.coverage
+tests/cover
+
+# kdiff3 generated files
+*.orig
+
+# Symlinks
+docs/pydocs.html
+
+# Gradle related files
+.gradle
+gradlew.bat
+build/
+!*/gradle/wrapper/gradle-wrapper.jar
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+docker/certs/
+kubernetes/local/
+external-kafka.yaml
+

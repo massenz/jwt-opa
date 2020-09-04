@@ -1,0 +1,32 @@
+
+logging:
+  level:
+    io.kapsules: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "env, info, health"
+
+secrets:
+  keypair:
+    private: "secrets/ec-key-1.pem"
+    pub: "secrets/ec-key-pub.pem"
+
+---
+spring:
+  profiles: debug
+
+secret: "zekret"
+
+logging:
+  level:
+    io.kapsules: debug
+    reactor.netty: trace
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
