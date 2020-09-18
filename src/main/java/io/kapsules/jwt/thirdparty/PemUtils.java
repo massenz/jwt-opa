@@ -58,8 +58,8 @@ public class PemUtils {
       EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
       privateKey = kf.generatePrivate(keySpec);
     } catch (NoSuchAlgorithmException e) {
-      log.error("Could not reconstruct the private key, "
-          + "the given algorithm could not be found. {}", e.getLocalizedMessage());
+      log.error("Could not reconstruct the private key, algorithm [{}] could not be found",
+          algorithm);
     } catch (InvalidKeySpecException e) {
       log.error("Could not reconstruct the private key: {}", e.getLocalizedMessage());
     }
