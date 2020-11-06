@@ -1,0 +1,13 @@
+{
+  "input": {
+    "user": {
+      "username": "marco",
+      "roles": ["USER"],
+      "accounts": ["1234"]
+    },
+    "resource": {
+      "path": "/users/marco",
+      "method": "PUT"
+    }
+  }
+}

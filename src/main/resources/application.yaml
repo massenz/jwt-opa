@@ -23,7 +23,7 @@ secret: "zekret"
 logging:
   level:
     io.kapsules: debug
-    reactor.netty: trace
+    reactor.netty: warn
 
 management:
   endpoints:

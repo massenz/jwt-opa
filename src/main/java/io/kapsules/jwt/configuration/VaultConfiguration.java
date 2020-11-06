@@ -22,6 +22,7 @@ public class VaultConfiguration {
 
   public static final String ISSUER = "covaxx";
   public static final String ELLIPTIC_CURVE = "EC";
+
   // TODO(marco): retrieve it from Vault
   @Value("${secret}")
   String secret;
