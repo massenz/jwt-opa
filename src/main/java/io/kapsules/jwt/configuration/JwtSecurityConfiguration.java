@@ -1,14 +1,15 @@
 package io.kapsules.jwt.configuration;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 /**
@@ -51,5 +52,10 @@ public class JwtSecurityConfiguration {
   public ReactiveUserDetailsService userDetailsService() {
     log.info("Creating a ReactiveUserDetailsService bean");
     return new MyReactiveUserDetailsService();
+  }
+  
+  @Bean
+  public ReactiveAuthenticationManager dummyManager() {
+      return auth -> Mono.just(auth);
   }
 }

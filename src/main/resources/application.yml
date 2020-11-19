@@ -30,3 +30,11 @@ management:
     web:
       exposure:
         include: "*"
+---
+spring:
+  profiles: test
+logging:
+  level:
+    io.kapsules: debug
+    reactor.netty: warn
+secret: "zekret"

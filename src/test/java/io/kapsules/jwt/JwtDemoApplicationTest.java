@@ -1,25 +1,31 @@
 package io.kapsules.jwt;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class JwtDemoApplicationTest {
   @Test
   void contextLoads() {
   }
-
+  @MockBean
+  PrivateKey privateKey;
+  @MockBean
+  PublicKey publicKey;
+  
   @Autowired
   ReactiveAuthenticationManager authenticationManager;
 
