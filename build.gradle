@@ -36,6 +36,7 @@ dependencies {
 
     implementation 'com.auth0:java-jwt:3.10.3'
     compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    implementation 'commons-codec:commons-codec:1.6'
 
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {

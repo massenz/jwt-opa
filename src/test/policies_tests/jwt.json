@@ -1,0 +1,16 @@
+[
+  {
+    "input": {
+      "user": "rompila",
+      "role": "USER",
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb21waWxhIiwiaXNzIjoiY292YXh4In0.utyhkaxD6oUS1yY5bqO0PgZJuSYu-A8SWunnrsH6zKg"
+    }
+  },
+  {
+    "input": {
+      "user": "marco",
+      "role": "USER",
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjbyIsInJvbGUiOiJVU0VSIiwiaXNzIjoiY292YXh4In0.HqpfatOK4MkVzgNIvB3r4aQiihRhuwLDujcAgvwiCzY"
+    }
+  }
+]
