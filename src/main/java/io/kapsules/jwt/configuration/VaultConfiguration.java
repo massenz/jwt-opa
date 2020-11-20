@@ -68,7 +68,7 @@ public class VaultConfiguration {
 
   @Bean
   PublicKey publicKey() throws IOException {
-    Path p = Paths.get(privateKey);
+    Path p = Paths.get(publicKey);
     log.info("Reading public key from file {}", p.toAbsolutePath());
 
     PublicKey pk = PemUtils.readPublicKeyFromFile(publicKey, ELLIPTIC_CURVE);

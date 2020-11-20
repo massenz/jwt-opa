@@ -1,19 +1,16 @@
 package io.kapsules.jwt.api;
 
-import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.kapsules.jwt.KeyPair;
-import io.kapsules.jwt.configuration.VaultConfiguration;
+import io.kapsules.jwt.security.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -35,11 +33,12 @@ import java.util.Objects;
 @RestController
 public class JwtController {
 
-  @Autowired
-  Algorithm hmac;
 
   @Autowired
   JWTVerifier verifier;
+
+  @Autowired
+  JwtTokenProvider provider;
 
   @Autowired
   PrivateKey privateKey;
@@ -51,6 +50,7 @@ public class JwtController {
   @AllArgsConstructor
   static class ApiToken {
     String username;
+    String role;
     @JsonProperty("api-token")
     String apiToken;
   }
@@ -59,25 +59,22 @@ public class JwtController {
   @GetMapping(path = "/token/{user}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<ApiToken>> getToken(
       @PathVariable String user,
-      @RequestParam(required = false, name = "role") @Nullable String role
+      @RequestParam(required = true, name = "role") final String role
   ) {
     if (StringUtils.isEmpty(role)) {
-      role = "NONE";
+      log.error("Missing role when requesting API Token for {}", user);
+      return Mono.error(
+          new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing Role"));
     }
     log.debug("Creating API Token for `{}` with role [{}]", user, role);
-    return Mono.just(
-        JWT.create()
-            .withIssuer(VaultConfiguration.ISSUER)
-            .withSubject(user)
-            .withClaim("role", role)
-            .sign(hmac)
-    )
-        .map(jwt -> new ApiToken(user, jwt))
+    return Mono.just(provider.createToken(user, role))
+        .map(jwt -> new ApiToken(user, role, jwt))
         .map(ResponseEntity::ok)
-        .doOnSuccess(response -> log.debug("API Token for user {}: {}", user,
+        .doOnSuccess(response -> log.debug("Returning API Token for user {}: {}", user,
             Objects.requireNonNull(response.getBody()).getApiToken()))
         .onErrorReturn(Exception.class, ResponseEntity.badRequest().build());
   }
+
 
   @GetMapping(path = "/auth/{user}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE,
       consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
