@@ -18,11 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 public class VaultConfiguration {
 
-  public static final String ISSUER = "covaxx";
+  public static final String ISSUER = "demo";
   public static final String ELLIPTIC_CURVE = "EC";
 
-  // TODO(marco): retrieve it from Vault
-  @Value("${secret}")
+  // TODO(marco): move to their own Properties class, and retrieve it from Vault
+  @Value("${secrets.secret}")
   String secret;
 
   @Value("${secrets.keypair.private}")

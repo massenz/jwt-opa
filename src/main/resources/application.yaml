@@ -11,14 +11,15 @@ management:
 
 secrets:
   keypair:
-    private: "secrets/ec-key-1.pem"
-    pub: "secrets/ec-key-pub.pem"
+    private: "private/ec-key-1.pem"
+    pub: "private/ec-key-pub.pem"
 
 ---
 spring:
   profiles: debug
 
-secret: "zekret"
+secrets:
+  secret: "zekret"
 
 logging:
   level:
@@ -37,4 +38,6 @@ logging:
   level:
     io.kapsules: debug
     reactor.netty: warn
-secret: "zekret"
+
+secrets:
+  secret: "test"

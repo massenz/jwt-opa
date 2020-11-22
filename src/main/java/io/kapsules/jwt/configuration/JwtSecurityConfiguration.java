@@ -1,6 +1,7 @@
 package io.kapsules.jwt.configuration;
 
 import io.kapsules.jwt.security.OpaAuthorizationExchange;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -25,40 +26,12 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class JwtSecurityConfiguration {
 
-  // TODO: replace with an actual Reactive Repository backed by Mongo.
-  static class MyReactiveUserDetailsService implements ReactiveUserDetailsService {
-
-    @Override
-    public Mono<UserDetails> findByUsername(String username) {
-      log.debug("Looking up user details for: {}", username);
-      return Mono.just(
-          User.withDefaultPasswordEncoder()
-              .username(username)
-              .password("password")
-              .disabled(false)
-              .roles("USER")
-              .build()
-      );
-    }
-  }
-
-  // TODO: replace with code from https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com/example/demo/config/SecurityConfig.java
+  @Autowired
+  OpaAuthorizationExchange authorizationExchange;
 
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-    // TODO: OPA Authorization will be done inside the authorizeExchange "custom authorization"
-    //  logic
-    return http.authorizeExchange(new OpaAuthorizationExchange()).build();
-  }
-
-  @Bean
-  public ReactiveUserDetailsService userDetailsService() {
-    log.info("Creating a ReactiveUserDetailsService bean");
-    return new MyReactiveUserDetailsService();
-  }
-
-  @Bean
-  public ReactiveAuthenticationManager dummyManager() {
-      return auth -> Mono.just(auth);
+    // OPA Authorization will be done inside the authorizeExchange "custom authorization" logic
+    return http.authorizeExchange(authorizationExchange).build();
   }
 }

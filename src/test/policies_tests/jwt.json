@@ -1,16 +1,7 @@
-[
-  {
-    "input": {
-      "user": "rompila",
-      "role": "USER",
-      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb21waWxhIiwiaXNzIjoiY292YXh4In0.utyhkaxD6oUS1yY5bqO0PgZJuSYu-A8SWunnrsH6zKg"
-    }
-  },
-  {
-    "input": {
-      "user": "marco",
-      "role": "USER",
-      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjbyIsInJvbGUiOiJVU0VSIiwiaXNzIjoiY292YXh4In0.HqpfatOK4MkVzgNIvB3r4aQiihRhuwLDujcAgvwiCzY"
-    }
+{
+  "input": {
+    "user": "marco",
+    "role": "USER",
+    "api-token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjbyIsInJvbGUiOiJVU0VSIiwiaXNzIjoiZGVtbyJ9.V4tkTtDYsW5tzGJf1YGcK6c7bbTdSQwiPI-rRC6yja4"
   }
-]
+}
