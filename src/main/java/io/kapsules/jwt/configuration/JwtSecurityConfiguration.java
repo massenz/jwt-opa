@@ -1,18 +1,13 @@
 package io.kapsules.jwt.configuration;
 
-import io.kapsules.jwt.security.OpaAuthorizationExchange;
+import io.kapsules.jwt.security.CustomAuthorizationExchange;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
 
 /**
  * <h3>JwtSecurityConfiguration</h3>
@@ -27,7 +22,7 @@ import reactor.core.publisher.Mono;
 public class JwtSecurityConfiguration {
 
   @Autowired
-  OpaAuthorizationExchange authorizationExchange;
+  CustomAuthorizationExchange authorizationExchange;
 
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {

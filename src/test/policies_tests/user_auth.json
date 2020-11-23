@@ -1,13 +1,7 @@
 {
-  "input": {
-    "user": {
-      "username": "marco",
-      "roles": ["USER"],
-      "accounts": ["1234"]
-    },
-    "resource": {
-      "path": "/users/marco",
-      "method": "PUT"
-    }
+  "api_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjbyIsInJvbGUiOiJVU0VSIiwiaXNzIjoiZGVtbyJ9.V4tkTtDYsW5tzGJf1YGcK6c7bbTdSQwiPI-rRC6yja4",
+  "resource": {
+    "path": "/users/marco",
+    "method": "PUT"
   }
 }

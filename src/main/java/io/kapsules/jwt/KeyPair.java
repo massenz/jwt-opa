@@ -1,11 +1,8 @@
 package io.kapsules.jwt;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.kapsules.jwt.api.JwtController;
 import io.kapsules.jwt.thirdparty.PemUtils;
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 

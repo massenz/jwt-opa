@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class OpaAuthorizationExchange implements Customizer<AuthorizeExchangeSpec> {
+public class CustomAuthorizationExchange implements Customizer<AuthorizeExchangeSpec> {
 
   @Autowired
-  OpaReactiveAuthorizationManager opaAccessManager;
+  JwtReactiveAuthorizationManager authorizationManager;
 
   @Override
   public void customize(AuthorizeExchangeSpec spec) {
-    log.debug("Configuring Application Authorization via the OPA Server");
-    spec.anyExchange().access(opaAccessManager);
+    log.debug("Configuring Application Authorization using API Tokens (JWT)");
+    spec.anyExchange().access(authorizationManager);
   }
 }
