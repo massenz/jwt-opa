@@ -9,6 +9,7 @@ package io.kapsules.jwt;
 public class Constants {
 
   public static final String BEARER_TOKEN = "Bearer";
+  public static final String BASIC_AUTH = "Basic";
   public static final String OPA_DATA_API = "/v1/data/";
 
   private Constants() {

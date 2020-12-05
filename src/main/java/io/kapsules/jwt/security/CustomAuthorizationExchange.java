@@ -21,6 +21,16 @@ public class CustomAuthorizationExchange implements Customizer<AuthorizeExchange
   @Override
   public void customize(AuthorizeExchangeSpec spec) {
     log.debug("Configuring Application Authorization using API Tokens (JWT)");
-    spec.anyExchange().access(authorizationManager);
+    spec
+//        .anyExchange()
+//        .permitAll();
+        .pathMatchers("/test")
+        .permitAll()
+        .pathMatchers("/login")
+        .authenticated()
+      .and()
+        .authorizeExchange()
+        .pathMatchers("/**")
+        .access(authorizationManager);
   }
 }

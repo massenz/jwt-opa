@@ -1,15 +1,20 @@
 package io.kapsules.jwt.security;
 
+import io.kapsules.jwt.configuration.OpaServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,7 +22,7 @@ import java.util.Objects;
  * <h3>OpaReactiveAuthorizationManager</h3>
  *
  * <p>We execute the authorization request against an OPA server, which is reachable via the
- * {@link #apiEndpoint}, using the
+ * {@link OpaServerProperties#endpoint()}, using the
  * <a href="https://www.openpolicyagent.org/docs/latest/rest-api/#data-api">Data REST API</a>.
  *
  * <p>In this example implementation, we simply validate the user/roles contained in the JWT
@@ -32,8 +37,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationManager<ServerHttpRequest> {
 
-  private final WebClient.Builder clientBuilder;
-  private final String apiEndpoint;
+  private final WebClient client;
 
   /**
    * Determines if access is granted for a specific authentication and request.
@@ -62,24 +66,41 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
                   makeRequestBody(auth.getCredentials().toString(), request);
               // TODO: it would be probably beneficial here to emit the full JSON instead.
               log.debug("OPA Authorization request with {}", body);
-              return clientBuilder.build().post()
-                  .uri(apiEndpoint)
+              return client.post()
                   .accept(MediaType.APPLICATION_JSON)
                   .contentType(MediaType.APPLICATION_JSON)
                   .bodyValue(body)
                   .exchange();
             }
         )
-        .flatMap(response -> {
-          return response.bodyToMono(Map.class)
-              .map(res -> res.get("result").toString())
-              .map(Boolean::parseBoolean)
-              .map(AuthorizationDecision::new);
-        });
+        .flatMap(response -> response.bodyToMono(Map.class)
+            .map(res -> {
+              log.debug("OPA Server returned: {}", res);
+              Object result = res.get("result");
+              if (StringUtils.isEmpty(result)) {
+                return Mono.error(unauthorized());
+              }
+              return result.toString();
+            })
+            .map(o -> Boolean.parseBoolean(o.toString()))
+            .map(AuthorizationDecision::new));
   }
 
-  private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(String token, ServerHttpRequest request) {
+  private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(
+      String token,
+      ServerHttpRequest request
+  ) {
     return TokenBasedAuthorizationRequestBody.build(token, request.getPath().toString(),
         Objects.requireNonNull(request.getMethod()).toString());
+  }
+
+  private WebClientResponseException unauthorized() {
+    return WebClientResponseException.create(
+        HttpStatus.UNAUTHORIZED.value(),
+        "OPA Server did not return a valid result",
+        null,
+        null,
+        StandardCharsets.UTF_8
+    );
   }
 }

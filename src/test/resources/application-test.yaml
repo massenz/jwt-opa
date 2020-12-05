@@ -4,37 +4,7 @@
 
 logging:
   level:
-    io.kapsules: info
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "env, info, health"
-
-secrets:
-  keypair:
-    private: "private/ec-key-1.pem"
-    pub: "private/ec-key-pub.pem"
-
-# This is used to build the Rule validation endpoint:
-#   http://localhost:8181/v1/data/kapsules/allow
-#
-opa:
-  policy: kapsules
-  rule: allow
-
----
-spring:
-  profiles: debug
-
-secrets:
-  secret: "zekret"
-
-logging:
-  level:
     io.kapsules: debug
-    reactor.netty: warn
 
 management:
   endpoints:
@@ -42,8 +12,16 @@ management:
       exposure:
         include: "*"
 
+secrets:
+  keypair:
+    private: "private/ec-key-1.pem"
+    pub: "private/ec-key-pub.pem"
+  secret: "test"
+
 # This is used to build the Rule validation endpoint:
 #   http://localhost:8181/v1/data/kapsules/allow
 #
 opa:
+  policy: kapsules
+  rule: allow
   server: "http://localhost:8181"

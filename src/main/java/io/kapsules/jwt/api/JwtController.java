@@ -56,6 +56,8 @@ public class JwtController {
   }
 
 
+  // TODO: change this endpoint to `/login` with the `username` being carried in the Authorization
+  //  header; the `role` is extracted from the User DB.
   @GetMapping(path = "/token/{user}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<ApiToken>> getToken(
       @PathVariable String user,

@@ -4,12 +4,11 @@ import io.kapsules.jwt.security.OpaReactiveAuthorizationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * <h3>OpaServerConfiguration</h3>
- *
- * <p>Insert class description here...
  *
  * @author M. Massenzio, 2020-11-22
  */
@@ -20,12 +19,16 @@ public class OpaServerConfiguration {
   OpaServerProperties opaProperties;
 
   @Bean
-  public WebClient.Builder clientBuilder() {
-    return WebClient.builder();
+  public WebClient client() {
+    return WebClient.builder()
+        .baseUrl(opaProperties.endpoint())
+        .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+        .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+        .build();
   }
 
   @Bean
   OpaReactiveAuthorizationManager authorizationManager() {
-    return new OpaReactiveAuthorizationManager(clientBuilder(), opaProperties.endpoint());
+    return new OpaReactiveAuthorizationManager(client());
   }
 }
