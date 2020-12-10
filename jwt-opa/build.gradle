@@ -1,0 +1,35 @@
+// Copyright (c) 2020 kapsules.io.  All rights reserved.
+// Created 2020-09-02, M. Massenzio
+
+dependencies {
+
+// https://mvnrepository.com/artifact/org.springframework.security/spring-security-core
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '5.3.6.RELEASE'
+
+// https://mvnrepository.com/artifact/org.springframework.security/spring-security-config
+    compile group: 'org.springframework.security', name: 'spring-security-config', version: '5.3.6.RELEASE'
+
+// https://mvnrepository.com/artifact/org.springframework.security/spring-security-web
+    compile group: 'org.springframework.security', name: 'spring-security-web', version: '5.3.6.RELEASE'
+
+// https://mvnrepository.com/artifact/io.projectreactor/reactor-core
+    compile group: 'io.projectreactor', name: 'reactor-core', version: '3.3.9.RELEASE'
+
+    // https://mvnrepository.com/artifact/org.springframework/spring-webflux
+    compile group: 'org.springframework', name: 'spring-webflux', version: '5.2.8.RELEASE'
+// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.2'
+
+
+// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+
+// https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.16'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+
+    implementation 'com.auth0:java-jwt:3.10.3'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    implementation 'commons-codec:commons-codec:1.6'
+}

@@ -1,0 +1,38 @@
+// Copyright (c) 2020 kapsules.io.  All rights reserved.
+// Created 2020-09-02, M. Massenzio
+
+
+plugins {
+    id 'org.springframework.boot' version '2.3.3.RELEASE'
+}
+
+
+bootJar {
+    mainClassName = 'io.kapsules.jwt.JwtDemoApplication'
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation project (':jwt-opa')
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'com.auth0:java-jwt:3.10.3'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    implementation 'commons-codec:commons-codec:1.6'
+
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'io.projectreactor:reactor-test'
+}

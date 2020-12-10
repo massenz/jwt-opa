@@ -1,2 +1,3 @@
-rootProject.name = 'jwt-vault'
+rootProject.name = 'jwt-opa-demo'
 
+include 'webapp', 'jwt-opa'

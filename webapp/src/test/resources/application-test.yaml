@@ -1,0 +1,27 @@
+# JWT / OPA Demo application configuration
+#
+# Created by M. Massenzio, 2020-11-22
+
+logging:
+  level:
+    io.kapsules: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+secrets:
+  keypair:
+    private: "../private/ec-key-1.pem"
+    pub: "../private/ec-key-pub.pem"
+  secret: "test"
+
+# This is used to build the Rule validation endpoint:
+#   http://localhost:8181/v1/data/kapsules/allow
+#
+opa:
+  policy: kapsules
+  rule: allow
+  server: "http://localhost:8181"

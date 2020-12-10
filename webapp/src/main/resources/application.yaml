@@ -1,0 +1,50 @@
+# JWT / OPA Demo application configuration
+#
+# Created by M. Massenzio, 2020-11-22
+
+logging:
+  level:
+    io.kapsules: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "env, info, health"
+
+# TODO: this should be configured via env properties, or a "well-known location"
+#secrets:
+#  keypair:
+#    private: "../private/ec-key-1.pem"
+#    pub: "../private/ec-key-pub.pem"
+
+# This is used to build the Rule validation endpoint:
+#   http://localhost:8181/v1/data/kapsules/allow
+#
+opa:
+  policy: kapsules
+  rule: allow
+
+---
+spring:
+  profiles: debug
+
+secrets:
+  secret: "zekret"
+
+logging:
+  level:
+    io.kapsules: debug
+    reactor.netty: warn
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# This is used to build the Rule validation endpoint:
+#   http://localhost:8181/v1/data/kapsules/allow
+#
+opa:
+  server: "http://localhost:8181"
