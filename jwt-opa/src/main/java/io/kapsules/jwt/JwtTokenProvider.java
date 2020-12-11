@@ -1,10 +1,10 @@
-package io.kapsules.jwt.security;
+package io.kapsules.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.kapsules.jwt.configuration.VaultConfiguration;
+import io.kapsules.jwt.configuration.KeyMaterialConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +42,7 @@ public class JwtTokenProvider {
 
   public String createToken(String user, String role) {
     return JWT.create()
-        .withIssuer(VaultConfiguration.ISSUER)
+        .withIssuer(KeyMaterialConfiguration.ISSUER)
         .withSubject(user)
         .withClaim(ROLE, role)
         .sign(hmac);

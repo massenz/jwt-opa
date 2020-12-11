@@ -6,12 +6,6 @@ logging:
   level:
     io.kapsules: debug
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-
 secrets:
   keypair:
     private: "../private/ec-key.pem"
@@ -22,6 +16,6 @@ secrets:
 #   http://localhost:8181/v1/data/kapsules/allow
 #
 opa:
-  policy: kapsules
+  policy: test-policy
   rule: allow
-  server: "http://localhost:8181"
+  server: "opa-test.kapsules.io"

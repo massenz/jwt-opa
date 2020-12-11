@@ -17,7 +17,7 @@ import java.security.PublicKey;
 
 @Slf4j
 @Configuration
-public class VaultConfiguration {
+public class KeyMaterialConfiguration {
 
   public static final String ISSUER = "demo";
   public static final String ELLIPTIC_CURVE = "EC";
@@ -40,7 +40,7 @@ public class VaultConfiguration {
   @Bean
   JWTVerifier verifier() {
     return JWT.require(hmac())
-        .withIssuer(VaultConfiguration.ISSUER)
+        .withIssuer(KeyMaterialConfiguration.ISSUER)
         .build();
   }
 

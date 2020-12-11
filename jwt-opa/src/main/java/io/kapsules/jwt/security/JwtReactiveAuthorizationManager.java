@@ -1,6 +1,6 @@
 package io.kapsules.jwt.security;
 
-import io.kapsules.jwt.Constants;
+import io.kapsules.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +30,8 @@ import java.util.List;
 public class JwtReactiveAuthorizationManager implements
     ReactiveAuthorizationManager<AuthorizationContext> {
 
+  public static final String BEARER_TOKEN = "Bearer";
+
   @Autowired
   JwtTokenProvider provider;
 
@@ -38,8 +40,8 @@ public class JwtReactiveAuthorizationManager implements
 
   private Mono<String> resolveToken(ServerHttpRequest request) {
     String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.BEARER_TOKEN)) {
-      return Mono.just(bearerToken.substring(Constants.BEARER_TOKEN.length() + 1));
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN)) {
+      return Mono.just(bearerToken.substring(BEARER_TOKEN.length() + 1));
     }
     log.warn("No Bearer API Token found in the Authorization header, or no header found");
     return Mono.empty();

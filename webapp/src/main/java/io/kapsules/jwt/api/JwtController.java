@@ -4,7 +4,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.kapsules.jwt.KeyPair;
-import io.kapsules.jwt.security.JwtTokenProvider;
+import io.kapsules.jwt.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

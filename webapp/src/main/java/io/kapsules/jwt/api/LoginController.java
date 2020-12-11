@@ -1,7 +1,7 @@
 package io.kapsules.jwt.api;
 
 import io.kapsules.jwt.data.ReactiveUsersRepository;
-import io.kapsules.jwt.security.JwtTokenProvider;
+import io.kapsules.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Base64Utils;

@@ -2,20 +2,12 @@
 // Created 2020-09-02, M. Massenzio
 
 
-plugins {
-    id 'org.springframework.boot' version '2.3.3.RELEASE'
-}
-
-
 bootJar {
     mainClassName = 'io.kapsules.jwt.JwtDemoApplication'
 }
-repositories {
-    mavenCentral()
-}
-dependencies {
-        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+dependencies {
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation project (':jwt-opa')
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'

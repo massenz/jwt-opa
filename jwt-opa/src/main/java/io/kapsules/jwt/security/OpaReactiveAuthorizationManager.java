@@ -1,5 +1,6 @@
 package io.kapsules.jwt.security;
 
+import io.kapsules.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -32,6 +34,7 @@ import java.util.Objects;
  *
  * @author M. Massenzio, 2020-11-22
  */
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationManager<ServerHttpRequest> {

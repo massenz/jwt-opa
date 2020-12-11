@@ -1,5 +1,6 @@
 package io.kapsules.jwt.security;
 
+import io.kapsules.jwt.JwtTokenProvider;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
