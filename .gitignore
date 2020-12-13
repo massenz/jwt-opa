@@ -86,3 +86,4 @@ logback-spring.xml
 application-default.properties
 application-beta.properties
 .DS_Store
+.run/

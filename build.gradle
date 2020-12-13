@@ -13,7 +13,7 @@ bootJar.enabled = false
 
 allprojects {
     group 'io.kapsules'
-    version '1.1-SNAPSHOT'
+    version '0.1-alpha'
     sourceCompatibility = '11'
 
     repositories {

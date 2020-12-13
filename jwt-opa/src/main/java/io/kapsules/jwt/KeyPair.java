@@ -19,6 +19,8 @@ import java.util.Map;
  *
  * @author M. Massenzio, 2020-09-04
  */
+// TODO: this class is just a stopgap measure; we should use instead already-available others.
+
 @Value
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class KeyPair {

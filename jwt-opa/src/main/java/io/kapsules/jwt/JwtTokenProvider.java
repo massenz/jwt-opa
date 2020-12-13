@@ -25,6 +25,8 @@ import java.util.List;
  * <a href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com/example/demo/security/jwt/JwtTokenProvider.java">
  * this example code</a>
  *
+ * <p><strong>This class is a temporary implementation and need a lot of refinement</strong></p>
+ *
  * @author M. Massenzio, 2020-11-19
  */
 @Component
@@ -40,11 +42,11 @@ public class JwtTokenProvider {
   JWTVerifier verifier;
 
 
-  public String createToken(String user, String role) {
+  public String createToken(String user, List<String> roles) {
     return JWT.create()
         .withIssuer(KeyMaterialConfiguration.ISSUER)
         .withSubject(user)
-        .withClaim(ROLE, role)
+        .withClaim(ROLE, roles)
         .sign(hmac);
   }
 
@@ -63,15 +65,17 @@ public class JwtTokenProvider {
       DecodedJWT decodedJWT = verifier.verify(token);
       String subject = decodedJWT.getSubject();
 
-      // TODO: users typically have several roles, so this should be an Array
-      String role = decodedJWT.getClaim(ROLE).asString();
+      List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
+          decodedJWT.getClaim(ROLE).asArray(String.class));
 
-      List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(role);
+      // We do not store the password here, as we do not need it (by virtue of the API Token
+      // having been successfully verified, we know the user is authenticated).
+      // TODO: should we allow client applications to retrieve/inject it here?
       User principal = new User(subject, "", authorities);
-
       return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+
     } catch (Exception error) {
-      log.error("Could not authenticate with Token: {}", error.getMessage());
+      log.error("Could not authenticate Token: {}", error.getMessage());
     }
     return null;
   }

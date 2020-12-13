@@ -43,10 +43,8 @@ public class LoginController {
     return fromCredentials(credentials)
         .flatMap(repository::findByUsername)
         .map(u -> {
-          // TODO: the ApiToken should carry an array of Roles
-          String role = u.getRoles().get(0).getRole();
-          String token = provider.createToken(u.getUsername(), role);
-          return new JwtController.ApiToken(u.getUsername(), role, token);
+          String token = provider.createToken(u.getUsername(), u.roles());
+          return new JwtController.ApiToken(u.getUsername(), u.roles(), token);
         })
         .doOnSuccess(apiToken ->
             log.debug("User {} authenticated, API Token generated: {}",

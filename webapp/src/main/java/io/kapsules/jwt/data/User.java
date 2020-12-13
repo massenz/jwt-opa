@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <h3>User</h3>
@@ -64,6 +65,12 @@ public class User implements UserDetails {
       roles.add(new RoleAuthority(role));
 
     }
+  }
+
+  public List<String> roles() {
+    return roles.stream()
+        .map(RoleAuthority::toString)
+        .collect(Collectors.toList());
   }
 
   /**

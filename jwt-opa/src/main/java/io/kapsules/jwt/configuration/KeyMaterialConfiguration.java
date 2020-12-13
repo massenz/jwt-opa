@@ -3,6 +3,7 @@ package io.kapsules.jwt.configuration;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import io.kapsules.jwt.KeyPair;
 import io.kapsules.jwt.thirdparty.PemUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,18 +46,14 @@ public class KeyMaterialConfiguration {
   }
 
   @Bean
-  PrivateKey privateKey() throws IOException {
+  public KeyPair keyPair() throws IOException {
+    return KeyPair.build(loadPrivateKey(), loadPublicKey());
+  }
+
+  private PrivateKey loadPrivateKey() throws IOException {
     Path p = Paths.get(privateKey);
     log.info("Reading private key from file {}", p.toAbsolutePath());
 
-    // See this: https://github.com/auth0/java-jwt/issues/270
-    // Keys generated with:
-    // 1. generate the EC param
-    //    openssl ecparam -name prime256v1 -genkey -noout -out ec-key.pem
-    // 2. generate EC private key
-    //    openssl pkcs8 -topk8 -inform pem -in ec-key.pem -outform pem -nocrypt -out ec-key-1.pem
-    // 3. generate EC public key
-    //    openssl ec -in ec-key-1.pem -pubout -out public.pem
     PrivateKey pk = PemUtils.readPrivateKeyFromFile(privateKey, ELLIPTIC_CURVE);
     if (pk == null) {
       log.error("Could not read Public key");
@@ -67,8 +64,7 @@ public class KeyMaterialConfiguration {
     return pk;
   }
 
-  @Bean
-  PublicKey publicKey() throws IOException {
+  private PublicKey loadPublicKey() throws IOException {
     Path p = Paths.get(publicKey);
     log.info("Reading public key from file {}", p.toAbsolutePath());
 

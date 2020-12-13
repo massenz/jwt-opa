@@ -1,6 +1,7 @@
 package io.kapsules.jwt.security;
 
 import io.kapsules.jwt.JwtTokenProvider;
+import io.kapsules.jwt.configuration.OpaServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ import java.util.Objects;
  * <h3>OpaReactiveAuthorizationManager</h3>
  *
  * <p>We execute the authorization request against an OPA server, which is reachable via the
- * {@link io.kapsules.jwt.configuration.PolicyServerConfiguration#endpoint(String)}, using the
+ * {@link OpaServerProperties#authorization() authorization endpoint}, using the
  * <a href="https://www.openpolicyagent.org/docs/latest/rest-api/#data-api">Data REST API</a>.
  *
  * <p>In this example implementation, we simply validate the user/roles contained in the JWT
