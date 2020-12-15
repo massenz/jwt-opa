@@ -19,14 +19,7 @@ import java.util.stream.Collectors;
 import static io.kapsules.jwt.JwtTokenProvider.ROLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {
-    OpaServerConfiguration.class,
-    JwtSecurityConfiguration.class,
-    KeyMaterialConfiguration.class,
-    JwtOpa.class
-})
-@ActiveProfiles("test")
-class JwtTokenProviderTest {
+class JwtTokenProviderTest extends AbstractTestBase {
 
   @Autowired
   JwtTokenProvider provider;

@@ -13,10 +13,11 @@ management:
         include: "*"
 
 secrets:
+  algorithm: "EC"
   keypair:
-    private: "../private/ec-key.pem"
+    priv: "../private/ec-key.pem"
     pub: "../private/ec-key-pub.pem"
-  secret: "test"
+  issuer: "test-demo"
 
 # This is used to build the Rule validation endpoint:
 #   http://localhost:8181/v1/data/kapsules/allow

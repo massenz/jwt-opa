@@ -41,10 +41,12 @@ public class JwtTokenProvider {
   @Autowired
   JWTVerifier verifier;
 
+  @Autowired
+  String issuer;
 
   public String createToken(String user, List<String> roles) {
     return JWT.create()
-        .withIssuer(KeyMaterialConfiguration.ISSUER)
+        .withIssuer(issuer)
         .withSubject(user)
         .withClaim(ROLE, roles)
         .sign(hmac);

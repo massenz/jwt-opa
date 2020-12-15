@@ -1,5 +1,6 @@
 package io.kapsules.jwt.configuration;
 
+import io.kapsules.jwt.AbstractTestBase;
 import io.kapsules.jwt.JwtOpa;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest (classes = {
-    OpaServerConfiguration.class,
-    JwtSecurityConfiguration.class,
-    KeyMaterialConfiguration.class,
-    JwtOpa.class
-})
-@ActiveProfiles("test")
-class OpaServerPropertiesTest {
+class OpaServerPropertiesTest extends AbstractTestBase {
 
   @Autowired
   OpaServerProperties opaServerProperties;

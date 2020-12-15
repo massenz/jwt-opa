@@ -6,7 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import io.kapsules.jwt.KeyPair;
 import io.kapsules.jwt.thirdparty.PemUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,33 +15,43 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 
 @Slf4j
 @Configuration
+@EnableConfigurationProperties(KeyProperties.class)
 public class KeyMaterialConfiguration {
 
-  public static final String ISSUER = "demo";
   public static final String ELLIPTIC_CURVE = "EC";
+  public static final String PASSPHRASE = "SECRET";
 
-  // TODO(marco): move to their own Properties class, and retrieve it from Vault
-  @Value("${secrets.secret}")
-  String secret;
+  private final KeyProperties secrets;
 
-  @Value("${secrets.keypair.private}")
-  String privateKey;
-
-  @Value("${secrets.keypair.pub}")
-  String publicKey;
-
-  @Bean
-  Algorithm hmac() {
-    return Algorithm.HMAC256(secret);
+  public KeyMaterialConfiguration(KeyProperties secrets) {
+    this.secrets = secrets;
   }
 
   @Bean
-  JWTVerifier verifier() {
-    return JWT.require(hmac())
-        .withIssuer(KeyMaterialConfiguration.ISSUER)
+  public String issuer() {
+    return secrets.getIssuer();
+  }
+
+  @Bean
+  Algorithm hmac(KeyPair keyPair) {
+    return switch (secrets.getAlgorithm()) {
+      case PASSPHRASE -> Algorithm.HMAC256(secrets.getSecret());
+      case ELLIPTIC_CURVE -> Algorithm.ECDSA256((ECPublicKey) keyPair.getPublicKey(),
+          (ECPrivateKey) keyPair.getPrivateKey());
+      default -> throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
+          secrets.getAlgorithm()));
+    };
+  }
+
+  @Bean
+  JWTVerifier verifier() throws IOException {
+    return JWT.require(hmac(keyPair()))
+        .withIssuer(issuer())
         .build();
   }
 
@@ -51,10 +61,10 @@ public class KeyMaterialConfiguration {
   }
 
   private PrivateKey loadPrivateKey() throws IOException {
-    Path p = Paths.get(privateKey);
+    Path p = Paths.get(secrets.getKeypair().getPriv());
     log.info("Reading private key from file {}", p.toAbsolutePath());
 
-    PrivateKey pk = PemUtils.readPrivateKeyFromFile(privateKey, ELLIPTIC_CURVE);
+    PrivateKey pk = PemUtils.readPrivateKeyFromFile(p.toString(), secrets.getAlgorithm());
     if (pk == null) {
       log.error("Could not read Public key");
       throw new IllegalStateException(
@@ -65,10 +75,10 @@ public class KeyMaterialConfiguration {
   }
 
   private PublicKey loadPublicKey() throws IOException {
-    Path p = Paths.get(publicKey);
+    Path p = Paths.get(secrets.getKeypair().getPub());
     log.info("Reading public key from file {}", p.toAbsolutePath());
 
-    PublicKey pk = PemUtils.readPublicKeyFromFile(publicKey, ELLIPTIC_CURVE);
+    PublicKey pk = PemUtils.readPublicKeyFromFile(p.toString(), secrets.getAlgorithm());
     if (pk == null) {
       log.error("Could not read Public key");
       throw new IllegalStateException(

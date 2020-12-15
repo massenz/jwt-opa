@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
  * @author M. Massenzio, 2020-11-22
  */
 @Data
-@Component
 @ConfigurationProperties(prefix = "opa")
 public class OpaServerProperties {
 

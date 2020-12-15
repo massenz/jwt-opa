@@ -22,13 +22,22 @@ opa:
 spring:
   profiles: debug
 
-# TODO: in Production this should be configured via env properties, or a "well-known location"
+# TODO: in Production this should be configured via env properties
 secrets:
-  secret: "zekret"
+  # The issuer is carried over in the API Token and can be used to determine the
+  # application context, when resolving different policies.
+  issuer: "demo-issuer"
+  # We currently support Elliptic Curve signatures, and passphrase-based secrets.
+  # If using a passphrase (not recommended) use something like this:
+  # algorithm: "SECRET"
+  # secret: "my very zekret pa55phrase"
+  algorithm: "EC"
   keypair:
-    private: "private/ec-key.pem"
+    # These can be absolute or relative paths to a pair of private/public keys
+    # used to sign/verify the API Token (JWTs).
+    # See README.md for more information on how to generate them.
+    priv: "private/ec-key.pem"
     pub: "private/ec-key-pub.pem"
-
 
 logging:
   level:
