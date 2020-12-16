@@ -4,6 +4,7 @@
 
 package io.kapsules.jwt.data;
 
+import io.kapsules.jwt.RoleAuthority;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,6 @@ public interface ReactiveUsersRepository extends ReactiveCrudRepository<User, St
 
   Mono<User> removeByUsername(String username);
 
-  Flux<User> findAllByRolesContains(User.RoleAuthority role);
+  Flux<User> findAllByRolesContains(RoleAuthority role);
 
 }

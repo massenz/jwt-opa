@@ -6,6 +6,7 @@ package io.kapsules.jwt.api;
 
 import io.kapsules.jwt.data.ReactiveUsersRepository;
 import io.kapsules.jwt.data.User;
+import io.kapsules.jwt.RoleAuthority;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,7 +82,7 @@ public class UserController {
   ) {
        return repository.findByUsername(username)
                 .map(u -> {
-                  u.getRoles().add(new User.RoleAuthority(role));
+                  u.getRoles().add(new RoleAuthority(role));
                   return u;
                 })
                 .flatMap(repository::save)

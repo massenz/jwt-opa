@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static io.kapsules.jwt.data.User.RoleAuthority.USER;
+import static io.kapsules.jwt.RoleAuthority.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest

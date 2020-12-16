@@ -1,5 +1,6 @@
 package io.kapsules.jwt.security;
 
+import io.kapsules.jwt.ApiTokenAuthentication;
 import io.kapsules.jwt.JwtTokenProvider;
 import io.kapsules.jwt.configuration.OpaServerProperties;
 import lombok.RequiredArgsConstructor;

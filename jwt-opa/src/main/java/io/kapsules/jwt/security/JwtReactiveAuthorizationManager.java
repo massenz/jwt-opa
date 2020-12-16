@@ -1,5 +1,6 @@
 package io.kapsules.jwt.security;
 
+import io.kapsules.jwt.ApiTokenAuthenticationFactory;
 import io.kapsules.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
 
 /**
  * <h3>OpaReactiveAuthorizationManager</h3>
@@ -37,6 +39,9 @@ public class JwtReactiveAuthorizationManager implements
 
   @Autowired
   OpaReactiveAuthorizationManager authorizationManager;
+
+  @Autowired
+  ApiTokenAuthenticationFactory factory;
 
   private Mono<String> resolveToken(ServerHttpRequest request) {
     String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
@@ -102,8 +107,7 @@ public class JwtReactiveAuthorizationManager implements
             validate(request)
                 .flatMap(token ->
                     authorizationManager.check(
-                        Mono.just(new ApiTokenAuthentication(token, true)), request)
-                )
+                        Mono.just(factory.createAuthentication(token)), request))
                 .doOnSuccess(decision -> {
                   if (decision != null) {
                     log.debug("Access was {}granted", decision.isGranted() ? "" : "not ");

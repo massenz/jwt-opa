@@ -3,10 +3,10 @@ package io.kapsules.jwt.data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import io.kapsules.jwt.RoleAuthority;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -31,20 +31,6 @@ import java.util.stream.Collectors;
 @Data @Slf4j @NoArgsConstructor
 @Document(collection = "users")
 public class User implements UserDetails {
-
-  @Value
-  public static class RoleAuthority implements GrantedAuthority {
-    public static final RoleAuthority USER = new RoleAuthority("USER");
-    public static final RoleAuthority ADMIN = new RoleAuthority("ADMIN");
-    public static final RoleAuthority SYSTEM = new RoleAuthority("SYSTEM");
-
-    String role;
-
-    @Override
-    public String getAuthority() {
-      return role;
-    }
-  }
 
   @Id @JsonProperty("user_id") @EqualsAndHashCode.Exclude
   @JsonSerialize(using = ToStringSerializer.class)
