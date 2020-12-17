@@ -42,18 +42,4 @@ subprojects {
         useJUnitPlatform()
         finalizedBy jacocoTestReport // report is always generated after tests run
     }
-
-// Fail the build if test coverage (by lines covered) falls below 60%.
-// See: https://reflectoring.io/jacoco/
-    jacocoTestCoverageVerification {
-        violationRules {
-            rule {
-                limit {
-                    counter = 'LINE'
-                    value = 'COVEREDRATIO'
-                    minimum = 0.6
-                }
-            }
-        }
-    }
 }

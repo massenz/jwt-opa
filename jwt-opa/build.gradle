@@ -8,24 +8,34 @@ bootJar.enabled = false
 jar.enabled = true
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-
-// https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.16'
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
-
     implementation 'com.auth0:java-jwt:3.10.3'
-    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
     implementation 'commons-codec:commons-codec:1.6'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+// Fail the build if test coverage (by lines covered) falls below 60%.
+// See: https://reflectoring.io/jacoco/
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                // TODO: steadily increase this until it reaches 80% at least (ratchet)
+                minimum = 0.65
+            }
+        }
     }
 }
