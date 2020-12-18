@@ -1,5 +1,23 @@
+/*
+ * Copyright (c) 2020 kapsules.io.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.kapsules.jwt.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kapsules.jwt.ApiTokenAuthentication;
 import io.kapsules.jwt.JwtTokenProvider;
 import io.kapsules.jwt.configuration.OpaServerProperties;
@@ -43,6 +61,8 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
 
   private final WebClient client;
 
+  private final ObjectMapper mapper = new ObjectMapper();
+
   /**
    * Determines if access is granted for a specific authentication and request.
    *
@@ -60,6 +80,7 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
   public Mono<AuthorizationDecision> check(Mono<Authentication> authentication,
                                            ServerHttpRequest request) {
 
+
     return authentication.flatMap(
             auth -> {
               // We expect to receive a valid API Token (JWT) as the user's credentials.
@@ -68,8 +89,12 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
               }
               TokenBasedAuthorizationRequestBody.RequestBody body =
                   makeRequestBody(auth.getCredentials().toString(), request);
-              // TODO: it would be probably beneficial here to emit the full JSON instead.
-              log.debug("OPA Authorization request with {}", body);
+              try {
+                log.debug("POSTing OPA Authorization request: {}",
+                    mapper.writeValueAsString(body));
+              } catch (JsonProcessingException e) {
+                e.printStackTrace();
+              }
               return client.post()
                   .accept(MediaType.APPLICATION_JSON)
                   .contentType(MediaType.APPLICATION_JSON)

@@ -20,27 +20,30 @@ user := u {
     u = token[i].sub
 }
 
-role := r {
+roles := r {
     some i
     token[i].iss == "demo"
-    r = token[i].role
+    r = token[i].roles
 }
 
 # System administrators can modify all entities
 is_sysadmin {
-    role == "SYSTEM"
+    some i
+    roles[i] == "SYSTEM"
 }
 
 # Admin users can only create/modify a subset
 # of entities
 is_admin {
-    role == "ADMIN"
+    some i
+    roles[i] == "ADMIN"
 }
 
 # Users can only modify self, and entities associated
 # with the users themselves.
 is_user {
-    role == "USER"
+    some i
+    roles[i] == "USER"
 }
 
 split_path(path) = s {

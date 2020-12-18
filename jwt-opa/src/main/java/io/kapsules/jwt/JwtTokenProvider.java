@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2020 kapsules.io.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.kapsules.jwt;
 
 import com.auth0.jwt.JWT;
@@ -5,7 +21,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.kapsules.jwt.configuration.KeyMaterialConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +49,7 @@ import java.util.List;
 @Slf4j
 public class JwtTokenProvider {
 
-  public static final String ROLE = "roles";
+  public static final String ROLES = "roles";
 
   @Autowired
   Algorithm hmac;
@@ -49,7 +64,7 @@ public class JwtTokenProvider {
     return JWT.create()
         .withIssuer(issuer)
         .withSubject(user)
-        .withClaim(ROLE, roles)
+        .withClaim(ROLES, roles)
         .sign(hmac);
   }
 
@@ -73,7 +88,7 @@ public class JwtTokenProvider {
       String subject = decodedJWT.getSubject();
 
       List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
-          decodedJWT.getClaim(ROLE).asArray(String.class));
+          decodedJWT.getClaim(ROLES).asArray(String.class));
 
       // We do not store the password here, as we do not need it (by virtue of the API Token
       // having been successfully verified, we know the user is authenticated).
