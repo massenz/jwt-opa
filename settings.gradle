@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-rootProject.name = 'jwt-opa-demo'
-
-include 'webapp', 'jwt-opa'
+rootProject.name = 'jwt-opa-integration'
+include 'webapp-example', 'jwt-opa'

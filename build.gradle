@@ -24,9 +24,22 @@ plugins {
 // Disable the default Spring Boot executable JAR to be created.
 bootJar.enabled = false
 
+ext {
+    jsonpathVersion = "2.5.0"
+    lombokVersion = "1.18.16"
+    mockitoVersion = "3.6.0"
+
+    minCoverageRatio = 0.72
+}
+
+task logCoverageRatio {
+    doLast {
+        logger.lifecycle "Min Coverage: ${100 * minCoverageRatio}%"
+    }
+}
+
 allprojects {
     group 'io.kapsules'
-    version '0.1-alpha'
     sourceCompatibility = '11'
 
     repositories {
@@ -40,19 +53,20 @@ configurations {
     }
 }
 
-
 subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.springframework.boot'
 
-    repositories {
-        mavenCentral()
-    }
+    // We want the test and coverage reports to be based on the
+    // most recent build.
+    jacocoTestCoverageVerification.dependsOn([logCoverageRatio, jacocoTestReport])
 
     test {
         useJUnitPlatform()
-        finalizedBy jacocoTestReport // report is always generated after tests run
+        // A build will fail unless test coverage reaches minimum.
+        // See: https://reflectoring.io/jacoco/
+        finalizedBy jacocoTestCoverageVerification
     }
 }

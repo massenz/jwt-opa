@@ -7,6 +7,9 @@ target/
 .out/
 out/
 build/
+_build/
+tmp/
+bin/
 classes/
 *.class
 *.jar
@@ -20,52 +23,24 @@ __pycache__/
 # Generated files
 generated/
 *.generated
+*.orig
 .DS_Store
-_build/
-python/protos
 
-# Key Material is never a good candidate for source control.
+# Key Material is never a good candidate for source control,
+# unless they are used for test purposes (only).
 *.pub
 *.pem
-
-# Example project, doesn't need to be checked in.
-example-*/
+!**/testdata/*.pem
 
 # Code Coverage
 .coverage
 tests/cover
-
-# kdiff3 generated files
-*.orig
-
-# Symlinks
-docs/pydocs.html
 
 # Gradle related files
 .gradle
 gradlew.bat
 build/
 !*/gradle/wrapper/gradle-wrapper.jar
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-docker/certs/
-kubernetes/local/
-external-kafka.yaml
-
-
-*.hprof
-tmp
-bin
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**
-!**/src/test/**
 
 ### STS ###
 .apt_generated
@@ -77,13 +52,8 @@ build/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
 *.iws
 *.iml
 *.ipr
-out/
-logback-spring.xml
-application-default.properties
-application-beta.properties
-.DS_Store
+.idea/
 .run/

@@ -20,11 +20,13 @@
 bootJar.enabled = false
 jar.enabled = true
 
+version '0.1.0-beta'
+
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    compileOnly 'org.projectlombok:lombok:1.18.16'
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -36,27 +38,19 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation 'com.jayway.jsonpath:json-path-assert:2.5.0'
-    testImplementation 'org.mockito:mockito-core:3.6.0'
+    testImplementation "com.jayway.jsonpath:json-path-assert:$jsonpathVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 
-// Fail the build if test coverage (by lines covered) falls below the given threshold.
-// See: https://reflectoring.io/jacoco/
 jacocoTestCoverageVerification {
-    violationRules {
+        violationRules {
         rule {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
                 // TODO: steadily increase this until it reaches 80% at least (ratchet)
-                minimum = 0.70
+                minimum = minCoverageRatio
             }
         }
     }
 }
-
-// We want the test and coverage reports to be based on the
-// most recent build.
-//
-jacocoTestReport.dependsOn build
-jacocoTestCoverageVerification.dependsOn jacocoTestReport

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+version = "0.1-SNAPHSOT"
 
 bootJar {
     mainClassName = 'io.kapsules.jwt.JwtDemoApplication'
@@ -40,4 +41,18 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     testImplementation 'io.projectreactor:reactor-test'
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                // This is just a demo application, we can be more lenient.
+                // TODO: increase this until it reaches 50%
+                minimum = 0.15
+            }
+        }
+    }
 }
