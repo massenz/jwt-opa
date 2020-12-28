@@ -20,20 +20,38 @@ import io.kapsules.jwt.AbstractTestBase;
 import io.kapsules.jwt.ApiTokenAuthenticationFactory;
 import io.kapsules.jwt.JwtTokenProvider;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Testcontainers
 class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
 
   @Autowired
@@ -45,9 +63,49 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
   @Autowired
   JwtTokenProvider provider;
 
+  // TODO: Find a better way to map a configured port and prevent potential port conflicts.
+  @Container
+  public GenericContainer<?> opaServer = new FixedHostPortGenericContainer<>(
+      "openpolicyagent/opa:0.25.2")
+      .withExposedPorts(8181)
+      .withFixedExposedPort(8181, 8181)
+      .withCommand("run --server --addr :8181")
+      .waitingFor(Wait.forHttp("/health"));
+
+  @Autowired
+  WebClient client;
+
+  @Autowired
+  String policyEndpoint;
+
+  @Value("classpath:jwt_auth.rego")
+  private Resource resource;
+
+  @BeforeEach
+  void postPolicy() throws IOException {
+    System.out.println(">>>> " + policyEndpoint);
+
+    Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8);
+    String policy = FileCopyUtils.copyToString(reader);
+
+    ClientResponse response = client.put()
+        .uri(policyEndpoint)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.TEXT_PLAIN)
+        .bodyValue(policy)
+        .exchange()
+        .block();
+    assertThat(response).isNotNull();
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.OK);
+  }
+
   @Test
-  void isInjected() {
+  void isReady() {
     assertThat(opaReactiveAuthorizationManager).isNotNull();
+
+    assertThat(opaServer).isNotNull();
+    assertThat(opaServer.getHost()).isEqualTo("localhost");
+    assertThat(opaServer.getFirstMappedPort()).isEqualTo(8181);
   }
 
   @Test
@@ -65,8 +123,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
     when(path.toString()).thenReturn("/users/test-user");
 
     AuthorizationDecision decision = opaReactiveAuthorizationManager.check(
-        Mono.just(auth), request
-    ).block();
+        Mono.just(auth), request).block();
     assertThat(decision).isNotNull();
     assertThat(decision.isGranted()).isTrue();
   }

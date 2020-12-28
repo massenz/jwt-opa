@@ -40,6 +40,10 @@ dependencies {
     }
     testImplementation "com.jayway.jsonpath:json-path-assert:$jsonpathVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+    // Test Containers: https://www.testcontainers.org/
+    testImplementation "org.testcontainers:testcontainers:$tcVersion"
+    testImplementation "org.testcontainers:junit-jupiter:$tcVersion"
 }
 
 jacocoTestCoverageVerification {

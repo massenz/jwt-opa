@@ -46,8 +46,14 @@ public class OpaServerConfiguration {
    *
    * @return the full URL of the OPA server API endpoint.
    */
+  @Bean
   public String authorizationEndpoint() {
     return opaServerProperties.authorization();
+  }
+
+  @Bean
+  public String policyEndpoint() {
+    return opaServerProperties.policyEndpoint();
   }
 
   @Bean

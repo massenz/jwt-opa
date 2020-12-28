@@ -28,6 +28,7 @@ ext {
     jsonpathVersion = "2.5.0"
     lombokVersion = "1.18.16"
     mockitoVersion = "3.6.0"
+    tcVersion = "1.15.1"
 
     minCoverageRatio = 0.72
 }

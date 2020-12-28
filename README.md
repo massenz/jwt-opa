@@ -1,6 +1,6 @@
 # JWT Integration with OPA, Using Spring Security
 
-![Version](https://img.shields.io/badge/Version-1.1.0-blue)
+![Version](https://img.shields.io/badge/Version-0.1.0-blue)
 ![Released](https://img.shields.io/badge/Released-2020.12.11-green)
 
 [![Author](https://img.shields.io/badge/Author-M.%20Massenzio-green)](https://bitbucket.org/marco)
@@ -9,12 +9,18 @@
 
 # Motivation
 
-`TODO`
+
+# Architecture
+
+```TODO```
 
 # Running
 
 ## Generating a `KeyPair`
 
+Use the `keygen.sh` script, specifying the name of the keys and, optionally, a folder where to save the keys (the folder **must** exist):
+
+    $ ./keygen.sh  ec-key private
 
 See [this](https://github.com/auth0/java-jwt/issues/270) for more details.
 
@@ -26,7 +32,8 @@ Briefly, an "elliptic cryptography" key pair can be generated with:
 
 2. generate EC private key
 
-        openssl pkcs8 -topk8 -inform pem -in ec-key.pem -outform pem -nocrypt -out ec-key-1.pem
+        openssl pkcs8 -topk8 -inform pem -in ec-key.pem -outform pem \
+            -nocrypt -out ec-key-1.pem
 
 3. generate EC public key
 
