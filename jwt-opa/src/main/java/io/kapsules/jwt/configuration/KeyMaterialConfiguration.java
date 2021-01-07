@@ -55,13 +55,16 @@ public class KeyMaterialConfiguration {
 
   @Bean
   Algorithm hmac(KeyPair keyPair) {
-    return switch (secrets.getAlgorithm()) {
-      case PASSPHRASE -> Algorithm.HMAC256(secrets.getSecret());
-      case ELLIPTIC_CURVE -> Algorithm.ECDSA256((ECPublicKey) keyPair.getPublicKey(),
+    switch (secrets.getAlgorithm()) {
+      case PASSPHRASE:
+        return Algorithm.HMAC256(secrets.getSecret());
+      case ELLIPTIC_CURVE:
+        return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublicKey(),
           (ECPrivateKey) keyPair.getPrivateKey());
-      default -> throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
+      default:
+        throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
           secrets.getAlgorithm()));
-    };
+    }
   }
 
   @Bean
