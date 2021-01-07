@@ -39,21 +39,16 @@ class JwtDemoApplicationTest {
   @MockBean
   PublicKey publicKey;
 
+  @Autowired
+  PasswordEncoder encoder;
+
   @Test
   void contextLoads() {
   }
 
   @Test
-  void security() {
-    PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+  void encodePassword() {
     String encoded = encoder.encode("password");
-    System.out.println(">>>>> " + encoded);
-
-    UserDetails details = User.withUsername("user")
-        .password(encoder.encode("password"))
-        .roles("USER", "EDITOR")
-        .build();
-
     assertTrue(encoder.matches("password", encoded));
   }
 }

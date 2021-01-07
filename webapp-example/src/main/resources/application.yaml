@@ -18,6 +18,11 @@ opa:
   policy: kapsules
   rule: allow
 
+db:
+  server: localhost
+  port: 27017
+  name: opa-demo-db
+
 ---
 spring:
   profiles: debug

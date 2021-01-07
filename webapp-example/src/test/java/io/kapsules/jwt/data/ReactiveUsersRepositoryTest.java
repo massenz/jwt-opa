@@ -16,12 +16,19 @@
 
 package io.kapsules.jwt.data;
 
+import io.kapsules.jwt.Constants;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
@@ -30,7 +37,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@ContextConfiguration(initializers = {ReactiveUsersRepositoryTest.Initializer.class})
 class ReactiveUsersRepositoryTest {
+
+  private final static MongoDBContainer mongoDBContainer = new MongoDBContainer(
+      DockerImageName.parse(Constants.IMAGE_NAME));
 
   @Autowired
   ReactiveUsersRepository repository;
@@ -60,9 +71,10 @@ class ReactiveUsersRepositoryTest {
   @Test
   void findAll() {
     List<User> all = repository.findAll().collectList().block();
+    assertThat(all).isNotNull();
     assertThat(all.size()).isEqualTo(3);
 
-    all.forEach(System.out::println);
+    all.forEach(user -> assertThat(user.getUsername()).isIn("alice", "bob", "charlie"));
   }
 
   @Test
@@ -76,5 +88,16 @@ class ReactiveUsersRepositoryTest {
             new User("bob", "bar", "USER")
         )
     );
+  }
+
+  static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+      mongoDBContainer.start();
+      TestPropertyValues.of(
+          "db.port=" + mongoDBContainer.getFirstMappedPort(),
+          "db.server=" + mongoDBContainer.getHost(),
+          "db.name=test-db"
+      ).applyTo(configurableApplicationContext.getEnvironment());
+    }
   }
 }

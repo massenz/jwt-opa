@@ -51,6 +51,11 @@ public class UserController {
   @Autowired
   ReactiveUsersRepository repository;
 
+  private Mono<User> saveAndMaskPassword(User user) {
+    return repository.save(user)
+        .map(u -> User.withPassword(u, "****"));
+  }
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<ResponseEntity<?>> create(@RequestBody User newUser) {
@@ -66,7 +71,7 @@ public class UserController {
         .flatMap(b -> b ?
             Mono.error(new ResponseStatusException(HttpStatus.CONFLICT,
                 String.format("User %s already exists", newUser.getUsername()))) :
-            repository.save(newUser)
+            saveAndMaskPassword(newUser)
                 .map(u -> ResponseEntity.created(
                     URI.create(String.format("/users/%s", newUser.getUsername()))).body(u))
         );
@@ -76,6 +81,7 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> get(@PathVariable String username) {
     return repository.findByUsername(username)
+        .map(u ->  User.withUsername(u, "****"))
         .map(ResponseEntity::ok)
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
   }
@@ -83,7 +89,8 @@ public class UserController {
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public Flux<User> getAll() {
-      return repository.findAll();
+    return repository.findAll()
+        .map(u -> User.withPassword(u, "****"));
   }
 
   @PutMapping(path = "/{username}/role/{role}")
@@ -97,7 +104,7 @@ public class UserController {
                   u.getRoles().add(new RoleAuthority(role));
                   return u;
                 })
-                .flatMap(repository::save)
+                .flatMap(this::saveAndMaskPassword)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
   }
@@ -110,7 +117,7 @@ public class UserController {
   ) {
     return repository.findByUsername(username)
         .map(u -> User.withPassword(u, password))
-        .flatMap(repository::save)
+        .flatMap(this::saveAndMaskPassword)
         .map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
@@ -130,7 +137,7 @@ public class UserController {
 
             repository.findByUsername(username)
                 .map(u -> User.withUsername(u, newUsername))
-                .flatMap(repository::save)
+                .flatMap(this::saveAndMaskPassword)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build())
         );

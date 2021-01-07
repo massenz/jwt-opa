@@ -63,7 +63,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
   @Autowired
   JwtTokenProvider provider;
 
-  // TODO: Find a better way to map a configured port and prevent potential port conflicts.
+  // TODO: Use @ContextConfiguration(initializers) to use the dynamically generated port.
   @Container
   public GenericContainer<?> opaServer = new FixedHostPortGenericContainer<>(
       "openpolicyagent/opa:0.25.2")
