@@ -83,8 +83,6 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
 
   @BeforeEach
   void postPolicy() throws IOException {
-    System.out.println(">>>> " + policyEndpoint);
-
     Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8);
     String policy = FileCopyUtils.copyToString(reader);
 

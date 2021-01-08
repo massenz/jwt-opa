@@ -73,6 +73,42 @@ docker run --rm -d -p 8181:8181 --name opa openpolicyagent/opa run --server
 
 `TODO`
 
+### Trying out the demo
+
+
+After starting the server (`./gradlew bootRun`), you will see in the log the generated password 
+for the `admin` user:
+
+    INFO Initializing DB with seed user (admin)
+    INFO Use the generated password: 342dfa7b-4
+    
+    
+**Note**
+> The system user does not get re-created, if it already exists: if you lose the random password, you will need to manually delete it from Mongo directly:
+
+```
+docker exec -it mongo mongo
+> show dbs;
+...
+opa-demo-db  0.000GB
+> use opa-demo-db
+> db.users.find()
+{ "_id" : ObjectId("5ff8173b20953c451f10a384"), "username" : "admin", ...
+> db.users.remove(ObjectId("5ff81..."))
+```
+> and then restart the server to recreate the admin user.
+> Alternatively, just stop & restart the Mongo container (but all data will be lost).
+
+To access the `/login` endpoint, you will need to use `Basic` authentication:
+
+    $ http :8080/login --auth admin:342dfa7b-4
+    
+this will generate a new API Token, that can then be used in subsequent HTTP API calls, with the `Authorization` header:
+
+    http :8080/users Authorization:"Bearer ... JWT goes here ..."
+
+
+
 # OPA Policies
 
 They are stored in `src/main/rego` and can be uploaded to the OPA policy server via a `curl POST` (see `REST API` in [Useful Links](useful-links#)); examples of policy evaulations are in `src/test/policies_tests` as JSON files; they can be executed against the policy server using the `/data` endpoint:

@@ -16,13 +16,14 @@
 
 package io.kapsules.jwt.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import io.kapsules.jwt.RoleAuthority;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -44,7 +45,9 @@ import java.util.stream.Collectors;
  *
  * @author M. Massenzio, 2020-12-04
  */
-@Data @Slf4j @NoArgsConstructor
+@Data
+@Slf4j
+@NoArgsConstructor
 @Document(collection = "users")
 public class User implements UserDetails {
 
@@ -52,27 +55,24 @@ public class User implements UserDetails {
   @JsonSerialize(using = ToStringSerializer.class)
   ObjectId userId;
 
-  @Indexed
+  @Indexed(unique = true)
   String username;
 
   @JsonProperty("password")
   String hashPassword;
 
-  List<RoleAuthority> roles = new ArrayList<>();
+  List<String> roles = new ArrayList<>();
 
   public User(String username, String password, String role) {
     this.username = username;
     this.hashPassword = password;
     if (!StringUtils.isEmpty(role)) {
-      roles.add(new RoleAuthority(role));
-
+      roles.add(role);
     }
   }
 
   public List<String> roles() {
-    return roles.stream()
-        .map(RoleAuthority::toString)
-        .collect(Collectors.toList());
+    return roles;
   }
 
   /**
@@ -126,33 +126,44 @@ public class User implements UserDetails {
   }
 
   // ===== UserDetails implementation =======
+  @Value
+  private static class RoleAuthority implements GrantedAuthority {
+    String role;
 
-  @Override
+    @Override
+    public String getAuthority() {
+      return role;
+    }
+  }
+
+  @Override @JsonIgnore
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return roles;
+    return roles.stream()
+        .map(RoleAuthority::new)
+        .collect(Collectors.toList());
   }
 
-  @Override
+  @Override @JsonIgnore
   public String getPassword() {
-    return "{noop}" + hashPassword;
+    return hashPassword;
   }
 
-  @Override
+  @Override @JsonIgnore
   public boolean isAccountNonExpired() {
     return true;
   }
 
-  @Override
+  @Override @JsonIgnore
   public boolean isAccountNonLocked() {
     return true;
   }
 
-  @Override
+  @Override @JsonIgnore
   public boolean isCredentialsNonExpired() {
     return true;
   }
 
-  @Override
+  @Override @JsonIgnore
   public boolean isEnabled() {
     return true;
   }

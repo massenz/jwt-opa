@@ -18,7 +18,6 @@ package io.kapsules.jwt.api;
 
 import io.kapsules.jwt.data.ReactiveUsersRepository;
 import io.kapsules.jwt.data.User;
-import io.kapsules.jwt.RoleAuthority;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,8 +43,8 @@ import java.util.Collections;
 @RestController
 @RequestMapping(
     path = "/users",
-    produces = MimeTypeUtils.APPLICATION_JSON_VALUE,
-    consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    produces = MimeTypeUtils.APPLICATION_JSON_VALUE
+)
 public class UserController {
 
   @Autowired
@@ -77,16 +76,18 @@ public class UserController {
         );
   }
 
-  @GetMapping("/{username}")
+  @GetMapping(value = "/{username}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE,
+      consumes = MimeTypeUtils.ALL_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> get(@PathVariable String username) {
     return repository.findByUsername(username)
+        .doOnNext(u -> log.debug("Found User: {}", u))
         .map(u ->  User.withUsername(u, "****"))
         .map(ResponseEntity::ok)
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
   }
 
-  @GetMapping
+  @GetMapping(consumes = MimeTypeUtils.ALL_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public Flux<User> getAll() {
     return repository.findAll()
@@ -101,7 +102,7 @@ public class UserController {
   ) {
        return repository.findByUsername(username)
                 .map(u -> {
-                  u.getRoles().add(new RoleAuthority(role));
+                  u.getRoles().add(role);
                   return u;
                 })
                 .flatMap(this::saveAndMaskPassword)

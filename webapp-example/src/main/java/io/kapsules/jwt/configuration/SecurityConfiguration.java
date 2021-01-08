@@ -38,7 +38,12 @@ public class SecurityConfiguration {
     return username -> {
       log.debug("Retrieving user details for `{}`", username);
       return repository.findByUsername(username)
-          .map(User::toUserDetails);
+          .map(User::toUserDetails)
+          .doOnSuccess(ud -> {
+            if (ud != null) {
+              log.debug("Found: {} [enabled={}]", ud.getUsername(), ud.isEnabled());
+            }
+          });
     };
   }
 }

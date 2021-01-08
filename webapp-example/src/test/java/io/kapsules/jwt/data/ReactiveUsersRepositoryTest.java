@@ -28,11 +28,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
-import static io.kapsules.jwt.RoleAuthority.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -45,6 +46,17 @@ class ReactiveUsersRepositoryTest {
 
   @Autowired
   ReactiveUsersRepository repository;
+
+  static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+      mongoDBContainer.start();
+      TestPropertyValues.of(
+          "db.port=" + mongoDBContainer.getFirstMappedPort(),
+          "db.server=" + mongoDBContainer.getHost(),
+          "db.name=test-db"
+      ).applyTo(configurableApplicationContext.getEnvironment());
+    }
+  }
 
   @BeforeEach
   void setup() {
@@ -79,7 +91,7 @@ class ReactiveUsersRepositoryTest {
 
   @Test
   void findByRole() {
-    List<User> found = repository.findAllByRolesContains(USER).collectList().block();
+    List<User> found = repository.findAllByRolesContains("USER").collectList().block();
     assertThat(found).isNotNull();
     assertThat(found.size()).isEqualTo(2);
     assertThat(found).containsAll(
@@ -90,14 +102,14 @@ class ReactiveUsersRepositoryTest {
     );
   }
 
-  static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-      mongoDBContainer.start();
-      TestPropertyValues.of(
-          "db.port=" + mongoDBContainer.getFirstMappedPort(),
-          "db.server=" + mongoDBContainer.getHost(),
-          "db.name=test-db"
-      ).applyTo(configurableApplicationContext.getEnvironment());
-    }
+  @Test
+  void jsongen() throws JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    User me = new User("me", "myself", "USER");
+    String json = mapper.writeValueAsString(me);
+
+    User tu = mapper.readValue(json, User.class);
+    assertThat(tu).isEqualTo(me);
   }
 }

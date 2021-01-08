@@ -22,7 +22,6 @@ user := u {
 
 roles := r {
     some i
-    token[i].iss == "demo"
     r = token[i].roles
 }
 

@@ -18,8 +18,10 @@ package io.kapsules.jwt.api;
 
 import io.kapsules.jwt.data.ReactiveUsersRepository;
 import io.kapsules.jwt.JwtTokenProvider;
+import io.kapsules.jwt.data.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.MimeTypeUtils;
@@ -43,7 +45,7 @@ import static io.kapsules.jwt.Constants.BASIC_AUTH;
 @RequestMapping(
     path = "/login",
     produces = MimeTypeUtils.APPLICATION_JSON_VALUE,
-    consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
+    consumes = MimeTypeUtils.ALL_VALUE)
 public class LoginController {
 
   @Autowired
@@ -54,6 +56,7 @@ public class LoginController {
 
   @Autowired
   PasswordEncoder encoder;
+
 
   @GetMapping
   Mono<JwtController.ApiToken> login(
