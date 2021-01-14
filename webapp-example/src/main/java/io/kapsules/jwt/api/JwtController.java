@@ -16,10 +16,8 @@
 
 package io.kapsules.jwt.api;
 
-import com.auth0.jwt.JWTVerifier;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.kapsules.jwt.JwtTokenProvider;
-import io.kapsules.jwt.KeyPair;
 import io.kapsules.jwt.data.ReactiveUsersRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,8 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.KeyPair;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -113,29 +110,5 @@ public class JwtController {
   @GetMapping(path = "/keypair", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<?>> getKeypair() {
     return Mono.just(ResponseEntity.ok(keyPair));
-  }
-
-  /**
-   * Just a "demo" endpoint which is accessible exclusively by the SYSTEM role.
-   *
-   * <p>Updates the Key Pair used by the server; upon restart, the server however will pick up
-   * again the configured files: the POSTed key material does not get persisted.</p>
-   *
-   * @param pair a JSON object that carries the key material, Base-64 encoded
-   * @see KeyPair
-   */
-  // TODO: implement the Rego policy to only allow SYSTEM role to acces this API
-  @PostMapping(path = "/keypair", produces = MimeTypeUtils.APPLICATION_JSON_VALUE,
-      consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
-  public Mono<ResponseEntity<?>> postKeypair(@RequestBody KeyPair pair) {
-    log.warn("Updating Key material");
-    // In a real-life application, we should verify here that the contents of the request body
-    // match the expected format of a JSON KeyPair (see KeyPair#build()) and that these are a valid
-    // private/public key pair.
-    // Then again, in a real application, we would NEVER allow an API to upload key material.
-    keyPair = pair;
-    return Mono.just(ResponseEntity.created(URI.create("/keypair")).body(
-        Collections.singletonMap("message", "KeyPair updated")
-    ));
   }
 }

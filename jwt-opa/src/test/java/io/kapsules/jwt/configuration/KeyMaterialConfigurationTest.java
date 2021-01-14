@@ -20,12 +20,12 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.kapsules.jwt.AbstractTestBase;
-import io.kapsules.jwt.KeyPair;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.security.KeyPair;
 
 import static io.kapsules.jwt.JwtTokenProvider.ROLES;
 import static io.kapsules.jwt.configuration.KeyMaterialConfiguration.ELLIPTIC_CURVE;
@@ -60,8 +60,8 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
   void keyPair() throws IOException {
     KeyPair pair = configuration.keyPair();
     assertThat(pair).isNotNull();
-    assertThat(pair.getPrivateKeyProperties().get("format")).isEqualTo("PKCS#8");
-    assertThat(pair.getPrivateKeyProperties().get("algorithm")).isEqualTo(ELLIPTIC_CURVE);
+    assertThat(pair.getPrivate().getFormat()).isEqualTo("PKCS#8");
+    assertThat(pair.getPrivate().getAlgorithm()).isEqualTo(ELLIPTIC_CURVE);
   }
 
   @Test
