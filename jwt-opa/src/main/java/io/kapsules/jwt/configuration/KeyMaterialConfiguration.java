@@ -35,6 +35,8 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
+import static io.kapsules.jwt.Constants.UNDEFINED_KEYPAIR;
+
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(KeyProperties.class)
@@ -44,6 +46,9 @@ public class KeyMaterialConfiguration {
 
   public KeyMaterialConfiguration(KeyProperties secrets) {
     this.secrets = secrets;
+    if (secrets.getKeypair() == null) {
+      throw new IllegalStateException(UNDEFINED_KEYPAIR);
+    }
   }
 
   @Bean

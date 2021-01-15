@@ -26,3 +26,8 @@ opa:
   policy: kapsules
   rule: allow
   server: "http://localhost:8181"
+
+routes:
+  allowed:
+    - "/health"
+    - "/demo"

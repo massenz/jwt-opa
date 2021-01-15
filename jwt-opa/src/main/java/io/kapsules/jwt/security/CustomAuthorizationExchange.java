@@ -17,8 +17,9 @@
 package io.kapsules.jwt.security;
 
 import io.kapsules.jwt.JwtTokenProvider;
+import io.kapsules.jwt.configuration.RoutesConfiguration;
+import io.kapsules.jwt.configuration.RoutesProperties2;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity.AuthorizeExchangeSpec;
 import org.springframework.stereotype.Component;
@@ -44,20 +45,28 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CustomAuthorizationExchange implements Customizer<AuthorizeExchangeSpec> {
 
-  @Autowired
-  JwtReactiveAuthorizationManager authorizationManager;
+  private final RoutesConfiguration configuration;
+  private final JwtReactiveAuthorizationManager authorizationManager;
+
+  public CustomAuthorizationExchange(
+      RoutesConfiguration configuration,
+      JwtReactiveAuthorizationManager authorizationManager
+  ) {
+    this.configuration = configuration;
+    this.authorizationManager = authorizationManager;
+  }
 
   @Override
   public void customize(AuthorizeExchangeSpec spec) {
     log.debug("Configuring Application Authorization using API Tokens (JWT)");
     spec
         // Heartbeat endpoint, needs to have unauthenticated access.
-        .pathMatchers("/health")
+        .pathMatchers(configuration.getProperties().getAllowed().toArray(String[]::new))
         .permitAll()
 
         // Only endpoint which is accessible *without* an API Token, used to generate one, once
         // the user authenticates with username/password.
-        .pathMatchers("/login")
+        .pathMatchers(configuration.getProperties().getAuthenticated().toArray(String[]::new))
         .authenticated()
 
         .and()

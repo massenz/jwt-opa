@@ -17,7 +17,6 @@
 package io.kapsules.jwt.security;
 
 import io.kapsules.jwt.ApiTokenAuthenticationFactory;
-import io.kapsules.jwt.Constants;
 import io.kapsules.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
-import static io.kapsules.jwt.Constants.*;
+import static io.kapsules.jwt.Constants.BEARER_TOKEN;
+import static io.kapsules.jwt.Constants.TOKEN_MISSING_OR_INVALID;
+import static io.kapsules.jwt.Constants.UNEXPECTED_AUTHENTICATION_OBJECT;
 
 
 /**

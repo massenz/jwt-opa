@@ -34,11 +34,16 @@ public class Constants {
   public static final String OPA_DATA_API = "data";
   public static final String OPA_POLICIES_API = "policies";
 
-  // Error Messages
+  // Default routes.
+  public static final String DEFAULT_HEALTH_ROUTE = "/health";
+  public static final String DEFAULT_LOGIN_ROUTE = "/login";
+
+  // Error Messages.
   public static final String FILE_NOT_EXISTS = "The file '%s' doesn't exist.";
   public static final String INVALID_RESULT = "OPA Server did not return a valid result";
   public static final String UNEXPECTED_AUTHENTICATION_OBJECT = "Unexpected Authentication object";
   public static final String TOKEN_MISSING_OR_INVALID = "API Token was missing or invalid";
-  public static final String AUTHORIZATION_HEADER_MISSING =
-      "No Authorization header, rejecting request";
+  public static final String AUTHORIZATION_HEADER_MISSING = "No Authorization header, rejecting request";
+  public static final String UNDEFINED_KEYPAIR = "Public/Private key pair paths must be defined, "
+      + "using the 'secrets.keypair.priv/pub' properties";
 }

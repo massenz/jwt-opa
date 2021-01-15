@@ -59,3 +59,8 @@ management:
 #    docker run -d --rm -p 8181:8181 --name opa openpolicyagent/opa run --server
 opa:
   server: "localhost:8181"
+
+routes:
+  allowed:
+    - "/health"
+    - "/demo"
