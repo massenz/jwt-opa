@@ -30,7 +30,7 @@ ext {
     mockitoVersion = "3.6.0"
     tcVersion = "1.15.1"
 
-    minCoverageRatio = 0.72
+    minCoverageRatio = 0.80
 }
 
 task logCoverageRatio {

@@ -17,7 +17,6 @@
 package io.kapsules.jwt.configuration;
 
 import lombok.Data;
-import lombok.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**

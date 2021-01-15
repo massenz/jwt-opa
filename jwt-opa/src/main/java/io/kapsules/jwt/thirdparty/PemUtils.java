@@ -18,6 +18,7 @@
 
 package io.kapsules.jwt.thirdparty;
 
+import io.kapsules.jwt.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -41,7 +42,7 @@ public class PemUtils {
   private static byte[] parsePEMFile(File pemFile) throws IOException {
     if (!pemFile.isFile() || !pemFile.exists()) {
       throw new FileNotFoundException(
-          String.format("The file '%s' doesn't exist.", pemFile.getAbsolutePath()));
+          String.format(Constants.FILE_NOT_EXISTS, pemFile.getAbsolutePath()));
     }
     PemReader reader = new PemReader(new FileReader(pemFile));
     PemObject pemObject = reader.readPemObject();

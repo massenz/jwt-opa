@@ -27,8 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.security.KeyPair;
 
+import static io.kapsules.jwt.Constants.ELLIPTIC_CURVE;
 import static io.kapsules.jwt.JwtTokenProvider.ROLES;
-import static io.kapsules.jwt.configuration.KeyMaterialConfiguration.ELLIPTIC_CURVE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class KeyMaterialConfigurationTest extends AbstractTestBase {

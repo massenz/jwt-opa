@@ -19,6 +19,7 @@ package io.kapsules.jwt.security;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kapsules.jwt.ApiTokenAuthentication;
+import io.kapsules.jwt.Constants;
 import io.kapsules.jwt.JwtTokenProvider;
 import io.kapsules.jwt.configuration.OpaServerProperties;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +48,10 @@ import java.util.Objects;
  * <a href="https://www.openpolicyagent.org/docs/latest/rest-api/#data-api">Data REST API</a>.
  *
  * <p>In this example implementation, we simply validate the user/roles contained in the JWT
- * against the API endpoint and method that are in the request; however, via the
- * {@link ServerHttpRequest request} object we would have access to the entire request
- * attributes, headers, etc. and those could be packaged into the JSON
- * {@link TokenBasedAuthorizationRequestBody body} of the request POSTed to the OPA server.
+ * against the API endpoint and method that are in the request; however, via the {@link
+ * ServerHttpRequest request} object we would have access to the entire request attributes, headers,
+ * etc. and those could be packaged into the JSON {@link TokenBasedAuthorizationRequestBody body} of
+ * the request POSTed to the OPA server.
  *
  * @author M. Massenzio, 2020-11-22
  */
@@ -66,53 +67,55 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
   /**
    * Determines if access is granted for a specific authentication and request.
    *
-   * @param authentication  an {@link ApiTokenAuthentication} object, contains the JWT in the
-   *                        {@literal credentials} attribute; `authenticated` will be {@literal true}
-   *                        if the JWT has been validated
-   * @param request         the API endpoint and method (amongst other attributes) which we are
-   *                        authorizing access to (or denying, depending on the OPA Policy
-   *                        validation)
+   * @param authentication an {@link ApiTokenAuthentication} object, contains the JWT in the
+   *                       {@literal credentials} attribute; `authenticated` will be {@literal true}
+   *                       if the JWT has been validated
+   * @param request        the API endpoint and method (amongst other attributes) which we are
+   *                       authorizing access to (or denying, depending on the OPA Policy
+   *                       validation)
    * @return a decision or empty Mono if no decision could be made.
    * @see ApiTokenAuthentication
    * @see JwtTokenProvider
    */
   @Override
-  public Mono<AuthorizationDecision> check(Mono<Authentication> authentication,
-                                           ServerHttpRequest request) {
+  public Mono<AuthorizationDecision> check(
+      Mono<Authentication> authentication,
+      ServerHttpRequest request
+  ) {
 
-
-    return authentication.flatMap(
-            auth -> {
-              // We expect to receive a valid API Token (JWT) as the user's credentials.
-              if (!auth.isAuthenticated()) {
-                throw new IllegalStateException("Credentials have not been authenticated");
-              }
-              TokenBasedAuthorizationRequestBody.RequestBody body =
-                  makeRequestBody(auth.getCredentials().toString(), request);
-              try {
-                log.debug("POSTing OPA Authorization request: {}",
-                    mapper.writeValueAsString(body));
-              } catch (JsonProcessingException e) {
-                e.printStackTrace();
-              }
-              return client.post()
-                  .accept(MediaType.APPLICATION_JSON)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .bodyValue(body)
-                  .exchange();
-            }
-        )
-        .flatMap(response -> response.bodyToMono(Map.class)
-            .map(res -> {
-              log.debug("OPA Server returned: {}", res);
-              Object result = res.get("result");
-              if (StringUtils.isEmpty(result)) {
-                return Mono.error(unauthorized());
-              }
-              return result.toString();
-            })
-            .map(o -> Boolean.parseBoolean(o.toString()))
-            .map(AuthorizationDecision::new));
+    return authentication.map(auth -> {
+      //@formatter:off
+          // We expect to receive a valid API Token (JWT) as the user's credentials.
+          if (!auth.isAuthenticated()) {
+            return Mono.error(unauthorized());
+          }
+          return makeRequestBody(auth.getCredentials().toString(), request);
+        })
+      // @formatter:on
+        .doOnSuccess(body -> {
+          try {
+            log.debug("POSTing OPA Authorization request: {}",
+                mapper.writeValueAsString(body));
+          } catch (JsonProcessingException e) {
+            log.error("Cannot parse Authorization request: {}", e.getMessage());
+          }
+        })
+        .flatMap(body -> client.post()
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange())
+        .flatMap(response -> response.bodyToMono(Map.class))
+        .map(res -> {
+          log.debug("OPA Server returned: {}", res);
+          Object result = res.get("result");
+          if (StringUtils.isEmpty(result)) {
+            return Mono.error(unauthorized());
+          }
+          return result.toString();
+        })
+        .map(o -> Boolean.parseBoolean(o.toString()))
+        .map(AuthorizationDecision::new);
   }
 
   private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(
@@ -126,9 +129,9 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
   private WebClientResponseException unauthorized() {
     return WebClientResponseException.create(
         HttpStatus.UNAUTHORIZED.value(),
-        "OPA Server did not return a valid result",
+        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
         null,
-        null,
+        Constants.INVALID_RESULT.getBytes(StandardCharsets.UTF_8),
         StandardCharsets.UTF_8
     );
   }

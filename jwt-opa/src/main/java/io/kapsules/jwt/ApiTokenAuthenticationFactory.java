@@ -31,8 +31,6 @@ import static io.kapsules.jwt.JwtTokenProvider.ROLES;
 /**
  * <h3>ApiTokenAuthenticationFactory</h3>
  *
- * <p>Insert class description here...
- *
  * @author M. Massenzio, 2020-12-15
  */
 @Service

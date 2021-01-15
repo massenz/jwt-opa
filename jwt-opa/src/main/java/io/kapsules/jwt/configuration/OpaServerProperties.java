@@ -16,9 +16,9 @@
 
 package io.kapsules.jwt.configuration;
 
+import io.kapsules.jwt.Constants;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 
 /**
@@ -47,18 +47,13 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "opa")
 public class OpaServerProperties {
 
-  public static final String OPA_VERSION = "v1";
-  public static final String OPA_DATA_API = "data";
-  public static final String OPA_POLICIES_API = "policies";
-
-
   Boolean secure = false;
   String server;
   String policy;
   String rule;
 
   protected String versionedApi(String api) {
-    return String.format("/%s/%s", OPA_VERSION, api);
+    return String.format("/%s/%s", Constants.OPA_VERSION, api);
   }
 
   protected String endpoint(String api) {
@@ -68,11 +63,11 @@ public class OpaServerProperties {
   }
 
   public String policyEndpoint() {
-    return endpoint(OPA_POLICIES_API);
+    return endpoint(Constants.OPA_POLICIES_API);
   }
 
   public String dataEndpoint() {
-    return endpoint(OPA_DATA_API);
+    return endpoint(Constants.OPA_DATA_API);
   }
 
   public String authorization() {

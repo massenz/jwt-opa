@@ -20,7 +20,7 @@
 bootJar.enabled = false
 jar.enabled = true
 
-version '0.2.0-beta'
+version '0.3.0-beta'
 
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
@@ -52,7 +52,6 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                // TODO: steadily increase this until it reaches 80% at least (ratchet)
                 minimum = minCoverageRatio
             }
         }

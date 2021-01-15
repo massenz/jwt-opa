@@ -17,6 +17,7 @@
 package io.kapsules.jwt.security;
 
 import io.kapsules.jwt.ApiTokenAuthenticationFactory;
+import io.kapsules.jwt.Constants;
 import io.kapsules.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import static io.kapsules.jwt.Constants.*;
 
 
 /**
@@ -48,8 +51,6 @@ import java.util.List;
 public class JwtReactiveAuthorizationManager implements
     ReactiveAuthorizationManager<AuthorizationContext> {
 
-  public static final String BEARER_TOKEN = "Bearer";
-
   @Autowired
   JwtTokenProvider provider;
 
@@ -64,7 +65,7 @@ public class JwtReactiveAuthorizationManager implements
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN)) {
       return Mono.just(bearerToken.substring(BEARER_TOKEN.length() + 1));
     }
-    log.warn("No Bearer API Token found in the Authorization header, or no header found");
+    log.warn(TOKEN_MISSING_OR_INVALID);
     return Mono.empty();
   }
 
@@ -86,7 +87,7 @@ public class JwtReactiveAuthorizationManager implements
             log.debug("Found valid API Token");
             return Mono.just(token);
           }
-          log.warn("The API Token was invalid");
+          log.warn(TOKEN_MISSING_OR_INVALID);
           return Mono.empty();
         });
   }
@@ -102,24 +103,14 @@ public class JwtReactiveAuthorizationManager implements
   public Mono<AuthorizationDecision> check(Mono<Authentication> authentication,
                                            AuthorizationContext context) {
     ServerHttpRequest request = context.getExchange().getRequest();
-    HttpHeaders headers = request.getHeaders();
-    log.debug("Authorizing access to `{}` {}", request.getPath(), headers);
-
-    List<String> authValues = headers.get("Authorization");
-    if (authValues == null || authValues.isEmpty()) {
-      log.warn("No Authorization header, rejecting request");
-      return Mono.empty();
-    }
-    if (authValues.size() != 1) {
-      log.warn("Authorization header value contains multiple values: {}", authValues);
-    }
+    log.debug("Authorizing access to `{}`", request.getPath());
 
     // We expect the `authentication` Mono to always be empty, as Spring does not authenticate
     // the user in this configuration.
     return authentication
         .hasElement()
         .flatMap(b -> b ?
-            Mono.error(new IllegalStateException("Unexpected Authentication object")) :
+            Mono.error(new IllegalStateException(UNEXPECTED_AUTHENTICATION_OBJECT)) :
             validate(request)
                 .flatMap(token ->
                     authorizationManager.check(
@@ -128,7 +119,7 @@ public class JwtReactiveAuthorizationManager implements
                   if (decision != null) {
                     log.debug("Access was {}granted", decision.isGranted() ? "" : "not ");
                   } else {
-                    log.warn("API Token was missing or invalid");
+                    log.warn(TOKEN_MISSING_OR_INVALID);
                   }
                 })
         );

@@ -20,14 +20,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import static io.kapsules.jwt.configuration.KeyMaterialConfiguration.ELLIPTIC_CURVE;
+import static io.kapsules.jwt.Constants.ELLIPTIC_CURVE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PemUtilsTest {
 

@@ -16,7 +16,6 @@
 
 package io.kapsules.jwt.data;
 
-import io.kapsules.jwt.Constants;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +39,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = {ReactiveUsersRepositoryTest.Initializer.class})
 class ReactiveUsersRepositoryTest {
+  public static final String IMAGE_NAME = "mongo:4.0.10";
 
   private final static MongoDBContainer mongoDBContainer = new MongoDBContainer(
-      DockerImageName.parse(Constants.IMAGE_NAME));
+      DockerImageName.parse(IMAGE_NAME));
 
   @Autowired
   ReactiveUsersRepository repository;

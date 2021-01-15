@@ -16,7 +16,7 @@
 
 package io.kapsules.jwt.security;
 
-import io.kapsules.jwt.AbstractTestBase;
+import io.kapsules.jwt.AbstractTestBaseWithOpaContainer;
 import io.kapsules.jwt.ApiTokenAuthenticationFactory;
 import io.kapsules.jwt.JwtTokenProvider;
 import org.assertj.core.util.Lists;
@@ -35,11 +35,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -51,8 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Testcontainers
-class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
+class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContainer {
 
   @Autowired
   OpaReactiveAuthorizationManager opaReactiveAuthorizationManager;
@@ -62,15 +56,6 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
 
   @Autowired
   JwtTokenProvider provider;
-
-  // TODO: Use @ContextConfiguration(initializers) to use the dynamically generated port.
-  @Container
-  public GenericContainer<?> opaServer = new FixedHostPortGenericContainer<>(
-      "openpolicyagent/opa:0.25.2")
-      .withExposedPorts(8181)
-      .withFixedExposedPort(8181, 8181)
-      .withCommand("run --server --addr :8181")
-      .waitingFor(Wait.forHttp("/health"));
 
   @Autowired
   WebClient client;
@@ -95,15 +80,6 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBase {
         .block();
     assertThat(response).isNotNull();
     assertThat(response.statusCode()).isEqualTo(HttpStatus.OK);
-  }
-
-  @Test
-  void isReady() {
-    assertThat(opaReactiveAuthorizationManager).isNotNull();
-
-    assertThat(opaServer).isNotNull();
-    assertThat(opaServer.getHost()).isEqualTo("localhost");
-    assertThat(opaServer.getFirstMappedPort()).isEqualTo(8181);
   }
 
   @Test

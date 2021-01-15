@@ -19,6 +19,7 @@ package io.kapsules.jwt.configuration;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import io.kapsules.jwt.Constants;
 import io.kapsules.jwt.thirdparty.PemUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,9 +40,6 @@ import java.security.interfaces.ECPublicKey;
 @EnableConfigurationProperties(KeyProperties.class)
 public class KeyMaterialConfiguration {
 
-  public static final String ELLIPTIC_CURVE = "EC";
-  public static final String PASSPHRASE = "SECRET";
-
   private final KeyProperties secrets;
 
   public KeyMaterialConfiguration(KeyProperties secrets) {
@@ -56,9 +54,9 @@ public class KeyMaterialConfiguration {
   @Bean
   Algorithm hmac(KeyPair keyPair) {
     switch (secrets.getAlgorithm()) {
-      case PASSPHRASE:
+      case Constants.PASSPHRASE:
         return Algorithm.HMAC256(secrets.getSecret());
-      case ELLIPTIC_CURVE:
+      case Constants.ELLIPTIC_CURVE:
         return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
           (ECPrivateKey) keyPair.getPrivate());
       default:
