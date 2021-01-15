@@ -16,10 +16,11 @@
 
 package io.kapsules.jwt.security;
 
-import io.kapsules.jwt.AbstractTestBaseWithOpaContainer;
+import io.kapsules.jwt.AbstractTestBase;
 import io.kapsules.jwt.ApiTokenAuthenticationFactory;
 import io.kapsules.jwt.JwtTokenProvider;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,12 +38,12 @@ import static io.kapsules.jwt.Constants.BEARER_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class JwtReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContainer {
+class JwtReactiveAuthorizationManagerTest extends AbstractTestBase {
 
   @Autowired
   JwtReactiveAuthorizationManager manager;
@@ -55,35 +56,83 @@ class JwtReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
 
 
   @MockBean(name = "authorizationManager")
-  OpaReactiveAuthorizationManager authorizationManager;
+  OpaReactiveAuthorizationManager opaAuthorizationManager;
 
-  @Test
-  void check() {
-    AuthorizationContext context = mock(AuthorizationContext.class);
-    ServerHttpRequest mockRequest = mock(ServerHttpRequest.class);
-    ServerWebExchange mockExchange = mock(ServerWebExchange.class);
-    HttpHeaders mockHeaders = mock(HttpHeaders.class);
+  AuthorizationContext context = mock(AuthorizationContext.class);
+  ServerHttpRequest mockRequest = mock(ServerHttpRequest.class);
+  ServerWebExchange mockExchange = mock(ServerWebExchange.class);
+  HttpHeaders mockHeaders = mock(HttpHeaders.class);
 
+  private void mockWithOpaResult(boolean granted) {
+    when(opaAuthorizationManager.check(any(), eq(mockRequest)))
+        .thenReturn(Mono.just(new AuthorizationDecision(granted)));
+  }
+
+  private void mockWithValidToken() {
     String token = provider.createToken("test-user", Lists.list("USER"));
-
-    when(context.getExchange()).thenReturn(mockExchange);
-    when(mockExchange.getRequest()).thenReturn(mockRequest);
-
-    when(mockRequest.getHeaders()).thenReturn(mockHeaders);
     when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(
         String.format("%s %s", BEARER_TOKEN, token));
+  }
 
+  private void mockWithInvalidToken() {
+    when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(
+        String.format("%s %s", BEARER_TOKEN, "not a token"));
+  }
+
+  @BeforeEach
+  void initMocks() {
+    when(context.getExchange()).thenReturn(mockExchange);
+    when(mockExchange.getRequest()).thenReturn(mockRequest);
+    when(mockRequest.getHeaders()).thenReturn(mockHeaders);
     when(mockRequest.getPath()).thenReturn(
         RequestPath.parse(URI.create("/some/crazy/test/path"), null));
+  }
+
+  @Test
+  void checkSucceeds() {
+    mockWithValidToken();
 
     // Happy path: the OPA server returned an "allow" result.
-    when(authorizationManager.check(any(), eq(mockRequest)))
-        .thenReturn(Mono.just(new AuthorizationDecision(true)));
+    mockWithOpaResult(true);
 
     assertThat(manager.check(Mono.empty(), context)
-      .map(AuthorizationDecision::isGranted).block()
+        .map(AuthorizationDecision::isGranted).block()
     ).isTrue();
 
-    verify(authorizationManager).check(any(), eq(mockRequest));
+    verify(opaAuthorizationManager).check(any(), eq(mockRequest));
+  }
+
+  @Test
+  void checkFailsIfNoToken() {
+    assertThat(manager.check(Mono.empty(), context)
+        .map(AuthorizationDecision::isGranted).block()
+    ).isNull();
+
+    // We never even got so far as to calling the OPA Server
+    verify(opaAuthorizationManager, never()).check(any(), any());
+  }
+
+  @Test
+  void checkFailsIfInvalidToken() {
+    mockWithInvalidToken();
+
+    assertThat(manager.check(Mono.empty(), context)
+        .map(AuthorizationDecision::isGranted).block()
+    ).isNull();
+
+    // We never even got so far as to calling the OPA Server
+    verify(opaAuthorizationManager, never()).check(any(), any());
+  }
+
+  @Test
+  void checkFailsIfOpaCheckFails() {
+    mockWithValidToken();
+    mockWithOpaResult(false);
+
+    assertThat(manager.check(Mono.empty(), context)
+        .map(AuthorizationDecision::isGranted).block()
+    ).isFalse();
+
+    verify(opaAuthorizationManager).check(any(), eq(mockRequest));
   }
 }
