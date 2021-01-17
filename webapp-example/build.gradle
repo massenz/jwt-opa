@@ -44,6 +44,12 @@ dependencies {
     testImplementation "org.testcontainers:mongodb:$tcVersion"
 }
 
+jacoco {
+    // TODO: remove once Jacoco 0.8.7 is released
+    // See: https://github.com/gradle/gradle/issues/15038
+    toolVersion = '0.8.7-SNAPSHOT'
+}
+
 jacocoTestCoverageVerification {
     violationRules {
         rule {

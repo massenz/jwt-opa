@@ -45,6 +45,10 @@ allprojects {
 
     repositories {
         mavenCentral()
+
+        // TODO: remove once Jacoco 0.8.7 is released
+        // See: https://github.com/gradle/gradle/issues/15038
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 }
 
