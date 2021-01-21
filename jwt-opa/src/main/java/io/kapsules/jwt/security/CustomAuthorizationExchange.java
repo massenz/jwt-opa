@@ -18,7 +18,6 @@ package io.kapsules.jwt.security;
 
 import io.kapsules.jwt.JwtTokenProvider;
 import io.kapsules.jwt.configuration.RoutesConfiguration;
-import io.kapsules.jwt.configuration.RoutesProperties2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity.AuthorizeExchangeSpec;

@@ -16,6 +16,10 @@
 
 package io.kapsules.jwt;
 
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -23,14 +27,24 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
+@ContextConfiguration(initializers = {AbstractTestBaseWithOpaContainer.Initializer.class})
 public abstract class AbstractTestBaseWithOpaContainer extends AbstractTestBase {
 
-  // TODO: Use @ContextConfiguration(initializers) to use the dynamically generated port.
+  public static final Integer opaServerExposedPort = 8181;
+
   @Container
-  protected static GenericContainer<?> opaServer = new FixedHostPortGenericContainer<>(
+  protected static GenericContainer<?> opaServer = new GenericContainer<>(
       "openpolicyagent/opa:0.25.2")
-      .withExposedPorts(8181)
-      .withFixedExposedPort(8181, 8181)
-      .withCommand("run --server --addr :8181")
+      .withExposedPorts(opaServerExposedPort)
+      .withCommand(String.format("run --server --addr :%d", opaServerExposedPort))
       .waitingFor(Wait.forHttp("/health"));
+
+  public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+      opaServer.start();
+      TestPropertyValues.of(
+          String.format("opa.server=%s:%d", opaServer.getHost(), opaServer.getFirstMappedPort())
+      ).applyTo(configurableApplicationContext.getEnvironment());
+    }
+  }
 }
