@@ -29,10 +29,12 @@ import org.springframework.stereotype.Component;
  * <p>Opinionated authorization configuration class, defines a set of API endpoints and their
  * authentication/authorization policies.
  *
- * <p>Essentially, it provides a heartbeat unauthenticated endpoint ({@literal /health}) a single
- * (authenticated) {@literal /login} endpoint to obtain an API Token ({@link com.auth0.jwt.JWT})
- * and everything else uses OPA to authorize access (the API Token is validated by the
- * {@link JwtTokenProvider verifies} and provides the authentication phase).
+ * <p>Essentially, it configures a set of unauthenticated endpoint (such as {@literal /health});
+ * those which are authenticated using the Spring Security
+ * {@link org.springframework.security.core.userdetails.UserDetails UserDetails} mechanism
+ * (e.g., a {@literal /login} endpoint to obtain a {@link com.auth0.jwt.JWT} Token);
+ * and everything else that uses OPA to authorize access (the API Token is validated by the
+ * {@link JwtTokenProvider} and provides the authentication part).
  *
  * <p>{@literal TODO} this may need revisiting, finding ways for applications using this library
  * to configure their own authentication/authorization policies per endpoint.
@@ -59,11 +61,12 @@ public class CustomAuthorizationExchange implements Customizer<AuthorizeExchange
   public void customize(AuthorizeExchangeSpec spec) {
     log.debug("Configuring Application Authorization using API Tokens (JWT)");
     spec
-        // Heartbeat endpoint, needs to have unauthenticated access.
+        // Allowed endpoints, which need to have unauthenticated access (such as heartbeat, and
+        // other management ones).
         .pathMatchers(configuration.getProperties().getAllowed().toArray(String[]::new))
         .permitAll()
 
-        // Only endpoint which is accessible *without* an API Token, used to generate one, once
+        // Endpoints which are accessible *without* an API Token, used to generate one, once
         // the user authenticates with username/password.
         .pathMatchers(configuration.getProperties().getAuthenticated().toArray(String[]::new))
         .authenticated()

@@ -60,15 +60,10 @@ public class LoginController {
   Mono<JwtController.ApiToken> login(
       @RequestHeader("Authorization") String credentials
   ) {
+    // Of course DON'T DO THIS in a real application.
     log.debug("Got credentials: {}", credentials);
-    return credentialsFromHeader(credentials)
-        .flatMap(creds -> repository.findByUsername(creds[0])
-            .map(u -> {
-              if (!encoder.matches(creds[1], u.getPassword())) {
-                throw new IllegalStateException("Password does not match");
-              }
-              return u;
-            }))
+    return usernameFromHeader(credentials)
+        .flatMap(repository::findByUsername)
         .map(u -> {
           String token = provider.createToken(u.getUsername(), u.roles());
           return new JwtController.ApiToken(u.getUsername(), u.roles(), token);
@@ -78,7 +73,8 @@ public class LoginController {
                 apiToken.getUsername(), apiToken.getApiToken()));
   }
 
-  private Mono<String[]> credentialsFromHeader(String credentials) {
+  private Mono<String> usernameFromHeader(String credentials) {
+    // Really, DON'T do this.
     log.debug("Extracting username from Authorization credentials: {}", credentials);
     if (credentials.startsWith(BASIC_AUTH)) {
       return Mono.just(credentials.substring(BASIC_AUTH.length() + 1))
@@ -86,11 +82,9 @@ public class LoginController {
           .map(String::new)
           .map(creds -> {
             String[] userPass = creds.split(":");
-            // TODO: remove this logging of the password.
-            log.debug("Basic auth - user: {}, pass: {}", userPass[0], userPass[1]);
-            return userPass;
+            return userPass[0];
           })
-          .doOnSuccess(userPass -> log.debug("Found user: {}", userPass[0]));
+          .doOnSuccess(userPass -> log.debug("Found user: {}", userPass));
     }
     return Mono.error(new IllegalStateException("Invalid Authorization header"));
   }
