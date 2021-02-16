@@ -25,7 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author M. Massenzio, 2020-12-14
  */
 @Data
-@ConfigurationProperties(prefix = "secrets")
+@ConfigurationProperties(prefix = "tokens")
 public class KeyProperties {
 
   @Data
@@ -34,8 +34,38 @@ public class KeyProperties {
     String pub;
   }
 
-  private String algorithm;
+  @Data
+  public static class SignatureProperties {
+    private String algorithm;
+    private Pair keypair;
+    private String secret;
+  }
+
+  /**
+   * Corresponds to the {@literal "iss"} claim; the authority that has issued the token
+   */
   private String issuer;
-  private Pair keypair;
-  private String secret;
+
+  /**
+   * {@literal true} by default, used in conjunction with {@link #expiresAfterSec} to determine
+   * whether the token should expire and, if so, how long after it has been created (the
+   * {@literal "iat"}, "issued-at" claim).
+   */
+  boolean shouldExpire = true;
+
+  /**
+   * How long this token is valid; this value is added to the creation time ({@literal "iat"}
+   * claim} and set in the {@literal "exp"} (expires) claim.
+   */
+  long expiresAfterSec = 86400L;
+
+  /**
+   * To set the {@literal "nbf"} (not-before) claim, this value is added to the token's creation
+   * time ({@literal "iat"} (issued-at) time.
+   *
+   * By default this value is 0, i.e., the token is immediately available for use.
+   */
+  long notBeforeDelaySec = 0L;
+
+  SignatureProperties signature;
 }

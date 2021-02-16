@@ -17,10 +17,12 @@
 package io.kapsules.jwt;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.kapsules.jwt.configuration.KeyProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +32,16 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
+
+import static com.auth0.jwt.impl.PublicClaims.EXPIRES_AT;
+import static com.auth0.jwt.impl.PublicClaims.ISSUED_AT;
+import static com.auth0.jwt.impl.PublicClaims.NOT_BEFORE;
 
 /**
  * <h3>JwtTokenProvider</h3>
@@ -60,12 +71,33 @@ public class JwtTokenProvider {
   @Autowired
   String issuer;
 
+  @Autowired
+  KeyProperties keyProperties;
+
   public String createToken(String user, List<String> roles) {
-    return JWT.create()
+    Instant now = Instant.now();
+
+    JWTCreator.Builder builder = JWT.create()
         .withIssuer(issuer)
         .withSubject(user)
         .withClaim(ROLES, roles)
-        .sign(hmac);
+        .withIssuedAt(Date.from(now));
+
+    if (keyProperties.isShouldExpire()) {
+      Instant expires = now.plusSeconds(keyProperties.getExpiresAfterSec());
+      log.debug("JWT will expire at {}", expires);
+      builder.withExpiresAt(Date.from(expires));
+    }
+
+    if (keyProperties.getNotBeforeDelaySec() > 0) {
+      Instant notBefore = now.plusSeconds(keyProperties.getNotBeforeDelaySec());
+      log.debug("JWT Not Valid Before {}", notBefore);
+      builder.withNotBefore(Date.from(notBefore));
+    }
+
+    String token = builder.sign(hmac);
+    log.debug("Issuing JWT: {}", token);
+    return token;
   }
 
   public boolean validateToken(String token) {

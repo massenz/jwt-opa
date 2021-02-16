@@ -6,12 +6,13 @@ logging:
   level:
     io.kapsules: debug
 
-secrets:
-  algorithm: "EC"
-  keypair:
-    priv: "../private/ec-key.pem"
-    pub: "../private/ec-key-pub.pem"
+tokens:
   issuer: "demo"
+  signature:
+    algorithm: "EC"
+    keypair:
+      priv: "../private/ec-key.pem"
+      pub: "../private/ec-key-pub.pem"
 
 # This is used to build the Rule validation endpoint:
 #   http://localhost:8181/v1/data/kapsules/allow

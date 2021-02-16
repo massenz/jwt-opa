@@ -21,6 +21,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.kapsules.jwt.Constants;
 import io.kapsules.jwt.thirdparty.PemUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -42,31 +43,34 @@ import static io.kapsules.jwt.Constants.UNDEFINED_KEYPAIR;
 @EnableConfigurationProperties(KeyProperties.class)
 public class KeyMaterialConfiguration {
 
-  private final KeyProperties secrets;
+//  @Getter(onMethod=@__({@Bean}))
+  private final KeyProperties keyProperties;
 
-  public KeyMaterialConfiguration(KeyProperties secrets) {
-    this.secrets = secrets;
-    if (secrets.getKeypair() == null) {
+  public KeyMaterialConfiguration(KeyProperties properties) {
+    this.keyProperties = properties;
+    if (properties.getSignature().getKeypair() == null) {
       throw new IllegalStateException(UNDEFINED_KEYPAIR);
     }
   }
 
   @Bean
   public String issuer() {
-    return secrets.getIssuer();
+    return keyProperties.getIssuer();
   }
 
   @Bean
   Algorithm hmac(KeyPair keyPair) {
-    switch (secrets.getAlgorithm()) {
+    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
+
+    switch (properties.getAlgorithm()) {
       case Constants.PASSPHRASE:
-        return Algorithm.HMAC256(secrets.getSecret());
+        return Algorithm.HMAC256(properties.getSecret());
       case Constants.ELLIPTIC_CURVE:
         return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
           (ECPrivateKey) keyPair.getPrivate());
       default:
         throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
-          secrets.getAlgorithm()));
+          properties.getAlgorithm()));
     }
   }
 
@@ -83,10 +87,12 @@ public class KeyMaterialConfiguration {
   }
 
   private PrivateKey loadPrivateKey() throws IOException {
-    Path p = Paths.get(secrets.getKeypair().getPriv());
+    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
+
+    Path p = Paths.get(properties.getKeypair().getPriv());
     log.info("Reading private key from file {}", p.toAbsolutePath());
 
-    PrivateKey pk = PemUtils.readPrivateKeyFromFile(p.toString(), secrets.getAlgorithm());
+    PrivateKey pk = PemUtils.readPrivateKeyFromFile(p.toString(), properties.getAlgorithm());
     if (pk == null) {
       log.error("Could not read Public key");
       throw new IllegalStateException(
@@ -97,10 +103,11 @@ public class KeyMaterialConfiguration {
   }
 
   private PublicKey loadPublicKey() throws IOException {
-    Path p = Paths.get(secrets.getKeypair().getPub());
+    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
+    Path p = Paths.get(properties.getKeypair().getPub());
     log.info("Reading public key from file {}", p.toAbsolutePath());
 
-    PublicKey pk = PemUtils.readPublicKeyFromFile(p.toString(), secrets.getAlgorithm());
+    PublicKey pk = PemUtils.readPublicKeyFromFile(p.toString(), properties.getAlgorithm());
     if (pk == null) {
       log.error("Could not read Public key");
       throw new IllegalStateException(
