@@ -27,22 +27,33 @@ db:
 spring:
   profiles: debug
 
-# TODO: in Production this should be configured via env properties
-secrets:
+tokens:
   # The issuer is carried over in the API Token and can be used to determine the
   # application context, when resolving different policies.
   issuer: "demo-issuer"
-  # We currently support Elliptic Curve signatures, and passphrase-based secrets.
-  # If using a passphrase (not recommended) use something like this:
-  # algorithm: "SECRET"
-  # secret: "my very zekret pa55phrase"
-  algorithm: "EC"
-  keypair:
-    # These can be absolute or relative paths to a pair of private/public keys
-    # used to sign/verify the API Token (JWTs).
-    # See README.md for more information on how to generate them.
-    priv: "private/ec-key.pem"
-    pub: "private/ec-key-pub.pem"
+
+  # By default, the Token expires after one hour; change the following two
+  # properties (the duration expressed in seconds) to adapt to your application
+  # security requirements.
+  should_expire: true
+  expires_after_sec: 86400
+
+  # Interval in seconds, after creation, during which the JWT is not valid.
+  # Corresponds to the `nbf` ("not before") claim.
+  not_before_delay_sec: 60
+
+  signature:
+    # We currently support Elliptic Curve signatures, and passphrase-based secrets.
+    # If using a passphrase (not recommended) use something like this:
+    # algorithm: "SECRET"
+    # secret: "my very zekret pa55phrase"
+    algorithm: "EC"
+    keypair:
+      # These can be absolute or relative paths to a pair of private/public keys
+      # used to sign/verify the API Token (JWTs).
+      # See README.md for more information on how to generate them.
+      priv: "private/ec-key.pem"
+      pub: "private/ec-key-pub.pem"
 
 logging:
   level:

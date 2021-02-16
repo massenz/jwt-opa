@@ -17,7 +17,9 @@
 package io.kapsules.jwt;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.kapsules.jwt.configuration.KeyProperties;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +27,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.stream.Collectors;
 
+import static com.auth0.jwt.impl.PublicClaims.EXPIRES_AT;
+import static com.auth0.jwt.impl.PublicClaims.ISSUED_AT;
 import static io.kapsules.jwt.JwtTokenProvider.ROLES;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +42,9 @@ class JwtTokenProviderTest extends AbstractTestBase {
   @Autowired
   JwtTokenProvider provider;
 
+  @Autowired
+  KeyProperties properties;
+
   @Test
   public void createToken() {
     String token = provider.createToken("a-user", Lists.list("USER",
@@ -42,10 +52,22 @@ class JwtTokenProviderTest extends AbstractTestBase {
 
     JWT jwt = new JWT();
     DecodedJWT decoded = jwt.decodeJwt(token);
+
     assertThat(decoded).isNotNull();
     assertThat(decoded.getSubject()).isEqualTo("a-user");
     assertThat(decoded.getClaim(ROLES).asArray(String.class))
         .containsExactlyInAnyOrder("USER", "PAINTER", "POET");
+
+    // Test time/expiry claims.
+    assertThat(decoded.getClaim(ISSUED_AT).isNull()).isFalse();
+    assertThat(decoded.getClaim(EXPIRES_AT).isNull()).isFalse();
+
+    assertThat(decoded.getClaim(ISSUED_AT).asLong()).isLessThanOrEqualTo(
+        Instant.now().getEpochSecond());
+
+    long expiryAfter = properties.getExpiresAfterSec();
+    assertThat(decoded.getClaim(EXPIRES_AT).asLong()).isEqualTo(
+        decoded.getClaim(ISSUED_AT).asLong() + expiryAfter);
   }
 
   @Test
