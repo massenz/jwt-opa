@@ -44,11 +44,10 @@ public class PemUtils {
       throw new FileNotFoundException(
           String.format(Constants.FILE_NOT_EXISTS, pemFile.getAbsolutePath()));
     }
-    PemReader reader = new PemReader(new FileReader(pemFile));
-    PemObject pemObject = reader.readPemObject();
-    byte[] content = pemObject.getContent();
-    reader.close();
-    return content;
+    try (PemReader reader = new PemReader(new FileReader(pemFile))) {
+      PemObject pemObject = reader.readPemObject();
+      return pemObject.getContent();
+    }
   }
 
   public static PublicKey getPublicKey(byte[] keyBytes, String algorithm) {
