@@ -48,6 +48,8 @@ import java.util.Collections;
 )
 public class UserController {
 
+  private static final String DEFAULT_ROLE = "USER";
+
   @Autowired
   PasswordEncoder encoder;
 
@@ -55,11 +57,15 @@ public class UserController {
   ReactiveUsersRepository repository;
 
   private Mono<User> saveAndMaskPassword(User user) {
+    if (user.getRoles().isEmpty()) {
+      user.setRoles(Collections.singletonList(DEFAULT_ROLE));
+    }
+
     User withEncodedPwd = User.withPassword(user,
         encoder.encode(user.getPassword()));
 
     return repository.save(withEncodedPwd)
-        .map(u -> User.withPassword(u, "****"));
+        .map(u -> User.withPassword(u, null));
   }
 
   @PostMapping
@@ -88,7 +94,7 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> get(@PathVariable String username) {
     return repository.findByUsername(username)
-        .map(u ->  User.withPassword(u, "****"))
+        .map(u ->  User.withPassword(u, null))
         .doOnNext(u -> log.debug("Found User: {}", u))
         .map(ResponseEntity::ok)
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));

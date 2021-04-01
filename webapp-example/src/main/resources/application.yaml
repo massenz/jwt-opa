@@ -23,9 +23,19 @@ db:
   port: 27017
   name: opa-demo-db
 
+# Just making the response JSON body a bit prettier.
+spring:
+  jackson:
+    default-property-inclusion: "non_null"
 ---
 spring:
   profiles: debug
+
+# Doing this only for debug builds, as it may leak sensitive information
+# to an attacker.
+server:
+  error:
+    include-message: always
 
 tokens:
   # The issuer is carried over in the API Token and can be used to determine the
