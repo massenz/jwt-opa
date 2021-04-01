@@ -16,14 +16,17 @@
 
 package io.kapsules.jwt;
 
+import io.kapsules.jwt.api.UserController;
 import io.kapsules.jwt.data.ReactiveUsersRepository;
 import io.kapsules.jwt.data.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.PostConstruct;
 import java.util.UUID;
@@ -36,10 +39,8 @@ import java.util.UUID;
 @Component
 public class DbInit {
   @Autowired
-  ReactiveUsersRepository repository;
+  UserController controller;
 
-  @Autowired
-  PasswordEncoder encoder;
 
   @Value("${db.admin:admin}")
   String adminUsername;
@@ -48,18 +49,29 @@ public class DbInit {
   @PostConstruct
   public void initDb() {
     String randomPwd = UUID.randomUUID().toString().substring(0, 10);
-    String encodedPwd = encoder.encode(randomPwd);
+    User admin = new User(adminUsername, randomPwd, "SYSTEM");
 
-    repository.findByUsername(adminUsername)
-        .hasElement()
-        .map(exists -> {
-              if (!exists) {
-                log.info("Initializing DB with seed user ({}). Use the generated password: {}",
-                    adminUsername, randomPwd);
-                repository.save(new User(adminUsername, encodedPwd, "SYSTEM")).subscribe();
-              }
-              return exists;
-            })
+    controller.create(admin)
+        .doOnSuccess(responseEntity -> {
+          if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            log.info("Initializing DB with seed user ({}). Use the generated password: {}",
+                adminUsername, randomPwd);
+          } else {
+            log.warn("Unexpected response ({}): {}", responseEntity.getStatusCode(),
+                responseEntity.hasBody() ?
+                    responseEntity.getBody().toString() :
+                    "no details");
+          }
+        })
+        .doOnError(ResponseStatusException.class, ex -> {
+          if (ex.getStatus().equals(HttpStatus.CONFLICT)) {
+            log.info("User [{}] already exists in database, use existing credentials",
+                adminUsername);
+          } else {
+            log.error("Unexpected error when creating SYSTEM user", ex);
+            System.exit(1);
+          }
+        })
         .subscribe();
   }
 }

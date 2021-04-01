@@ -52,8 +52,8 @@ tokens:
       # These can be absolute or relative paths to a pair of private/public keys
       # used to sign/verify the API Token (JWTs).
       # See README.md for more information on how to generate them.
-      priv: "private/ec-key.pem"
-      pub: "private/ec-key-pub.pem"
+      priv: "../private/ec-key.pem"
+      pub: "../private/ec-key-pub.pem"
 
 logging:
   level:

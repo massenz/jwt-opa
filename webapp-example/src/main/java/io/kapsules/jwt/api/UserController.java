@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,10 +49,16 @@ import java.util.Collections;
 public class UserController {
 
   @Autowired
+  PasswordEncoder encoder;
+
+  @Autowired
   ReactiveUsersRepository repository;
 
   private Mono<User> saveAndMaskPassword(User user) {
-    return repository.save(user)
+    User withEncodedPwd = User.withPassword(user,
+        encoder.encode(user.getPassword()));
+
+    return repository.save(withEncodedPwd)
         .map(u -> User.withPassword(u, "****"));
   }
 
@@ -81,8 +88,8 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> get(@PathVariable String username) {
     return repository.findByUsername(username)
+        .map(u ->  User.withPassword(u, "****"))
         .doOnNext(u -> log.debug("Found User: {}", u))
-        .map(u ->  User.withUsername(u, "****"))
         .map(ResponseEntity::ok)
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
   }

@@ -170,9 +170,7 @@ The sample app (`jwt-vault`) uses the following services:
 Use the following to run the servers locally:
 
 ```
-docker run --rm -d -p 27017:27017 --name mongodb mongo:3.7
-docker run --rm -d -p 8181:8181 --name opa openpolicyagent/opa run --server
-# TODO: Vault container
+./run-example.sh
 ```
 
 `TODO:` a full Kubernetes service/pod spec to run all services.

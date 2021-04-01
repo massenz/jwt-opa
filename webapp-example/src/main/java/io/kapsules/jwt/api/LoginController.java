@@ -74,7 +74,6 @@ public class LoginController {
   }
 
   private Mono<String> usernameFromHeader(String credentials) {
-    // Really, DON'T do this.
     log.debug("Extracting username from Authorization credentials: {}", credentials);
     if (credentials.startsWith(BASIC_AUTH)) {
       return Mono.just(credentials.substring(BASIC_AUTH.length() + 1))

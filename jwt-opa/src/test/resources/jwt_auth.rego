@@ -16,7 +16,7 @@ token := t {
 
 user := u {
     some i
-    token[i].iss == "demo"
+    token[i].iss == "demo-issuer"
     u = token[i].sub
 }
 
