@@ -13,6 +13,10 @@ fi
 if [[ -z $(docker ps --filter name=opa | grep -w opa) ]]; then
     echo "Starting Open Policy Agent (OPA) container"
     docker run --rm -d -p 8181:8181 --name opa openpolicyagent/opa:0.25.2 run --server
+
+    echo "Uploading userauth Policy"
+    curl -T "${WORKDIR}/jwt-opa/src/test/resources/jwt_auth.rego" \
+        -X PUT http://localhost:8181/v1/policies/userauth
 fi
 
 export SPRING_PROFILES_ACTIVE="debug"
