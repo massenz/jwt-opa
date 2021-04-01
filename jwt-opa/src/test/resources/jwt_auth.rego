@@ -9,7 +9,6 @@ default allow = false
 
 # The JWT carries the username and roles, which will be used
 # to authorize access to the endpoint (`input.resource.path`)
-# TODO: roles should be an array
 token := t {
     t := io.jwt.decode(input.api_token)
 }

@@ -23,6 +23,7 @@ import io.kapsules.jwt.AbstractTestBase;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -36,9 +37,12 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
   @Autowired
   KeyMaterialConfiguration configuration;
 
+  @Value("${tokens.issuer}")
+  private String issuer;
+
   @Test
   void issuer() {
-    assertThat(configuration.issuer()).isEqualTo("demo");
+    assertThat(configuration.issuer()).isEqualTo(issuer);
   }
 
   @Test
@@ -70,7 +74,7 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
     Algorithm hmac = configuration.hmac(pair);
 
     String token = JWT.create()
-        .withIssuer("demo")
+        .withIssuer(issuer)
         .withSubject("test-user")
         .withClaim(ROLES, Lists.list("TEST"))
         .sign(hmac);

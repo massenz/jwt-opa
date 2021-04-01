@@ -7,7 +7,7 @@ logging:
     io.kapsules: debug
 
 tokens:
-  issuer: "demo"
+  issuer: "demo-issuer"
   signature:
     algorithm: "EC"
     keypair:
