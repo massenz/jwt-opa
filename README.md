@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![OS Debian](https://img.shields.io/badge/OS-Linux-green)
 
+[![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml)
+
 # Motivation
 
 [Spring Security](https://spring.io/projects/spring-security) assumes a fairly simplistic Role-Based access control (RBAC) where the service authenticates the user (via some credentials, typically username/password) and returns a `UserDetails` object which also lists the `Authorities` that the `Principal` has been granted.
