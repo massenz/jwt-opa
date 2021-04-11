@@ -1,13 +1,18 @@
 # Integrating Open Policy Agent (OPA) with Spring Security Reactive and JSON Web Tokens (JWT)
 
-![Version](https://img.shields.io/badge/Version-0.3.0-blue)
-![Released](https://img.shields.io/badge/Released-2021.01.21-green)
+![Version](https://img.shields.io/badge/Version-0.4.0-blue)
+![Released](https://img.shields.io/badge/Released-2021.04.10-green)
 
 [![Author](https://img.shields.io/badge/Author-M.%20Massenzio-green)](https://bitbucket.org/marco)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![OS Debian](https://img.shields.io/badge/OS-Linux-green)
 
 [![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml)
+
+### Copyright & Licensing
+
+**The code is copyright (c) 2021 AlertAvert.com. All rights reserved**<br>
+The code is released under the Apache 2.0 License, see `LICENSE` for details.
 
 # Motivation
 
