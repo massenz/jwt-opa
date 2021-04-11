@@ -16,5 +16,17 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-rootProject.name = 'jwt-opa-integration'
-include 'webapp-example', 'jwt-opa'
+package com.alertavert.opademo.data;
+
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public interface ReactiveUsersRepository extends ReactiveCrudRepository<User, String> {
+  Mono<User> findByUsername(String username);
+
+  Mono<User> removeByUsername(String username);
+
+  Flux<User> findAllByRolesContains(String role);
+
+}

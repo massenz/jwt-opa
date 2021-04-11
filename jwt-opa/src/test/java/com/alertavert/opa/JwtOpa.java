@@ -16,5 +16,15 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-rootProject.name = 'jwt-opa-integration'
-include 'webapp-example', 'jwt-opa'
+package com.alertavert.opa;
+
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Profile;
+
+/**
+ * Simple marker class to hold Spring Boot annotations.
+ */
+@Profile("test")
+@SpringBootApplication
+public class JwtOpa {
+}
