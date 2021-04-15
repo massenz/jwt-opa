@@ -37,9 +37,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class OpaServerConfiguration {
 
   private final OpaServerProperties opaServerProperties;
+  private final RoutesConfiguration configuration;
 
-  public OpaServerConfiguration(OpaServerProperties opaServerProperties) {
+  public OpaServerConfiguration(
+      OpaServerProperties opaServerProperties,
+      RoutesConfiguration configuration
+  ) {
     this.opaServerProperties = opaServerProperties;
+    this.configuration = configuration;
   }
 
   /**
@@ -71,6 +76,6 @@ public class OpaServerConfiguration {
 
   @Bean
   public OpaReactiveAuthorizationManager authorizationManager(WebClient client) {
-    return new OpaReactiveAuthorizationManager(client);
+    return new OpaReactiveAuthorizationManager(client, configuration);
   }
 }

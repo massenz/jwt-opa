@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -96,7 +99,7 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> get(@PathVariable String username) {
     return repository.findByUsername(username)
-        .map(u ->  User.withPassword(u, null))
+        .map(u -> User.withPassword(u, null))
         .doOnNext(u -> log.debug("Found User: {}", u))
         .map(ResponseEntity::ok)
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
@@ -115,16 +118,17 @@ public class UserController {
       @PathVariable String username,
       @PathVariable String role
   ) {
-       return repository.findByUsername(username)
-                .map(u -> {
-                  u.getRoles().add(role);
-                  return u;
-                })
-                .flatMap(this::saveAndMaskPassword)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+    return repository.findByUsername(username)
+        .map(u -> {
+          u.getRoles().add(role);
+          return u;
+        })
+        .flatMap(this::saveAndMaskPassword)
+        .map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
+  // TODO: This is, rather obviously, dumb and insecure; the password should be passed in the body.
   @PutMapping(path = "/{username}/password/{password}")
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<User>> changePassword(
@@ -157,5 +161,15 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build())
         );
+  }
+
+  @DeleteMapping(path = "/{username}")
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<ResponseEntity<User>> deleteUsername(@PathVariable String username) {
+    return repository.removeByUsername(username)
+        .doOnNext(u -> log.debug("DELETE user {} [{}]", u.getUsername(), u.getUserId()))
+        .map(u -> User.withPassword(u, null))
+        .map(ResponseEntity::ok)
+        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
   }
 }

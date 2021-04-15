@@ -4,7 +4,7 @@
 
 logging:
   level:
-    io.kapsules: debug
+    com.alertavert: debug
 
 tokens:
   issuer: "demo-issuer"
@@ -21,3 +21,8 @@ opa:
   policy: kapsules
   rule: allow
   server: "localhost:8181"
+
+# Add an endpoint which won't trigger OPA Authorization
+routes:
+   authenticated:
+     - "/testauth"

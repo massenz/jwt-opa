@@ -16,7 +16,7 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa;
+package com.alertavert.opa.jwt;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;

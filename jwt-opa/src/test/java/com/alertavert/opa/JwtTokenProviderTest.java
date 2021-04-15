@@ -18,8 +18,10 @@
 
 package com.alertavert.opa;
 
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.alertavert.opa.configuration.KeyProperties;
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -27,13 +29,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.auth0.jwt.impl.PublicClaims.EXPIRES_AT;
 import static com.auth0.jwt.impl.PublicClaims.ISSUED_AT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 class JwtTokenProviderTest extends AbstractTestBase {
 
@@ -69,6 +75,23 @@ class JwtTokenProviderTest extends AbstractTestBase {
   }
 
   @Test
+  public void createTokenThatNeverExpires() {
+    boolean shouldExpire = properties.isShouldExpire();
+    properties.setShouldExpire(false);
+    String token = provider.createToken("alice", Lists.list("USER"));
+
+    // Restore state for subsequent tests.
+    properties.setShouldExpire(shouldExpire);
+
+    // We specifically here avoid using TokenProvider's own methods.
+    JWT jwt = new JWT();
+    DecodedJWT decoded = jwt.decodeJwt(token);
+
+    assertThat(decoded).isNotNull();
+    assertThat(decoded.getClaim(EXPIRES_AT).isNull()).isTrue();
+  }
+
+  @Test
   public void canVerifyCreated() {
     String token = provider.createToken("me", Lists.list("uno"));
     assertThat(provider.validateToken(token)).isTrue();
@@ -98,5 +121,22 @@ class JwtTokenProviderTest extends AbstractTestBase {
         .map(GrantedAuthority::getAuthority)
         .collect(Collectors.toList())
     ).containsExactlyInAnyOrder("USER", "ADMIN");
+  }
+
+  @Test
+  public void createTokenWithNotBefore() {
+    long delay = properties.getNotBeforeDelaySec();
+    properties.setNotBeforeDelaySec(60);
+    String token = provider.createToken("charlie", List.of("USER"));
+
+    // Restore state for subsequent tests.
+    properties.setNotBeforeDelaySec(delay);
+
+    assertThrows(InvalidClaimException.class, () -> provider.decode(token));
+  }
+
+  @Test
+  public void invalidTokenFailsAuthentication() {
+    assertThat(provider.getAuthentication("definitelynotatoken")).isNull();
   }
 }

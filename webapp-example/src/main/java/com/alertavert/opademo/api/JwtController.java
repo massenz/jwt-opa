@@ -18,9 +18,9 @@
 
 package com.alertavert.opademo.api;
 
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.alertavert.opa.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,7 @@ import java.security.KeyPair;
 import java.util.List;
 import java.util.Objects;
 
+import static com.alertavert.opa.Constants.API_TOKEN;
 import static com.alertavert.opa.Constants.BEARER_TOKEN;
 
 @Slf4j
@@ -57,7 +58,7 @@ public class JwtController {
   static class ApiToken {
     String username;
     List<String> roles;
-    @JsonProperty("api-token")
+    @JsonProperty(API_TOKEN)
     String apiToken;
   }
 

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.PostConstruct;
@@ -41,22 +42,25 @@ public class DbInit {
   @Autowired
   UserController controller;
 
-
-  @Value("${db.admin:admin}")
+  @Value("${db.admin.username:admin}")
   String adminUsername;
+
+  @Value("${db.admin.password}")
+  String adminPassword;
 
 
   @PostConstruct
   public void initDb() {
-    String randomPwd = UUID.randomUUID().toString().substring(0, 10);
-    User admin = new User(adminUsername, randomPwd, "SYSTEM");
+    if (StringUtils.isEmpty(adminPassword)) {
+      adminPassword = UUID.randomUUID().toString().substring(0, 10);
+      log.info("Initializing DB with seed user ({}). Use the generated password: {}",
+          adminUsername, adminPassword);
+    }
+    User admin = new User(adminUsername, adminPassword, "SYSTEM");
 
     controller.create(admin)
         .doOnSuccess(responseEntity -> {
-          if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.info("Initializing DB with seed user ({}). Use the generated password: {}",
-                adminUsername, randomPwd);
-          } else {
+          if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
             log.warn("Unexpected response ({}): {}", responseEntity.getStatusCode(),
                 responseEntity.hasBody() ?
                     responseEntity.getBody().toString() :

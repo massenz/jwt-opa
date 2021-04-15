@@ -28,5 +28,4 @@ public interface ReactiveUsersRepository extends ReactiveCrudRepository<User, St
   Mono<User> removeByUsername(String username);
 
   Flux<User> findAllByRolesContains(String role);
-
 }

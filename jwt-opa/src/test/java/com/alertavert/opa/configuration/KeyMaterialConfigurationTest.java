@@ -20,7 +20,7 @@ package com.alertavert.opa.configuration;
 
 import com.alertavert.opa.AbstractTestBase;
 import com.alertavert.opa.Constants;
-import com.alertavert.opa.JwtTokenProvider;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;

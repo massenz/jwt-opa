@@ -16,7 +16,7 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa;
+package com.alertavert.opa.jwt;
 
 import lombok.Value;
 

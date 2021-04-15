@@ -19,11 +19,12 @@
 package com.alertavert.opa.security;
 
 import com.alertavert.opa.Constants;
-import com.alertavert.opa.JwtTokenProvider;
+import com.alertavert.opa.configuration.OpaServerProperties;
+import com.alertavert.opa.configuration.RoutesConfiguration;
+import com.alertavert.opa.jwt.ApiTokenAuthentication;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.alertavert.opa.ApiTokenAuthentication;
-import com.alertavert.opa.configuration.OpaServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -41,6 +43,8 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
 
 /**
  * <h3>OpaReactiveAuthorizationManager</h3>
@@ -60,21 +64,25 @@ import java.util.Objects;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationManager<ServerHttpRequest> {
+public class OpaReactiveAuthorizationManager
+    implements ReactiveAuthorizationManager<AuthorizationContext> {
 
   private final WebClient client;
-
+  private final RoutesConfiguration configuration;
   private final ObjectMapper mapper = new ObjectMapper();
 
   /**
-   * Determines if access is granted for a specific authentication and request.
+   * Determines if access is granted for a specific request, given a user's credentials (API
+   * token).
    *
    * @param authentication an {@link ApiTokenAuthentication} object, contains the JWT in the
    *                       {@literal credentials} attribute; `authenticated` will be {@literal true}
    *                       if the JWT has been validated
-   * @param request        the API endpoint and method (amongst other attributes) which we are
-   *                       authorizing access to (or denying, depending on the OPA Policy
-   *                       validation)
+   * @param context        the {@link AuthorizationContext context} for the authorization decision,
+   *                       we will use it to extract the HTTP request, which will be sent to the OPA
+   *                       server (alongside the user's {@link ApiTokenAuthentication credentials},
+   *                       i.e., the JWT) for the authorization policies to be evaluated.
+   *
    * @return a decision or empty Mono if no decision could be made.
    * @see ApiTokenAuthentication
    * @see JwtTokenProvider
@@ -82,24 +90,34 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
   @Override
   public Mono<AuthorizationDecision> check(
       Mono<Authentication> authentication,
-      ServerHttpRequest request
+      AuthorizationContext context
   ) {
+    ServerHttpRequest request = context.getExchange().getRequest();
+    log.debug("OPA Auth Mgr -- Authorizing {} to `{}`",
+        request.getMethod(), request.getPath());
+
+    // TODO: need to use Ant matchers to be consistent with Spring Security.
+    if (configuration.getProperties().getAuthenticated().contains(request.getPath().toString())) {
+      log.debug("Bypassing OPA Policies authorization");
+      return Mono.just(new AuthorizationDecision(true));
+    }
 
     return authentication.map(auth -> {
-      //@formatter:off
-          // We expect to receive a valid API Token (JWT) as the user's credentials.
-          if (!auth.isAuthenticated()) {
-            return Mono.error(unauthorized());
+          log.debug("OPA Auth Mgr -- For user [{}]", auth.getPrincipal());
+          // If authentication failed, there is no point in even trying to authorize the request.
+          if (!auth.isAuthenticated() || !(auth instanceof ApiTokenAuthentication)) {
+            log.error(Constants.UNEXPECTED_AUTHENTICATION_CLASS,
+                auth.getClass().getSimpleName());
+            throw unauthorized();
           }
-          return makeRequestBody(auth.getCredentials().toString(), request);
+          return makeRequestBody(auth.getCredentials(), request);
         })
-      // @formatter:on
-        .doOnSuccess(body -> {
+        .doOnNext(body -> {
           try {
             log.debug("POSTing OPA Authorization request: {}",
                 mapper.writeValueAsString(body));
           } catch (JsonProcessingException e) {
-            log.error("Cannot parse Authorization request: {}", e.getMessage());
+            log.error(Constants.CANNOT_PARSE_AUTHORIZATION_REQUEST, e.getMessage());
           }
         })
         .flatMap(body -> client.post()
@@ -111,19 +129,20 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
         .map(res -> {
           log.debug("OPA Server returned: {}", res);
           Object result = res.get("result");
-          if (StringUtils.isEmpty(result)) {
-            return Mono.error(unauthorized());
+          boolean authorized = false;
+          if (!StringUtils.isEmpty(result)) {
+            authorized = Boolean.parseBoolean(result.toString());
           }
-          return result.toString();
-        })
-        .map(o -> Boolean.parseBoolean(o.toString()))
-        .map(AuthorizationDecision::new);
+          return new AuthorizationDecision(authorized);
+        });
   }
 
   private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(
-      String token,
+      Object credentials,
       ServerHttpRequest request
   ) {
+    Objects.requireNonNull(credentials);
+    String token = credentials.toString();
     return TokenBasedAuthorizationRequestBody.build(token, request.getPath().toString(),
         Objects.requireNonNull(request.getMethod()).toString());
   }
@@ -133,7 +152,7 @@ public class OpaReactiveAuthorizationManager implements ReactiveAuthorizationMan
         HttpStatus.UNAUTHORIZED.value(),
         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
         null,
-        Constants.INVALID_RESULT.getBytes(StandardCharsets.UTF_8),
+        USER_NOT_AUTHORIZED.getBytes(StandardCharsets.UTF_8),
         StandardCharsets.UTF_8
     );
   }

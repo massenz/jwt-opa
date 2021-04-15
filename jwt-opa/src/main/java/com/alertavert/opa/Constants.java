@@ -42,10 +42,15 @@ public class Constants {
 
   // Error Messages.
   public static final String FILE_NOT_EXISTS = "The file '%s' doesn't exist.";
-  public static final String INVALID_RESULT = "OPA Server did not return a valid result";
-  public static final String UNEXPECTED_AUTHENTICATION_OBJECT = "Unexpected Authentication object";
+  public static final String USER_NOT_AUTHORIZED = "Cannot authorize user";
   public static final String TOKEN_MISSING_OR_INVALID = "API Token was missing or invalid";
   public static final String AUTHORIZATION_HEADER_MISSING = "No Authorization header, rejecting request";
   public static final String UNDEFINED_KEYPAIR = "Public/Private key pair paths must be defined, "
       + "using the 'secrets.keypair.priv/pub' properties";
+  public static final String UNEXPECTED_AUTHENTICATION_CLASS = "Unexpected user not "
+      + "authenticated, or Authentication type "
+      + "({}) not an instance of ApiTokenAuthentication, cannot progress authorization";
+  public static final String CANNOT_PARSE_AUTHORIZATION_REQUEST = "Cannot parse Authorization "
+      + "request: {}";
+  public static final String API_TOKEN = "api_token";
 }
