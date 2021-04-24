@@ -22,7 +22,12 @@ import com.alertavert.opa.configuration.JwtSecurityConfiguration;
 import com.alertavert.opa.configuration.KeyMaterialConfiguration;
 import com.alertavert.opa.configuration.OpaServerConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.test.context.ActiveProfiles;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <h3>AbstractTestBase</h3>
@@ -39,4 +44,12 @@ import org.springframework.test.context.ActiveProfiles;
 })
 @ActiveProfiles("test")
 public abstract class AbstractTestBase {
+
+  public static void setBearerTokenForRequest(ServerHttpRequest request, String token) {
+    HttpHeaders headers = mock(HttpHeaders.class);
+    when(request.getHeaders()).thenReturn(headers);
+    when(headers.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(
+        String.format("%s %s", Constants.BEARER_TOKEN, token)
+    );
+  }
 }

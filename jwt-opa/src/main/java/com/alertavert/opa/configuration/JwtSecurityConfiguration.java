@@ -18,11 +18,14 @@
 
 package com.alertavert.opa.configuration;
 
-import com.alertavert.opa.security.CustomAuthorizationExchange;
+import com.alertavert.opa.jwt.JwtAuthenticationWebFilter;
+import com.alertavert.opa.security.OpaReactiveAuthorizationManager;
+import com.alertavert.opa.security.PasswordAuthenticationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
@@ -35,18 +38,44 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class JwtSecurityConfiguration {
 
+  // TODO: use constructor arguments & final private fields instead of auto-wiring.
   @Autowired
-  CustomAuthorizationExchange authorizationExchange;
+  PasswordAuthenticationManager authenticationManager;
+
+  @Autowired
+  RoutesConfiguration configuration;
+
+  @Autowired
+  OpaReactiveAuthorizationManager authorizationManager;
+
+  @Autowired
+  JwtAuthenticationWebFilter jwtAuthenticationWebFilter;
+
 
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-    // OPA Authorization will be done inside the authorizeExchange "custom authorization" logic
-    return http
-        // TODO: This is INSECURE, but makes testing using Postman easier
-        // See: https://stackoverflow.com/questions/27182701/how-do-i-send-spring-csrf-token-from-postman-rest-client
-        .csrf().disable()
+
+    // TODO: This is INSECURE, but makes testing using Postman easier
+    // See: https://stackoverflow.com/questions/27182701/how-do-i-send-spring-csrf-token-from-postman-rest-client
+    http.csrf().disable()
+        .addFilterAfter(jwtAuthenticationWebFilter, SecurityWebFiltersOrder.HTTP_BASIC)
+        .authorizeExchange(authorizeExchangeSpec -> {
+          authorizeExchangeSpec.pathMatchers("/**").access(authorizationManager);
+        });
+
+    return http.authenticationManager(authenticationManager)
         .httpBasic()
-      .and()
-        .authorizeExchange(authorizationExchange).build();
+        .and()
+        .authorizeExchange()
+
+        .pathMatchers(configuration.getProperties().getAllowed().toArray(String[]::new))
+        .permitAll()
+
+        .anyExchange()
+        .authenticated()
+//        .access(authorizationManager)
+
+        .and()
+        .build();
   }
 }

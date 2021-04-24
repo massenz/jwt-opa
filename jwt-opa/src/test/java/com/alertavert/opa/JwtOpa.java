@@ -19,7 +19,11 @@
 package com.alertavert.opa;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Simple marker class to hold Spring Boot annotations.
@@ -27,4 +31,10 @@ import org.springframework.context.annotation.Profile;
 @Profile("test")
 @SpringBootApplication
 public class JwtOpa {
+
+  @Bean
+  PasswordEncoder encoder() {
+    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+  }
+
 }

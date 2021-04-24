@@ -16,7 +16,7 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa;
+package com.alertavert.opa.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;

@@ -4,7 +4,7 @@
 
 logging:
   level:
-    io.kapsules: info
+    com.alertavert: info
 
 management:
   endpoints:
@@ -22,6 +22,10 @@ db:
   server: localhost
   port: 27017
   name: opa-demo-db
+
+  admin:
+    username: admin
+    password: 8535b9c4-a
 
 # Just making the response JSON body a bit prettier.
 spring:
@@ -42,15 +46,18 @@ tokens:
   # application context, when resolving different policies.
   issuer: "demo-issuer"
 
-  # By default, the Token expires after one hour; change the following two
+  # By default, the Token expires after a full day (24-hour); change the following two
   # properties (the duration expressed in seconds) to adapt to your application
   # security requirements.
   should_expire: true
-  expires_after_sec: 86400
+  # For the demo app, we make the API Token valid for 5 minutes.
+  expires_after_sec: 300
 
   # Interval in seconds, after creation, during which the JWT is not valid.
   # Corresponds to the `nbf` ("not before") claim.
-  not_before_delay_sec: 60
+  # By default it is 0 (i.e., immediately valid, it could be set to a value
+  # larger than 0 to enforce a delay on using the token).
+  not_before_delay_sec: 0
 
   signature:
     # We currently support Elliptic Curve signatures, and passphrase-based secrets.
@@ -67,8 +74,13 @@ tokens:
 
 logging:
   level:
-    io.kapsules: debug
+    com.alertavert: debug
     reactor.netty: warn
+    org:
+      springframework:
+        security:
+          web:
+            authentication: debug
 
 management:
   endpoints:
@@ -82,6 +94,16 @@ opa:
   server: "localhost:8181"
 
 routes:
+  # These endpoints will be accessible without authentication
   allowed:
     - "/health"
     - "/demo"
+  # These will require the user to authenticate, but will not
+  # be subject to OPA Policies authorization check.
+  # By default, /login is already in the list.
+  # authenticated:
+  #   - "/login"
+  # If not specified, everything else will require authorization
+  # authorized:
+  #   - "/protected"
+  #   - "/safe"

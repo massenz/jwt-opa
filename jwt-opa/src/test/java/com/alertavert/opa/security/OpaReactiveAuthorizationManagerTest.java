@@ -19,8 +19,8 @@
 package com.alertavert.opa.security;
 
 import com.alertavert.opa.AbstractTestBaseWithOpaContainer;
-import com.alertavert.opa.ApiTokenAuthenticationFactory;
-import com.alertavert.opa.JwtTokenProvider;
+import com.alertavert.opa.jwt.ApiTokenAuthenticationFactory;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,11 +32,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -45,6 +49,7 @@ import java.io.Reader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -86,21 +91,70 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
 
   @Test
   void check() {
-    Authentication auth = factory.createAuthentication(
+    Mono<Authentication> auth = factory.createAuthentication(
       provider.createToken("test-user", Lists.list("USER"))
     );
+
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/users/test-user");
+    opaReactiveAuthorizationManager.check(auth, context)
+        .doOnNext(decision -> {
+          assertThat(decision).isNotNull();
+          assertThat(decision.isGranted()).isTrue();
+        }).subscribe();
+  }
+
+  @Test
+  public void checkUnauthorizedFails() {
+    Authentication auth = factory.createAuthentication(
+        provider.createToken("alice", Lists.list("USER"))
+    ).block();
+    assertThat(auth).isNotNull();
     assertThat(auth.isAuthenticated()).isTrue();
-
-    ServerHttpRequest request = mock(ServerHttpRequest.class);
-    RequestPath path = mock(RequestPath.class);
-
-    when(request.getMethod()).thenReturn(HttpMethod.GET);
-    when(request.getPath()).thenReturn(path);
-    when(path.toString()).thenReturn("/users/test-user");
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.POST, "/users");
 
     AuthorizationDecision decision = opaReactiveAuthorizationManager.check(
-        Mono.just(auth), request).block();
+        Mono.just(auth), context).block();
     assertThat(decision).isNotNull();
-    assertThat(decision.isGranted()).isTrue();
+    assertThat(decision.isGranted()).isFalse();
+  }
+
+  @Test
+  public void checkUnauthenticatedFails() {
+    Authentication auth = new UsernamePasswordAuthenticationToken("bob", "pass");
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/whocares");
+
+    assertThrows(WebClientResponseException.class, () -> opaReactiveAuthorizationManager.check(
+        Mono.just(auth), context).block());
+  }
+
+  private AuthorizationContext getAuthorizationContext(
+      HttpMethod method, String path
+  ) {
+    ServerHttpRequest request = mock(ServerHttpRequest.class);
+    RequestPath requestPath = mock(RequestPath.class);
+
+    when(request.getMethod()).thenReturn(method);
+    when(request.getPath()).thenReturn(requestPath);
+    when(requestPath.toString()).thenReturn(path);
+
+    ServerWebExchange exchange = mock(ServerWebExchange.class);
+    when(exchange.getRequest()).thenReturn(request);
+
+    AuthorizationContext context = mock(AuthorizationContext.class);
+    when(context.getExchange()).thenReturn(exchange);
+    return context;
+  }
+
+  @Test
+  public void authenticatedEndpointBypassesOpa() {
+
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/testauth");
+    opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", Lists.list("USER"))
+        ), context)
+        .map(AuthorizationDecision::isGranted)
+        .doOnNext(b -> assertThat(b).isTrue())
+        .subscribe();
   }
 }

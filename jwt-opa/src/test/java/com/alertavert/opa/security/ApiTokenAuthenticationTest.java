@@ -18,11 +18,10 @@
 
 package com.alertavert.opa.security;
 
-import com.alertavert.opa.JwtTokenProvider;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.alertavert.opa.AbstractTestBase;
-import com.alertavert.opa.ApiTokenAuthentication;
-import com.alertavert.opa.ApiTokenAuthenticationFactory;
+import com.alertavert.opa.jwt.ApiTokenAuthenticationFactory;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +49,7 @@ class ApiTokenAuthenticationTest extends AbstractTestBase {
   @BeforeEach
   void setUp() {
     token = provider.createToken("alice", Lists.list("USER", "ADMIN"));
-    auth = factory.createAuthentication(token);
+    auth = factory.createAuthentication(token).block();
   }
 
   @Test
@@ -86,19 +85,20 @@ class ApiTokenAuthenticationTest extends AbstractTestBase {
     assertThat(auth.isAuthenticated()).isTrue();
 
     String tok2 = provider.createToken("bob", Lists.list("PAINTER"));
-    Authentication auth2 = factory.createAuthentication(tok2);
-    assertThat(auth.isAuthenticated()).isTrue();
+    Authentication auth2 = factory.createAuthentication(tok2).block();
+    assertThat(auth2).isNotNull();
+    assertThat(auth2.isAuthenticated()).isTrue();
   }
 
   @Test
   void isAuthenticatedFailsForBogus() {
-    ApiTokenAuthentication invalid = factory.createAuthentication(
+    Authentication invalid = factory.createAuthentication(
         token.replace("s", "5").replace("e", "3")
-    );
-    assertThat(invalid.isAuthenticated()).isFalse();
+    ).block();
+    assertThat(invalid).isNull();
 
-    invalid = factory.createAuthentication("bogus secret and a half");
-    assertThat(invalid.isAuthenticated()).isFalse();
+    invalid = factory.createAuthentication("bogus secret and a half").block();
+    assertThat(invalid).isNull();
   }
 
   @Test

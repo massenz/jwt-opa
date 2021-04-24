@@ -25,6 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -50,6 +51,7 @@ public class RoutesConfiguration {
 
     List<String> allowed = List.of(Constants.DEFAULT_HEALTH_ROUTE);
     List<String> authenticated = List.of(Constants.DEFAULT_LOGIN_ROUTE);
+    List<String> authorized = Collections.emptyList();
   }
 
   private final RoutesProperties properties;

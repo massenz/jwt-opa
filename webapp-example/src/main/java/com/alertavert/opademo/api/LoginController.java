@@ -19,7 +19,7 @@
 package com.alertavert.opademo.api;
 
 import com.alertavert.opademo.data.ReactiveUsersRepository;
-import com.alertavert.opa.JwtTokenProvider;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,11 +62,13 @@ public class LoginController {
   Mono<JwtController.ApiToken> login(
       @RequestHeader("Authorization") String credentials
   ) {
-    // Of course DON'T DO THIS in a real application.
-    log.debug("Got credentials: {}", credentials);
+    // Note here we do not even attempt to authenticate the user: because of the Spring Security
+    // injection, we know that, if we got here, the user is authenticated and their credentials
+    // are valid.
     return usernameFromHeader(credentials)
         .flatMap(repository::findByUsername)
         .map(u -> {
+          log.debug("Creating API Token (JWT) for {}", u.getUsername());
           String token = provider.createToken(u.getUsername(), u.roles());
           return new JwtController.ApiToken(u.getUsername(), u.roles(), token);
         })
@@ -76,7 +78,7 @@ public class LoginController {
   }
 
   private Mono<String> usernameFromHeader(String credentials) {
-    log.debug("Extracting username from Authorization credentials: {}", credentials);
+    log.debug("Extracting username from Authorization header");
     if (credentials.startsWith(BASIC_AUTH)) {
       return Mono.just(credentials.substring(BASIC_AUTH.length() + 1))
           .map(enc -> Base64Utils.decode(enc.getBytes(StandardCharsets.UTF_8)))
