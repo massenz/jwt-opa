@@ -16,7 +16,7 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-version = "0.1-SNAPHSOT"
+version = "0.2.0"
 
 bootJar {
     mainClassName = 'io.kapsules.jwt.JwtDemoApplication'
