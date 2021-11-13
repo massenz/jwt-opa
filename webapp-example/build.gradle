@@ -19,7 +19,7 @@
 version = "0.2.0"
 
 bootJar {
-    mainClassName = 'io.kapsules.jwt.JwtDemoApplication'
+    mainClassName = 'com.alertavert.opademo.JwtDemoApplication'
 }
 
 dependencies {

@@ -42,8 +42,8 @@ task logCoverageRatio {
 }
 
 allprojects {
-    group 'io.kapsules'
-    sourceCompatibility = '11'
+    group 'com.alertavert'
+    sourceCompatibility = JavaVersion.VERSION_15
 
     repositories {
         mavenCentral()

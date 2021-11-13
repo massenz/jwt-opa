@@ -73,7 +73,7 @@ public class LoginController {
           return new JwtController.ApiToken(u.getUsername(), u.roles(), token);
         })
         .doOnSuccess(apiToken ->
-            log.debug("User {} authenticated, API Token generated: {}",
+            log.debug("User `{}` authenticated, API Token generated: {}",
                 apiToken.getUsername(), apiToken.getApiToken()));
   }
 
