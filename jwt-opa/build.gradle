@@ -16,13 +16,21 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
+plugins {
+    // Required to build a "fatjar" as we have to disable the `bootJar` task here.
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+
 // While we use the Spring Boot machinery (mostly around managing dependencies and configuration
 // properties) we do not want an executable Spring Boot application JAR to be generated, but only
 // the library JAR to be made available.
 bootJar.enabled = false
 jar.enabled = true
 
-version '0.6.0'
+jar.dependsOn shadowJar
+
+version '0.6.1'
 
 jacoco {
     toolVersion = '0.8.7'
