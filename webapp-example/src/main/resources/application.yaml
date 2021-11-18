@@ -40,6 +40,7 @@ spring:
 server:
   error:
     include-message: always
+  port: 8089
 
 tokens:
   # The issuer is carried over in the API Token and can be used to determine the

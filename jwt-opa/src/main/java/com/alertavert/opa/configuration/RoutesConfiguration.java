@@ -25,6 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,4 +56,8 @@ public class RoutesConfiguration {
   }
 
   private final RoutesProperties properties;
+
+  @PostConstruct public void log() {
+    log.warn("Routes: {}", properties);
+  }
 }

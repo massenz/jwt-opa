@@ -33,7 +33,7 @@ import javax.annotation.PostConstruct;
 import java.util.UUID;
 
 /**
- * Initializes the DB with a seed `admin` user and a random password, if doesn't already exist.
+ * Initializes the DB with a seed `admin` user and a random password, if it doesn't already exist.
  */
 @Profile("debug")
 @Slf4j

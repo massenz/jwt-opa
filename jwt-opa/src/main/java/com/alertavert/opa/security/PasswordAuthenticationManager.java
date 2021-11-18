@@ -33,7 +33,7 @@ import reactor.core.publisher.Mono;
  * <h3>PasswordAuthenticationManager</h3>
  *
  * <p>This class authenticates the user against the stored password in the database (hashed using
- * {@literal bcrypt}); it usese the {@link ReactiveUserDetailsService reactive repository} to
+ * {@literal bcrypt}); it uses the {@link ReactiveUserDetailsService reactive repository} to
  * retrieve the {@link org.springframework.security.core.userdetails.UserDetails user details}
  * and validate them against the {@literal HTTP Basic} authorization header.
  *
@@ -54,6 +54,9 @@ public class PasswordAuthenticationManager implements
                                        PasswordEncoder passwordEncoder) {
     this.userDetailsService = userDetailsService;
     this.passwordEncoder = passwordEncoder;
+
+    log.debug("Password Authentication Manager (basic auth) instantiated - Using password "
+            + "encoder: {}", passwordEncoder.getClass().getName());
   }
 
   @Override
