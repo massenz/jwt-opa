@@ -30,7 +30,7 @@ jar.enabled = true
 
 jar.dependsOn shadowJar
 
-version '0.6.2'
+version '0.6.3'
 
 jacoco {
     toolVersion = '0.8.7'

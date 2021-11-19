@@ -68,7 +68,7 @@ public class PasswordAuthenticationManager implements
     return userDetailsService.findByUsername(username)
         .flatMap(userDetails -> {
           if (passwordEncoder.matches(password, userDetails.getPassword())) {
-            log.debug("Principal {} authenticated", username);
+            log.debug("`{}` principal authenticated", username);
             // Removing credentials here, so that they don't get passed around unnecessarily.
             // TODO: should we insert a freshly-minted API Token here?
             return Mono.just(new UsernamePasswordAuthenticationToken(username, null,

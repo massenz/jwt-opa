@@ -97,8 +97,10 @@ public class OpaReactiveAuthorizationManager
         request.getMethod(), request.getPath());
 
     // TODO: need to use Ant matchers to be consistent with Spring Security.
-    if (configuration.getProperties().getAuthenticated().contains(request.getPath().toString())) {
-      log.debug("Bypassing OPA Policies authorization");
+    String path = request.getPath().toString();
+    if (configuration.getProperties().getAuthenticated().contains(path)) {
+      log.debug("`{}` in the list of routes which bypass OPA AUthorization {}",
+          path, configuration.getProperties().getAuthenticated());
       return Mono.just(new AuthorizationDecision(true));
     }
 

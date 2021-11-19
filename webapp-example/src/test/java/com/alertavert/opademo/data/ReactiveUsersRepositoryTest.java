@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = {ReactiveUsersRepositoryTest.Initializer.class})
+public
 class ReactiveUsersRepositoryTest {
   public static final String IMAGE_NAME = "mongo:4.0.10";
 
@@ -49,7 +50,7 @@ class ReactiveUsersRepositoryTest {
   @Autowired
   ReactiveUsersRepository repository;
 
-  static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+  public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       mongoDBContainer.start();
       TestPropertyValues.of(

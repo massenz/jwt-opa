@@ -101,10 +101,15 @@ routes:
     - "/demo"
   # These will require the user to authenticate, but will not
   # be subject to OPA Policies authorization check.
-  # By default, /login is already in the list.
-  # authenticated:
-  #   - "/login"
-  # If not specified, everything else will require authorization
+  # By default, /login is already in the list, BUT would need to be
+  # explicitly added (if needed), if you override the default routes.authenticated property:
+  #   authenticated:
+  #     - "/login"
+  #     - "/myopenpage"
+  #     - "/another/open/page"
+  # If not specified, everything else will require authorization; again, if the property
+  # is set, all routes will need to be specified.
+  # TODO: we currently do NOT support Ant Matchers.
   # authorized:
   #   - "/protected"
   #   - "/safe"

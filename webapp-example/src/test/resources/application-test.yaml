@@ -4,7 +4,7 @@
 
 logging:
   level:
-    io.kapsules: debug
+    com.alertavert: debug
 
 management:
   endpoints:
@@ -38,3 +38,4 @@ routes:
   allowed:
     - "/health"
     - "/demo"
+    - "/login/reset/*"

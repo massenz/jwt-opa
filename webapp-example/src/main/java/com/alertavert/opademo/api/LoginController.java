@@ -18,20 +18,27 @@
 
 package com.alertavert.opademo.api;
 
+import com.alertavert.opademo.DbInit;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opademo.data.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static com.alertavert.opa.Constants.BASIC_AUTH;
 
@@ -77,7 +84,32 @@ public class LoginController {
                 apiToken.getUsername(), apiToken.getApiToken()));
   }
 
-  private Mono<String> usernameFromHeader(String credentials) {
+  @GetMapping("/reset/{username}")
+  @ResponseStatus(HttpStatus.OK)
+  Mono<ResponseEntity<User>> resetPassword(@PathVariable String username) {
+    return repository.findByUsername(username)
+        .map(u -> {
+          log.info("Resetting password for user {}", u.getUsername());
+          // FIXME: we should actually generate a unique URL and send it via email, for the user
+          //  to pick a new password.
+          String newPass = UUID.randomUUID().toString().substring(12);
+          return User.withPassword(u, newPass);
+        })
+        .flatMap(repository::save)
+        .map(ResponseEntity.ok()::body)
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
+  /**
+   * Parses the BASIC Authorization header (base-64 encoded) into a semicolon-separated pair, and
+   * extracts the username from the pair.
+   *
+   * @param credentials a base-64 encoded {@literal username:password} pair, prefixed by
+   * {@link Constants#BASIC_AUTH}.
+   *
+   * @return the decoded, plaintext username
+   */
+  public static Mono<String> usernameFromHeader(String credentials) {
     log.debug("Extracting username from Authorization header");
     if (credentials.startsWith(BASIC_AUTH)) {
       return Mono.just(credentials.substring(BASIC_AUTH.length() + 1))
@@ -90,5 +122,10 @@ public class LoginController {
           .doOnSuccess(userPass -> log.debug("Found user: {}", userPass));
     }
     return Mono.error(new IllegalStateException("Invalid Authorization header"));
+  }
+
+  public static Mono<String> credentialsToHeader(String credentials) {
+    String encoded = Base64Utils.encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+    return Mono.just(String.format("%s %s", BASIC_AUTH, encoded));
   }
 }

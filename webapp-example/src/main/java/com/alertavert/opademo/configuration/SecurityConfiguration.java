@@ -26,6 +26,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 
+import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
+
 /**
  * <h3>SecurityConfiguration</h3>
  *
@@ -35,6 +37,8 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 @EnableWebFluxSecurity
 @Slf4j
 public class SecurityConfiguration {
+
+
   @Bean
   public ReactiveUserDetailsService userDetailsService(ReactiveUsersRepository repository) {
     return username -> {
@@ -44,8 +48,15 @@ public class SecurityConfiguration {
           .doOnSuccess(ud -> {
             if (ud != null) {
               log.debug("Found: {} [enabled={}]", ud.getUsername(), ud.isEnabled());
+            } else {
+              log.warn("No user {} found", username);
             }
-          });
+          })
+          // This is necessary to deal with the
+          // "No provider found for class
+          // org.springframework.security.authentication.UsernamePasswordAuthenticationToken"
+          // error when simply returning an empty Mono, if the username does not exist.
+          .defaultIfEmpty(EMPTY_USERDETAILS);
     };
   }
 }

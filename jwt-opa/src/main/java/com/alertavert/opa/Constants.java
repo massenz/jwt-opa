@@ -20,6 +20,12 @@ package com.alertavert.opa;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.Collections;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constants {
@@ -53,4 +59,35 @@ public class Constants {
   public static final String CANNOT_PARSE_AUTHORIZATION_REQUEST = "Cannot parse Authorization "
       + "request: {}";
   public static final String API_TOKEN = "api_token";
+
+  /**
+   * A completely inactive user, that needs to act as a placeholder when the `username` is not
+   * found in the Users DB, and would trigger an exception in the Java Security HTTP Basic
+   * authentication machinery.
+   *
+   * @see  org.springframework.security.authentication.UsernamePasswordAuthenticationToken"
+   */
+  public static final UserDetails EMPTY_USERDETAILS = new UserDetails() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+      return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public String getPassword() {return "{noop} fake";}
+    @Override
+    public String getUsername() {return "fake";}
+
+    @Override
+    public boolean isAccountNonExpired() {return false;}
+
+    @Override
+    public boolean isAccountNonLocked() {return false;}
+
+    @Override
+    public boolean isCredentialsNonExpired() {return false;}
+
+    @Override
+    public boolean isEnabled() {return false;}
+  };
 }
