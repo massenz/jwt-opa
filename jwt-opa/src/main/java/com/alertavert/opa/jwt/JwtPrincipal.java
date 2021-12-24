@@ -24,7 +24,7 @@ import javax.security.auth.Subject;
 import java.security.Principal;
 
 /**
- * <h3>JwtPrincipal</h3>
+ * <h2>JwtPrincipal</h2>
  *
  * <p>A simple implementation of the {@link Principal} interface, carries the {@literal "sub"}
  * claim contained in a JWT.

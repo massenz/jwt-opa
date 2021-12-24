@@ -16,5 +16,5 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-rootProject.name = 'jwt-opa-integration'
+rootProject.name = 'jwt-opa'
 include 'webapp-example', 'jwt-opa'

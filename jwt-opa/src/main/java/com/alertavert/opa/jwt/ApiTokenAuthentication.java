@@ -30,7 +30,7 @@ import java.util.Collection;
 
 
 /**
- * <h3>ApiTokenAuthentication</h3>
+ * <h2>ApiTokenAuthentication</h2>
  * <p>
  * An {@link Authentication} implementation, based on an API Token (JWT) which is immutable and
  * validated at creation; the original {@literal token} can be obtained via the {@link
@@ -107,7 +107,7 @@ public class ApiTokenAuthentication extends AbstractAuthenticationToken {
 
   /**
    * <p>The identity of the {@literal Principal} being authenticated is the
-   * {@link "sub"} in the JWT body.
+   * {@literal "sub"} in the JWT body.
    *
    * @return the value of the {@literal "sub"} claim in the API Token.
    */

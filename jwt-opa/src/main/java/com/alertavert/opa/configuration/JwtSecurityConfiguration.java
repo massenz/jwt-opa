@@ -31,7 +31,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
- * <h3>JwtSecurityConfiguration</h3>
+ * <h2>JwtSecurityConfiguration</h2>
  *
  * @author M. Massenzio, 2020-09-27
  */

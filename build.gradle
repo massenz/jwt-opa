@@ -15,12 +15,15 @@
  *
  * Author: Marco Massenzio (marco@alertavert.com)
  */
-
 plugins {
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
     id 'jacoco'
     id 'org.springframework.boot' version '2.3.3.RELEASE'
+
+    // To upload the Artifact to Maven Central
+    // See: https://docs.gradle.org/current/userguide/publishing_maven.html
+    id 'maven-publish'
 }
 
 // Disable the default Spring Boot executable JAR to be created.
@@ -45,6 +48,8 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
+    version '0.6.4.4'
+
     sourceCompatibility = JavaVersion.VERSION_15
 
     repositories {
@@ -78,5 +83,9 @@ subprojects {
         // A build will fail unless test coverage reaches minimum.
         // See: https://reflectoring.io/jacoco/
         finalizedBy jacocoTestCoverageVerification
+    }
+
+    javadoc {
+        destinationDir = file("../docs/javadoc/${project.name}")
     }
 }

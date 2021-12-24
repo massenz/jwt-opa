@@ -27,7 +27,7 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 import reactor.core.publisher.Mono;
 
 /**
- * <h3>TokenAuthenticationFailureHandler</h3>
+ * <h2>TokenAuthenticationFailureHandler</h2>
  *
  * <p>Helper class to handle authentication failures, modeled over Spring's
  * {@link org.springframework.security.web.server.authentication.AuthenticationWebFilter}.

@@ -47,7 +47,7 @@ import java.util.Objects;
 import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
 
 /**
- * <h3>OpaReactiveAuthorizationManager</h3>
+ * <h2>OpaReactiveAuthorizationManager</h2>
  *
  * <p>We execute the authorization request against an OPA server, which is reachable via the
  * {@link OpaServerProperties#authorization() authorization endpoint}, using the

@@ -19,18 +19,16 @@
 plugins {
     // Required to build a "fatjar" as we have to disable the `bootJar` task here.
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'signing'
+    id 'maven-publish'
 }
-
 
 // While we use the Spring Boot machinery (mostly around managing dependencies and configuration
 // properties) we do not want an executable Spring Boot application JAR to be generated, but only
 // the library JAR to be made available.
 bootJar.enabled = false
 jar.enabled = true
-
 jar.dependsOn shadowJar
-
-version '0.6.4'
 
 jacoco {
     toolVersion = '0.8.7'
@@ -61,7 +59,7 @@ dependencies {
 }
 
 jacocoTestCoverageVerification {
-        violationRules {
+    violationRules {
         rule {
             limit {
                 counter = 'LINE'
@@ -71,3 +69,92 @@ jacocoTestCoverageVerification {
         }
     }
 }
+
+// Generating Source & Javadoc JARs for publication
+// See: https://central.sonatype.org/publish/publish-gradle/
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+// Remove the -all extension from the "fat" Jar, or it can't be used
+// when published to Maven Central.
+shadowJar {
+    archiveClassifier.set('')
+}
+
+// Publishing Artifact to Maven Central
+//
+// The contents of this section are described here:
+//   https://docs.gradle.org/current/userguide/publishing_maven.html
+//
+// To Release to Maven see: https://central.sonatype.org/publish/release/
+publishing {
+    publications {
+        jwtopaLibrary(MavenPublication) {
+            artifactId = 'jwt-opa'
+            artifacts = [ shadowJar, javadocJar, sourcesJar ]
+            pom {
+                name = 'Spring Security & OPA'
+                description = 'Spring Security & Open Policy Agent integration'
+                url = 'https://github.com/massenz/jwt-opa'
+
+                licenses {
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/massenz/jwt-opa'
+                    connection = 'scm:https://github.com/massenz/jwt-opa.git'
+                    developerConnection = 'scm:git@github.com:massenz/jwt-opa.git'
+                }
+                developers {
+                    developer {
+                        id = 'massenz'
+                        name = 'Marco Massenzio'
+                        email = 'marco@alertavert.com'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            // These are stored in gradle.properties and NEVER uploaded to GitHub
+            // See: https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.repositories.MavenArtifactRepository.html
+            credentials {
+                username "${ossrhUsername}"
+                password "${ossrhPassword}"
+            }
+        }
+    }
+}
+
+// Signs the `publication` generated above with the name `jwtopaLibrary`
+// Signing plugin, see: https://docs.gradle.org/current/userguide/signing_plugin.html#signing_plugin
+signing {
+    sign publishing.publications.jwtopaLibrary
+}
+
+// TODO MM: use Nexus to enable auto-release, after artifact upload to Sonatype.
+//      use: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+// See: https://github.com/gradle-nexus/publish-plugin/
+//
+//plugins {
+//    id("io.github.gradle-nexus.publish-plugin") version "«version»"
+//}
+//
+//nexusPublishing {
+//    repositories {
+//        sonatype {  //only for users registered in Sonatype after 24 Feb 2021
+//            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+//            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+//            username "${ossrhUsername}"
+//            password "${ossrhPassword}"
+//        }
+//    }
+//}

@@ -22,7 +22,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * <h3>KeyPropertiers</h3>
+ * <h2>KeyPropertiers</h2>
  *
  * @author M. Massenzio, 2020-12-14
  */

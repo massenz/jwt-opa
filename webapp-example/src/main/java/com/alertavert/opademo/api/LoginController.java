@@ -43,7 +43,7 @@ import java.util.UUID;
 import static com.alertavert.opa.Constants.BASIC_AUTH;
 
 /**
- * <h3>LoginController</h3>
+ * <h2>LoginController</h2>
  *
  * @author M. Massenzio, 2020-12-04
  */
@@ -105,7 +105,7 @@ public class LoginController {
    * extracts the username from the pair.
    *
    * @param credentials a base-64 encoded {@literal username:password} pair, prefixed by
-   * {@link Constants#BASIC_AUTH}.
+   * {@link com.alertavert.opa.Constants#BASIC_AUTH}.
    *
    * @return the decoded, plaintext username
    */

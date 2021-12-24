@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * <h3>ApiTokenAuthenticationFactory</h3>
+ * <h2>ApiTokenAuthenticationFactory</h2>
  *
  * @author M. Massenzio, 2020-12-15
  */

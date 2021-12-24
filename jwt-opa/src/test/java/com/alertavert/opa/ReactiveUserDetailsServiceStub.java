@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <h3>ReactiveUserDetailsServiceStub</h3>
+ * <h2>ReactiveUserDetailsServiceStub</h2>
  *
  * <p>Basic implementation of a {@link ReactiveUserDetailsService}, which will return any user
  * that was added via the {@link #addUser(UserDetails)} method.

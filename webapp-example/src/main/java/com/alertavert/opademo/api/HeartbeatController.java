@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 /**
- * <h3>HeartbeatController</h3>
+ * <h2>HeartbeatController</h2>
  * <p>
  * This class simply provides a {@literal /health} unauthenticated endpoint that returns a 200 OK so
  * long as the server is running and accepting incoming requests.

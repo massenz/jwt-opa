@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 
 
 /**
- * <h3>PasswordAuthenticationManager</h3>
+ * <h2>PasswordAuthenticationManager</h2>
  *
  * <p>This class authenticates the user against the stored password in the database (hashed using
  * {@literal bcrypt}); it uses the {@link ReactiveUserDetailsService reactive repository} to

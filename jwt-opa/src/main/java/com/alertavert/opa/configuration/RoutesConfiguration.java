@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * <h3>RoutesConfiguration</h3>
+ * <h2>RoutesConfiguration</h2>
  *
  * Routes are defined as lists of paths which are either "allowed" without authentication (which
  * should really be kept to a minimum; ideally, only the {@literal "/health"} one); the ones

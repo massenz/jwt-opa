@@ -65,7 +65,7 @@ public class Constants {
    * found in the Users DB, and would trigger an exception in the Java Security HTTP Basic
    * authentication machinery.
    *
-   * @see  org.springframework.security.authentication.UsernamePasswordAuthenticationToken"
+   * @see  org.springframework.security.authentication.UsernamePasswordAuthenticationToken
    */
   public static final UserDetails EMPTY_USERDETAILS = new UserDetails() {
     @Override

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <h3>User</h3>
+ * <h2>User</h2>
  *
  * <p>User entity, mapped to a MongoDB store.
  *

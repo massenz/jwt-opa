@@ -29,7 +29,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 
 /**
- * <h3>SecurityConfiguration</h3>
+ * <h2>SecurityConfiguration</h2>
  *
  * @author M. Massenzio, 2020-09-27
  */

@@ -39,7 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * <h3>JwtTokenProvider</h3>
+ * <h2>JwtTokenProvider</h2>
  *
  * <p>Handles JWT tokens validation, creation and authentication.
  *

@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
 /**
- * <h3>OpaServerProperties</h3>
+ * <h2>OpaServerProperties</h2>
  *
  * This class holds the properties required to connect to a running OPA server, and to correctly
  * build the API endpoints.
@@ -40,7 +40,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * The {@link #dataEndpoint()} and {@link #policyEndpoint()} endpoints are, respectively
  * {@literal /v1/data} and {@literal /v1/policies} (see also the
- * <a href="https://www.openpolicyagent.org/docs/latest/rest-api/>OPA REST API document</a>
+ * <a href="https://www.openpolicyagent.org/docs/latest/rest-api">OPA REST API document</a>
  *
  * @see OpaServerConfiguration
  * @author M. Massenzio, 2020-11-22

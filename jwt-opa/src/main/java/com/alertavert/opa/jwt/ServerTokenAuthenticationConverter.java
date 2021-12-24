@@ -33,7 +33,7 @@ import reactor.core.publisher.Mono;
 import static com.alertavert.opa.Constants.BEARER_TOKEN;
 
 /**
- * <h3>ServerTokenAuthenticationConverter</h3>
+ * <h2>ServerTokenAuthenticationConverter</h2>
  *
  * <p>Given a {@link ServerHttpRequest request} it extracts the API Token and creates an
  * {@link Authentication} object from it; in the process of creating it, the

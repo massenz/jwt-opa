@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
 import java.security.Principal;
 
 /**
- * <h3>JwtAuthenticationWebFilter</h3>
+ * <h2>JwtAuthenticationWebFilter</h2>
  *
  * <p>This is a Spring Security filter that authenticates the request using API Tokens carried in
  * the {@literal Authorization} header using a

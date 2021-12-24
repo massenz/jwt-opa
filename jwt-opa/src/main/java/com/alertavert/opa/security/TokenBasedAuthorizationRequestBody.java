@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Value;
 
 /**
- * <h3>TokenBasedAuthorizationRequestBody</h3>
+ * <h2>TokenBasedAuthorizationRequestBody</h2>
  *
  * <p>Encapsulates a request body to the OPA server, structured in a way that conforms to the
  * policy's Rego code's expectations:

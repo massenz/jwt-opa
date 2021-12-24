@@ -27,7 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
- * <h3>OpaServerConfiguration</h3>
+ * <h2>OpaServerConfiguration</h2>
  *
  * @author M. Massenzio, 2020-11-22
  */

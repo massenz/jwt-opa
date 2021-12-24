@@ -57,3 +57,7 @@ build/
 *.ipr
 .idea/
 .run/
+
+#### DO NOT EVER ADD THIS FILE TO THE PUBLIC REPO ######
+gradle.properties
+javadoc/

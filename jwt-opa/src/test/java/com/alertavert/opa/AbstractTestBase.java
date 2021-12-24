@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * <h3>AbstractTestBase</h3>
+ * <h2>AbstractTestBase</h2>
  *
  * <p>Base class for all test classes, used to group commonly-used annotations in a single place.
  *
