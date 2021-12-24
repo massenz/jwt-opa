@@ -66,6 +66,11 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.springframework.boot'
 
+    if(JavaVersion.current() != JavaVersion.VERSION_11) {
+        throw new GradleException(
+                "This build must be run with java 11, using ${JavaVersion.current()}")
+    }
+
     // We want the test and coverage reports to be based on the
     // most recent build.
     jacocoTestCoverageVerification.dependsOn([logCoverageRatio, jacocoTestReport])
