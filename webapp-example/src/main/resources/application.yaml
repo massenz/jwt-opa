@@ -40,7 +40,7 @@ spring:
 server:
   error:
     include-message: always
-  port: 8089
+  port: 8081
 
 tokens:
   # The issuer is carried over in the API Token and can be used to determine the
@@ -99,14 +99,20 @@ routes:
   allowed:
     - "/health"
     - "/demo"
+    - "/favicon.ico"
+
   # These will require the user to authenticate, but will not
   # be subject to OPA Policies authorization check.
   # By default, /login is already in the list, BUT would need to be
   # explicitly added (if needed), if you override the default routes.authenticated property:
-  #   authenticated:
-  #     - "/login"
-  #     - "/myopenpage"
-  #     - "/another/open/page"
+  authenticated:
+   - "/login"
+   - "/swagger-ui"
+   - "/swagger-ui/**"
+   - "/swagger-resources/**"
+   - "/v3/api-docs"
+   - "/v3/api-docs/**"
+
   # If not specified, everything else will require authorization; again, if the property
   # is set, all routes will need to be specified.
   # TODO: we currently do NOT support Ant Matchers.
