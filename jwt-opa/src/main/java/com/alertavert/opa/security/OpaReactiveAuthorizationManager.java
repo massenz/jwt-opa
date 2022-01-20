@@ -35,15 +35,18 @@ import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.alertavert.opa.Constants.UNEXPECTED_AUTHENTICATION_CLASS;
 import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
 
 /**
@@ -70,6 +73,7 @@ public class OpaReactiveAuthorizationManager
   private final WebClient client;
   private final RoutesConfiguration configuration;
   private final ObjectMapper mapper = new ObjectMapper();
+  private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   /**
    * Determines if access is granted for a specific request, given a user's credentials (API
@@ -82,7 +86,6 @@ public class OpaReactiveAuthorizationManager
    *                       we will use it to extract the HTTP request, which will be sent to the OPA
    *                       server (alongside the user's {@link ApiTokenAuthentication credentials},
    *                       i.e., the JWT) for the authorization policies to be evaluated.
-   *
    * @return a decision or empty Mono if no decision could be made.
    * @see ApiTokenAuthentication
    * @see JwtTokenProvider
@@ -92,27 +95,28 @@ public class OpaReactiveAuthorizationManager
       Mono<Authentication> authentication,
       AuthorizationContext context
   ) {
+    final List<String> authRoutes = configuration.getProperties().getAuthenticated();
     ServerHttpRequest request = context.getExchange().getRequest();
     log.debug("OPA Auth Mgr -- Authorizing {} to `{}`",
         request.getMethod(), request.getPath());
 
-    // TODO: need to use Ant matchers to be consistent with Spring Security.
     String path = request.getPath().toString();
-    if (configuration.getProperties().getAuthenticated().contains(path)) {
-      log.debug("`{}` in the list of routes which bypass OPA AUthorization {}",
-          path, configuration.getProperties().getAuthenticated());
-      return Mono.just(new AuthorizationDecision(true));
+    for (String pattern : authRoutes) {
+      if (pathMatcher.match(pattern, path)) {
+        log.debug("`{}` in the list of routes which bypass OPA Authorization {}",
+            path, configuration.getProperties().getAuthenticated());
+        return Mono.just(new AuthorizationDecision(true));
+      }
     }
 
-    return authentication.map(auth -> {
+    return authentication.flatMap(auth -> {
           log.debug("OPA Auth Mgr -- For user [{}]", auth.getPrincipal());
           // If authentication failed, there is no point in even trying to authorize the request.
           if (!auth.isAuthenticated() || !(auth instanceof ApiTokenAuthentication)) {
-            log.error(Constants.UNEXPECTED_AUTHENTICATION_CLASS,
-                auth.getClass().getSimpleName());
-            throw unauthorized();
+            log.error(UNEXPECTED_AUTHENTICATION_CLASS, auth.getClass().getSimpleName());
+            return Mono.empty();
           }
-          return makeRequestBody(auth.getCredentials(), request);
+          return Mono.just(makeRequestBody(auth.getCredentials(), request));
         })
         .doOnNext(body -> {
           try {
@@ -137,6 +141,7 @@ public class OpaReactiveAuthorizationManager
           }
           return new AuthorizationDecision(authorized);
         });
+//        .defaultIfEmpty(new AuthorizationDecision(false));
   }
 
   private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(

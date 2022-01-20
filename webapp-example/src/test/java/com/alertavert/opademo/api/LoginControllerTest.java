@@ -22,9 +22,8 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SpringBootTest(
-    classes = {JwtDemoApplication.class},
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {JwtDemoApplication.class},
+                webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = {ReactiveUsersRepositoryTest.Initializer.class})
 class LoginControllerTest {
