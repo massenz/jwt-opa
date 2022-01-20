@@ -140,8 +140,8 @@ public class OpaReactiveAuthorizationManager
             authorized = Boolean.parseBoolean(result.toString());
           }
           return new AuthorizationDecision(authorized);
-        })
-        .defaultIfEmpty(new AuthorizationDecision(false));
+        });
+//        .defaultIfEmpty(new AuthorizationDecision(false));
   }
 
   private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(

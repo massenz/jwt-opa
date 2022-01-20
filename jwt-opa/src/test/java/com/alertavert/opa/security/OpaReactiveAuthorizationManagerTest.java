@@ -123,8 +123,9 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     Authentication auth = new UsernamePasswordAuthenticationToken("bob", "pass");
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/whocares");
 
-    assertThrows(WebClientResponseException.class, () -> opaReactiveAuthorizationManager.check(
-        Mono.just(auth), context).block());
+    opaReactiveAuthorizationManager.check(Mono.just(auth), context)
+        .doOnNext(decision -> assertThat(decision.isGranted()).isFalse())
+        .block();
   }
 
   private AuthorizationContext getAuthorizationContext(
@@ -147,8 +148,42 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
 
   @Test
   public void authenticatedEndpointBypassesOpa() {
-
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/testauth");
+    opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", Lists.list("USER"))
+        ), context)
+        .map(AuthorizationDecision::isGranted)
+        .doOnNext(b -> assertThat(b).isTrue())
+        .subscribe();
+  }
+
+  @Test
+  public void authenticatedEndpointMatches() {
+    // In the test configuration (application-test.yaml) we have configured the following
+    // path matchers: ["/match/*/this", "/match/any/**"].
+    // Here we test that an authenticated user gains access to them without needing authorization.
+
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/match/one/this");
+    opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", Lists.list("USER"))
+        ), context)
+        .map(AuthorizationDecision::isGranted)
+        .doOnNext(b -> assertThat(b).isTrue())
+        .subscribe();
+
+    // This should NOT match
+    context = getAuthorizationContext(HttpMethod.GET, "/match/one/two/this.html");
+    opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", Lists.list("USER"))
+        ), context)
+        .map(AuthorizationDecision::isGranted)
+        .doOnNext(b -> assertThat(b).isFalse())
+        .subscribe();
+
+    context = getAuthorizationContext(HttpMethod.GET, "/match/any/this/that.html");
     opaReactiveAuthorizationManager.check(
         factory.createAuthentication(
             provider.createToken("alice", Lists.list("USER"))

@@ -100,6 +100,7 @@ routes:
     - "/health"
     - "/demo"
     - "/favicon.ico"
+    - "/login/reset/*"
 
   # These will require the user to authenticate, but will not
   # be subject to OPA Policies authorization check.
@@ -112,10 +113,3 @@ routes:
    - "/swagger-resources/**"
    - "/v3/api-docs"
    - "/v3/api-docs/**"
-
-  # If not specified, everything else will require authorization; again, if the property
-  # is set, all routes will need to be specified.
-  # TODO: we currently do NOT support Ant Matchers.
-  # authorized:
-  #   - "/protected"
-  #   - "/safe"
