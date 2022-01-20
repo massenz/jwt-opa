@@ -23,11 +23,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableReactiveMongoRepositories(basePackages = "com.alertavert.opademo")
 @ComponentScan(basePackages = {"com.alertavert.opa", "com.alertavert.opademo"})
+@EnableSwagger2
 public class JwtDemoApplication {
 
   public static void main(String[] args) {

@@ -26,3 +26,5 @@ opa:
 routes:
    authenticated:
      - "/testauth"
+     - "/match/*/this"
+     - "/match/any/**"

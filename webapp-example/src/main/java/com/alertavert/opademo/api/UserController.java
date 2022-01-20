@@ -20,6 +20,8 @@ package com.alertavert.opademo.api;
 
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opademo.data.User;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,6 +77,8 @@ public class UserController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @ApiOperation(value = "Creates a new User", response = User.class)
+  @ApiResponse(code = 409, message = "Username must be unique")
   public Mono<ResponseEntity<?>> create(@RequestBody User newUser) {
     if (newUser.getUserId() != null) {
       return Mono.just(
