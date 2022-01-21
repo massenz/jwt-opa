@@ -5,7 +5,7 @@ name: Build & Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, release ]
   pull_request:
     branches: [ main ]
 
@@ -20,7 +20,9 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 15
+    - name: Setup fake Credentials
+      run: cp gradle.properties.fake gradle.properties
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build test
