@@ -31,6 +31,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import static com.alertavert.opa.Constants.BEARER_TOKEN;
+import static com.alertavert.opa.Constants.TOKEN_MISSING_OR_INVALID;
 
 /**
  * <h2>ServerTokenAuthenticationConverter</h2>
@@ -55,7 +56,7 @@ public class ServerTokenAuthenticationConverter implements ServerAuthenticationC
         && bearerToken.length() > BEARER_TOKEN.length()) {
       return Mono.just(bearerToken.substring(BEARER_TOKEN.length() + 1));
     }
-    log.warn(Constants.TOKEN_MISSING_OR_INVALID);
+    log.debug(TOKEN_MISSING_OR_INVALID);
     return Mono.empty();
   }
 

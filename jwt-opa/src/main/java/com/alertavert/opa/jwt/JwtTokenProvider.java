@@ -27,8 +27,10 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.alertavert.opa.configuration.KeyProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -117,15 +119,15 @@ public class JwtTokenProvider {
       List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
           decodedJWT.getClaim(ROLES).asArray(String.class));
 
+      log.debug("Token is valid: subject = `{}`, authorities = `{}`", subject, authorities);
+
       // We do not store the password here, as we do not need it (by virtue of the API Token
       // having been successfully verified, we know the user is authenticated).
-      // TODO: should we allow client applications to retrieve/inject it here?
       User principal = new User(subject, "", authorities);
       return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-
     } catch (Exception error) {
-      log.error("Could not authenticate Token: {}", error.getMessage());
+      log.warn("Could not authenticate Token: {}", error.getMessage());
+      throw new BadCredentialsException("JWT invalid", error);
     }
-    return null;
   }
 }

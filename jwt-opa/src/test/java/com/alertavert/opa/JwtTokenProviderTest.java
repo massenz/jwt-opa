@@ -27,6 +27,7 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -137,6 +138,7 @@ class JwtTokenProviderTest extends AbstractTestBase {
 
   @Test
   public void invalidTokenFailsAuthentication() {
-    assertThat(provider.getAuthentication("definitelynotatoken")).isNull();
+    assertThrows(AuthenticationException.class,
+        () -> provider.getAuthentication("definitelynotatoken"));
   }
 }

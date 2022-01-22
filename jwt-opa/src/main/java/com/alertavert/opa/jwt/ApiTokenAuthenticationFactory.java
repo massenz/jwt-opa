@@ -20,7 +20,9 @@ package com.alertavert.opa.jwt;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -34,23 +36,26 @@ import java.util.List;
  *
  * @author M. Massenzio, 2020-12-15
  */
-@Service
+@Service @Slf4j
 public class ApiTokenAuthenticationFactory {
 
   @Autowired
   JwtTokenProvider provider;
 
   public Mono<Authentication> createAuthentication(String token) {
+    log.debug("Authenticating token {}...", token.substring(0, Math.min(25, token.length())));
     try {
       DecodedJWT jwt = provider.decode(token);
       List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
           jwt.getClaim(JwtTokenProvider.ROLES).asArray(String.class));
       String subject = jwt.getSubject();
 
+      log.debug("API Token valid: sub = `{}`, authorities = {}",
+          subject, authorities);
       return Mono.just(new ApiTokenAuthentication(token, subject, authorities, jwt));
-
     } catch (JWTVerificationException exception) {
-      return Mono.empty();
+      log.warn("Cannot validate API Token: {}", exception.getMessage());
+      return Mono.error(new BadCredentialsException("API Token invalid", exception));
     }
   }
 }

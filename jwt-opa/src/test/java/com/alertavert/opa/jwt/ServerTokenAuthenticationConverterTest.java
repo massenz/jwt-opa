@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -34,6 +35,7 @@ import java.security.Principal;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -73,9 +75,9 @@ class ServerTokenAuthenticationConverterTest extends AbstractTestBase {
 
   @Test
   public void invalidTokenShouldFail() {
-    setBearerTokenForRequest(request, "definitelynotatoken");
-    Authentication authentication = converter.convert(exchange).block();
-    assertThat(authentication).isNull();
+    setBearerTokenForRequest(request, "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhZ"
+        + "pbiIsInJvbGVzIjpbIlNZU1RFTSJdLCJpc3MiOiJkZW1vLWlzc3VlciIsImV4cCI6MTY0MjgzNjY2MywiaWF0");
+    assertThrows(AuthenticationException.class, () -> converter.convert(exchange).block());
   }
 
   @Test

@@ -69,7 +69,7 @@ public class JwtAuthenticationWebFilter implements WebFilter {
         this.authenticationConverter.convert(exchange)
             .doOnNext(authentication -> {
               Principal principal = (Principal) authentication.getPrincipal();
-              log.debug("Validated API Token for Principal: `{}`", principal.getName());
+              log.debug("---Validated API Token for Principal: `{}`", principal.getName());
             })
             .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
 
@@ -85,8 +85,8 @@ public class JwtAuthenticationWebFilter implements WebFilter {
 
   private Mono<Void> onAuthenticationSuccess(Authentication authentication,
                                              WebFilterExchange filterExchange) {
-    log.debug("Auth Success :: {}", authentication == null ? "null" :
-        authentication.getCredentials());
+    log.debug("Auth success, principal = `{}`", authentication == null ? "null" :
+        authentication.getPrincipal());
 
     SecurityContextImpl securityContext = new SecurityContextImpl();
     securityContext.setAuthentication(authentication);
