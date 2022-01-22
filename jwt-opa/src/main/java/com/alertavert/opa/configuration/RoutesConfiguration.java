@@ -58,6 +58,7 @@ public class RoutesConfiguration {
   private final RoutesProperties properties;
 
   @PostConstruct public void log() {
-    log.warn("Routes: {}", properties);
+    log.info("Routes configured: allowed = {}, authenticated = {}",
+        properties.allowed, properties.authenticated);
   }
 }

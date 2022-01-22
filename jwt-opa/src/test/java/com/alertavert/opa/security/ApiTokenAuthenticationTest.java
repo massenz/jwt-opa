@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.security.Principal;
@@ -92,13 +93,13 @@ class ApiTokenAuthenticationTest extends AbstractTestBase {
 
   @Test
   void isAuthenticatedFailsForBogus() {
-    Authentication invalid = factory.createAuthentication(
+    assertThrows(AuthenticationException.class, () -> factory.createAuthentication(
         token.replace("s", "5").replace("e", "3")
-    ).block();
-    assertThat(invalid).isNull();
+    ).block());
 
-    invalid = factory.createAuthentication("bogus secret and a half").block();
-    assertThat(invalid).isNull();
+    assertThrows(AuthenticationException.class, () -> factory.createAuthentication(
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlNZU1"
+            + "RFTSJdLCJpc3MiOiJkZW1vLWlzc3VlciIsImV4cCI6MTY0MjgzNjY2MywiaWF0").block());
   }
 
   @Test
