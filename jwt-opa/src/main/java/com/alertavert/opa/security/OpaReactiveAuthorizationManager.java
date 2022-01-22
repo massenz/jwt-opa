@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.alertavert.opa.Constants.CANNOT_PARSE_AUTHORIZATION_REQUEST;
 import static com.alertavert.opa.Constants.UNEXPECTED_AUTHENTICATION_CLASS;
 import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
 
@@ -97,33 +98,33 @@ public class OpaReactiveAuthorizationManager
   ) {
     final List<String> authRoutes = configuration.getProperties().getAuthenticated();
     ServerHttpRequest request = context.getExchange().getRequest();
-    log.debug("OPA Auth Mgr -- Authorizing {} to `{}`",
+    log.debug("Authorizing access: method = `{}`, path = `{}`",
         request.getMethod(), request.getPath());
 
     String path = request.getPath().toString();
     for (String pattern : authRoutes) {
       if (pathMatcher.match(pattern, path)) {
-        log.debug("`{}` in the list of routes which bypass OPA Authorization {}",
-            path, configuration.getProperties().getAuthenticated());
+        log.debug("Route is allowed to bypass authorization");
         return Mono.just(new AuthorizationDecision(true));
       }
     }
 
-    return authentication.flatMap(auth -> {
-          log.debug("OPA Auth Mgr -- For user [{}]", auth.getPrincipal());
+    return authentication
+        .flatMap(auth -> {
+          log.debug("Authorizing user = `{}`", auth.getPrincipal());
           // If authentication failed, there is no point in even trying to authorize the request.
           if (!auth.isAuthenticated() || !(auth instanceof ApiTokenAuthentication)) {
-            log.error(UNEXPECTED_AUTHENTICATION_CLASS, auth.getClass().getSimpleName());
+            log.debug(UNEXPECTED_AUTHENTICATION_CLASS, auth.getClass().getSimpleName());
             return Mono.empty();
           }
           return Mono.just(makeRequestBody(auth.getCredentials(), request));
         })
         .doOnNext(body -> {
           try {
-            log.debug("POSTing OPA Authorization request: {}",
-                mapper.writeValueAsString(body));
+            log.debug("POSTing OPA Authorization request:\n{}",
+                mapper.writerWithDefaultPrettyPrinter().writeValueAsString(body));
           } catch (JsonProcessingException e) {
-            log.error(Constants.CANNOT_PARSE_AUTHORIZATION_REQUEST, e.getMessage());
+            log.error(CANNOT_PARSE_AUTHORIZATION_REQUEST, e.getMessage());
           }
         })
         .flatMap(body -> client.post()
@@ -141,7 +142,6 @@ public class OpaReactiveAuthorizationManager
           }
           return new AuthorizationDecision(authorized);
         });
-//        .defaultIfEmpty(new AuthorizationDecision(false));
   }
 
   private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(

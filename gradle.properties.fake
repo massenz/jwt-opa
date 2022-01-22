@@ -1,0 +1,10 @@
+# Global Gradle Properties
+# Created M. Massenzio, 2021-12-24
+#
+# Fake properties to make the GitHub build pass.
+
+ossrhUsername=auser
+ossrhPassword=yeah
+signing.keyId=0x123456
+signing.password=yup
+signing.secretKeyRingFile=/tmp/foo/bar.gpg
