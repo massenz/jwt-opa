@@ -23,7 +23,6 @@ bootJar {
 }
 
 dependencies {
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation project (':jwt-opa')
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -31,21 +30,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    implementation 'com.auth0:java-jwt:3.10.3'
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
-    implementation 'commons-codec:commons-codec:1.6'
 
     // Swagger 2 API & UI
     // "Raw" JSON at http://localhost:8081/v2/api-docs
     // UI at http://localhost:8081/swagger-ui/ (trailing slash matters)
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation "org.testcontainers:mongodb:$tcVersion"
 }

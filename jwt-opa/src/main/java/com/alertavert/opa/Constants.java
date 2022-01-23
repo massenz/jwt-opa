@@ -27,23 +27,48 @@ import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * All constants are grouped here for ease of reference.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constants {
-  // Authorization header types.
+  /**
+   * Basic Authorization header type.
+   */
   public static final String BASIC_AUTH = "Basic";
+  /**
+   * Bearer (API TOKEN) Authorization header type (and prefix)
+   */
   public static final String BEARER_TOKEN = "Bearer";
 
-  // Secrets options
+  /**
+   * The type of encryption accepted by the {@link com.alertavert.opa.jwt.JwtTokenProvider}
+   */
   public static final String ELLIPTIC_CURVE = "EC";
+
+  /**
+   * Passphrase-based encryption (see
+   * {@link com.alertavert.opa.configuration.KeyMaterialConfiguration}.
+   */
   public static final String PASSPHRASE = "SECRET";
 
-  // OPA Server API constants.
+  /** OPA API version */
   public static final String OPA_VERSION = "v1";
+
+  /** OPA API policy evaluation prefix */
   public static final String OPA_DATA_API = "data";
+
+  /** OPA API policies upload endpoint */
   public static final String OPA_POLICIES_API = "policies";
 
   // Default routes.
+  /** The default healthcheck endpoint, allowed by default to be accessed without authentication */
   public static final String DEFAULT_HEALTH_ROUTE = "/health";
+
+  /**
+   * The default login endpoing, by default only allowed using HTTP Basic auth, but will not
+   * require a valid API Token and won't try to authorize access.
+   */
   public static final String DEFAULT_LOGIN_ROUTE = "/login";
 
   // Error Messages.
@@ -73,20 +98,39 @@ public class Constants {
       return Collections.EMPTY_LIST;
     }
 
+    /**
+     * @return    Inactive (fake) password.
+     */
     @Override
     public String getPassword() {return "{noop} fake";}
+
+    /**
+     * @return    Inactive (fake) username
+     */
     @Override
     public String getUsername() {return "fake";}
 
+    /**
+     * @return    Always {@literal false}, this account is always expired.
+     */
     @Override
     public boolean isAccountNonExpired() {return false;}
 
+    /**
+     * @return    Always {@literal false}, this account is always locked.
+     */
     @Override
     public boolean isAccountNonLocked() {return false;}
 
+    /**
+     * @return    Always {@literal false}, credentials are always expired.
+     */
     @Override
     public boolean isCredentialsNonExpired() {return false;}
 
+    /**
+     * @return    Always {@literal false}, this user is always disabled.
+     */
     @Override
     public boolean isEnabled() {return false;}
   };
