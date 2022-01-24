@@ -37,6 +37,8 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
+import static com.alertavert.opa.Constants.ELLIPTIC_CURVE;
+import static com.alertavert.opa.Constants.PASSPHRASE;
 import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
 
 @Slf4j
@@ -63,16 +65,13 @@ public class KeyMaterialConfiguration {
   Algorithm hmac(KeyPair keyPair) {
     KeyProperties.SignatureProperties properties = keyProperties.getSignature();
 
-    switch (properties.getAlgorithm()) {
-      case Constants.PASSPHRASE:
-        return Algorithm.HMAC256(properties.getSecret());
-      case Constants.ELLIPTIC_CURVE:
-        return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
+    return switch (properties.getAlgorithm()) {
+      case PASSPHRASE -> Algorithm.HMAC256(properties.getSecret());
+      case ELLIPTIC_CURVE -> Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
           (ECPrivateKey) keyPair.getPrivate());
-      default:
-        throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
+      default -> throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
           properties.getAlgorithm()));
-    }
+    };
   }
 
   @Bean

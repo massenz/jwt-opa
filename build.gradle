@@ -16,10 +16,10 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 plugins {
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.3.3.RELEASE'
+    id 'org.springframework.boot' version '2.5.7'
 
     // To upload the Artifact to Maven Central
     // See: https://docs.gradle.org/current/userguide/publishing_maven.html
@@ -30,14 +30,12 @@ plugins {
 bootJar.enabled = false
 
 ext {
+    javaVersion = JavaVersion.current()
     jsonpathVersion = "2.5.0"
-    lombokVersion = "1.18.16"
+    lombokVersion = "1.18.22"
+    minCoverageRatio = 0.80
     mockitoVersion = "3.6.0"
     tcVersion = "1.15.1"
-
-    minCoverageRatio = 0.80
-
-    javaVersion = JavaVersion.current()
 }
 
 task logCoverageRatio {
@@ -48,9 +46,9 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
-    version '0.6.7'
+    version '0.7.0'
 
-    sourceCompatibility = JavaVersion.VERSION_15
+    sourceCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
@@ -69,14 +67,24 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.springframework.boot'
 
-    if(javaVersion != JavaVersion.VERSION_15) {
-        throw new GradleException(
-                "This build must be run with OpenJDK 15, using instead version ${javaVersion}")
+    dependencies {
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+        implementation 'com.auth0:java-jwt:3.10.3'
+        implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
+        implementation 'commons-codec:commons-codec:1.6'
+
+        testImplementation('org.springframework.boot:spring-boot-starter-test') {
+            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        }
     }
 
     // We want the test and coverage reports to be based on the
     // most recent build.
-    jacocoTestCoverageVerification.dependsOn([logCoverageRatio, jacocoTestReport])
+    jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
+    jacocoTestCoverageVerification.finalizedBy(logCoverageRatio)
 
     test {
         useJUnitPlatform()
@@ -86,6 +94,6 @@ subprojects {
     }
 
     javadoc {
-        destinationDir = file("../docs/javadoc/${project.name}")
+        destinationDir = file("${rootDir}/docs/javadoc/${project.name}")
     }
 }
