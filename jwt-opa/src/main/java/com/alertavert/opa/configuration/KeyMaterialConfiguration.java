@@ -34,6 +34,8 @@ import java.security.KeyPair;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
+import static com.alertavert.opa.Constants.ELLIPTIC_CURVE;
+import static com.alertavert.opa.Constants.PASSPHRASE;
 import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
 
 @Slf4j
@@ -60,9 +62,9 @@ public class KeyMaterialConfiguration {
     KeyProperties.SignatureProperties properties = keyProperties.getSignature();
 
     switch (properties.getAlgorithm()) {
-      case Constants.PASSPHRASE:
+      case PASSPHRASE:
         return Algorithm.HMAC256(properties.getSecret());
-      case Constants.ELLIPTIC_CURVE:
+      case ELLIPTIC_CURVE:
         return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
           (ECPrivateKey) keyPair.getPrivate());
       default:
