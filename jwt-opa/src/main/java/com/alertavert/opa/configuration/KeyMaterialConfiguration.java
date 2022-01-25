@@ -18,22 +18,19 @@
 
 package com.alertavert.opa.configuration;
 
-import com.alertavert.opa.thirdparty.PemUtils;
+import com.alertavert.opa.security.crypto.KeypairFileReader;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.alertavert.opa.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
@@ -46,7 +43,6 @@ import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
 @EnableConfigurationProperties(KeyProperties.class)
 public class KeyMaterialConfiguration {
 
-//  @Getter(onMethod=@__({@Bean}))
   private final KeyProperties keyProperties;
 
   public KeyMaterialConfiguration(KeyProperties properties) {
@@ -75,45 +71,46 @@ public class KeyMaterialConfiguration {
   }
 
   @Bean
-  JWTVerifier verifier() throws IOException {
-    return JWT.require(hmac(keyPair()))
+  JWTVerifier verifier(KeypairReader reader) throws IOException {
+    return JWT.require(hmac(keyPair(reader)))
         .withIssuer(issuer())
         .build();
   }
 
   @Bean
-  public KeyPair keyPair() throws IOException {
-    return new KeyPair(loadPublicKey(), loadPrivateKey());
+  public KeyPair keyPair(KeypairReader reader) throws IOException {
+    return reader.loadKeys();
   }
 
-  private PrivateKey loadPrivateKey() throws IOException {
-    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
-
-    Path p = Paths.get(properties.getKeypair().getPriv());
-    log.info("Reading private key from file {}", p.toAbsolutePath());
-
-    PrivateKey pk = PemUtils.readPrivateKeyFromFile(p.toString(), properties.getAlgorithm());
-    if (pk == null) {
-      log.error("Could not read Public key");
-      throw new IllegalStateException(
-          String.format("Not a valid EC Private key file %s", p.toAbsolutePath()));
-    }
-    log.info("Read private key, format: {}", pk.getFormat());
-    return pk;
-  }
-
-  private PublicKey loadPublicKey() throws IOException {
-    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
-    Path p = Paths.get(properties.getKeypair().getPub());
-    log.info("Reading public key from file {}", p.toAbsolutePath());
-
-    PublicKey pk = PemUtils.readPublicKeyFromFile(p.toString(), properties.getAlgorithm());
-    if (pk == null) {
-      log.error("Could not read Public key");
-      throw new IllegalStateException(
-          String.format("Not a valid EC Public key file %s", p.toAbsolutePath()));
-    }
-    log.info("Read public key, format: {}", pk.getFormat());
-    return pk;
+  /**
+   * Default key pair reader from the file system; to load a key pair from a different storage
+   * (e.g., Vault) implement your custom {@link KeypairReader} and inject it as a {@literal
+   * reader} bean.
+   *
+   * <p>This reader will interpret the {@literal keypair.priv,pub} properties as paths.
+   *
+   * <p>To use your custom {@link KeypairReader} implementation, define your bean as primary:
+   *
+   <pre>
+       &#64;Bean &#64;Primary
+       public KeypairReader reader() {
+         return new KeypairReader() {
+           &#64;Override
+           public KeyPair loadKeys() throws KeyLoadException {
+              // do something here
+              return someKeypair;
+           }
+         };
+   </pre>
+   *
+   * @return      a reader which will try and load the key pair from the filesystem.
+   */
+  @Bean
+  public KeypairReader filereader() {
+    KeyProperties.SignatureProperties props = keyProperties.getSignature();
+    return new KeypairFileReader(
+        props.getAlgorithm(),
+        Paths.get(props.getKeypair().getPriv()),
+        Paths.get(props.getKeypair().getPub()));
   }
 }
