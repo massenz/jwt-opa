@@ -21,6 +21,7 @@ package com.alertavert.opa.configuration;
 import com.alertavert.opa.AbstractTestBase;
 import com.alertavert.opa.Constants;
 import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -39,6 +40,9 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
   @Autowired
   KeyMaterialConfiguration configuration;
 
+  @Autowired
+  KeypairReader reader;
+
   @Value("${tokens.issuer}")
   private String issuer;
 
@@ -49,7 +53,7 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
 
   @Test
   void hmac() throws IOException {
-    KeyPair pair = configuration.keyPair();
+    KeyPair pair = configuration.keyPair(reader);
     assertThat(pair).isNotNull();
     Algorithm hmac = configuration.hmac(pair);
     assertThat(hmac).isNotNull();
@@ -58,13 +62,13 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
 
   @Test
   void verifier() throws IOException {
-    JWTVerifier verifier = configuration.verifier();
+    JWTVerifier verifier = configuration.verifier(reader);
     assertThat(verifier).isNotNull();
   }
 
   @Test
   void keyPair() throws IOException {
-    KeyPair pair = configuration.keyPair();
+    KeyPair pair = configuration.keyPair(reader);
     assertThat(pair).isNotNull();
     assertThat(pair.getPrivate().getFormat()).isEqualTo("PKCS#8");
     assertThat(pair.getPrivate().getAlgorithm()).isEqualTo(Constants.ELLIPTIC_CURVE);
@@ -72,7 +76,7 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
 
   @Test
   void signVerify() throws IOException {
-    KeyPair pair = configuration.keyPair();
+    KeyPair pair = configuration.keyPair(reader);
     Algorithm hmac = configuration.hmac(pair);
 
     String token = JWT.create()
@@ -81,7 +85,7 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
         .withClaim(JwtTokenProvider.ROLES, Lists.list("TEST"))
         .sign(hmac);
 
-    JWTVerifier verifier = configuration.verifier();
+    JWTVerifier verifier = configuration.verifier(reader);
     assertThat(verifier.verify(token)).isNotNull();
   }
 }

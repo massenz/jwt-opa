@@ -18,13 +18,18 @@
 
 package com.alertavert.opademo.configuration;
 
+import com.alertavert.opa.security.crypto.KeyLoadException;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opademo.data.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+
+import java.security.KeyPair;
 
 import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 
