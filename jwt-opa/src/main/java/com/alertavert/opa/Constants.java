@@ -83,6 +83,8 @@ public class Constants {
       + "({}) not an instance of ApiTokenAuthentication, cannot progress authorization";
   public static final String CANNOT_PARSE_AUTHORIZATION_REQUEST = "Cannot parse Authorization "
       + "request: {}";
+  public static final String ERROR_CANNOT_READ_KEY = "Could not read key: path = {}, algorithm = {}";
+
   public static final String API_TOKEN = "api_token";
 
   /**
