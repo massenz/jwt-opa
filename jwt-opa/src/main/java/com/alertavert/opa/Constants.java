@@ -136,4 +136,5 @@ public class Constants {
     @Override
     public boolean isEnabled() {return false;}
   };
+  public static final int MAX_TOKEN_LEN_LOG = 6;
 }

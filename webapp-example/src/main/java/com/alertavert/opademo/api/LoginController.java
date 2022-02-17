@@ -41,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static com.alertavert.opa.Constants.BASIC_AUTH;
+import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
 /**
  * <h2>LoginController</h2>
@@ -80,8 +81,8 @@ public class LoginController {
           return new JwtController.ApiToken(u.getUsername(), u.roles(), token);
         })
         .doOnNext(apiToken ->
-            log.debug("User `{}` authenticated, API Token generated: {}",
-                apiToken.getUsername(), apiToken.getApiToken()));
+            log.debug("User authenticated, user = {}, token = {}...",
+                apiToken.getUsername(), apiToken.getApiToken().substring(0, MAX_TOKEN_LEN_LOG)));
   }
 
   @GetMapping("/reset/{username}")

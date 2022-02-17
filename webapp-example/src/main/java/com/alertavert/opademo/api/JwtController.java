@@ -39,6 +39,7 @@ import java.util.Objects;
 
 import static com.alertavert.opa.Constants.API_TOKEN;
 import static com.alertavert.opa.Constants.BEARER_TOKEN;
+import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
 @Slf4j
 @RestController
@@ -64,7 +65,7 @@ public class JwtController {
 
   @GetMapping(path = "/token/{user}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<ApiToken>> getToken(@PathVariable String user) {
-    log.debug("Refreshing API Token for `{}`", user);
+    log.debug("Refreshing API Token, user = {}", user);
 
     return repository.findByUsername(user)
         .map(u -> {
@@ -72,8 +73,9 @@ public class JwtController {
           return new ApiToken(user, u.roles(), token);
         })
         .map(ResponseEntity::ok)
-        .doOnSuccess(response -> log.debug("Returning API Token for user {}: {}", user,
-            Objects.requireNonNull(response.getBody()).getApiToken()))
+        .doOnSuccess(response -> log.debug(
+            "API Token successfully created, user = {}, token = {}...", user,
+            Objects.requireNonNull(response.getBody()).apiToken.substring(0, MAX_TOKEN_LEN_LOG)))
         .onErrorReturn(Exception.class, ResponseEntity.badRequest().build());
   }
 
