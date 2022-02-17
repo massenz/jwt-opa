@@ -120,12 +120,7 @@ public class OpaReactiveAuthorizationManager
           return Mono.just(makeRequestBody(auth.getCredentials(), request));
         })
         .doOnNext(body -> {
-          try {
-            log.debug("POSTing OPA Authorization request:\n{}",
-                mapper.writerWithDefaultPrettyPrinter().writeValueAsString(body));
-          } catch (JsonProcessingException e) {
-            log.error(CANNOT_PARSE_AUTHORIZATION_REQUEST, e.getMessage());
-          }
+            log.debug("POST Authorization request:\n{}", body.prettyPrint());
         })
         .flatMap(body -> client.post()
             .accept(MediaType.APPLICATION_JSON)

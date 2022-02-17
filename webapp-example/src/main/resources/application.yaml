@@ -52,7 +52,7 @@ tokens:
   # security requirements.
   should_expire: true
   # For the demo app, we make the API Token valid for 5 minutes.
-  expires_after_sec: 30
+  expires_after_sec: 3000
 
   # Interval in seconds, after creation, during which the JWT is not valid.
   # Corresponds to the `nbf` ("not before") claim.
