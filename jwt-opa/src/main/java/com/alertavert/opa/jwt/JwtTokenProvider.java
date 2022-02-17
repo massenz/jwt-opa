@@ -80,6 +80,7 @@ public class JwtTokenProvider {
         .withClaim(ROLES, roles)
         .withIssuedAt(Date.from(now));
 
+    log.debug("Issuing JWT for user = {}, roles = {}", user, roles);
     if (keyProperties.isShouldExpire()) {
       Instant expires = now.plusSeconds(keyProperties.getExpiresAfterSec());
       log.debug("JWT will expire at {}", expires);
@@ -93,7 +94,6 @@ public class JwtTokenProvider {
     }
 
     String token = builder.sign(hmac);
-    log.debug("Issuing JWT: {}", token);
     return token;
   }
 

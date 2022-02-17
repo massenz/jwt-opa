@@ -18,6 +18,7 @@
 
 package com.alertavert.opa.jwt;
 
+import com.alertavert.opa.Constants;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
+
 /**
  * <h2>ApiTokenAuthenticationFactory</h2>
  *
@@ -43,7 +46,7 @@ public class ApiTokenAuthenticationFactory {
   JwtTokenProvider provider;
 
   public Mono<Authentication> createAuthentication(String token) {
-    log.debug("Authenticating token {}...", token.substring(0, Math.min(25, token.length())));
+    log.debug("Authenticating token {}...", token.substring(0, Math.min(MAX_TOKEN_LEN_LOG, token.length())));
     try {
       DecodedJWT jwt = provider.decode(token);
       List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
