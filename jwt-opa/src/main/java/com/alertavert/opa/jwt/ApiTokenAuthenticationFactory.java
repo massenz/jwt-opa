@@ -37,6 +37,9 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 /**
  * <h2>ApiTokenAuthenticationFactory</h2>
  *
+ * <p>Used to create a new instance of an authentication grant, based on a JWT that must pass
+ * validation (signature must verify, and it must still be valid)</p>
+ *
  * @author M. Massenzio, 2020-12-15
  */
 @Service @Slf4j
@@ -45,6 +48,17 @@ public class ApiTokenAuthenticationFactory {
   @Autowired
   JwtTokenProvider provider;
 
+  /**
+   * Creates an implementation of the {@link Authentication} interface which implements the
+   * authentication via an API Token (JWT).
+   *
+   * If the passed in {@literal token} is valid, the {@literal granted authorities} will be the
+   * {@literal ROLES} carried inside the JWT.
+   *
+   * @param token     a string representation of a JWT
+   * @return          if the JWT signature can be verified, a {@link ApiTokenAuthentication}
+   *                  grant with the {@link JwtTokenProvider#ROLES} carried by the JWT.
+   */
   public Mono<Authentication> createAuthentication(String token) {
     log.debug("Authenticating token {}...", token.substring(0, Math.min(MAX_TOKEN_LEN_LOG, token.length())));
     try {

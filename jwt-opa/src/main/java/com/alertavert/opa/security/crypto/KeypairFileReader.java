@@ -29,6 +29,8 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import static com.alertavert.opa.Constants.ERROR_CANNOT_READ_KEY;
+
 /**
  * <H2>KeypairFileReader</H2>
  *
@@ -49,14 +51,9 @@ import java.security.PublicKey;
  */
 @Slf4j @Value
 public class KeypairFileReader implements KeypairReader {
-
-  public static final String ERROR_CANNOT_READ_KEY =
-      "Could not read key: path = {}, algorithm = {}";
-
   String algorithm;
   Path secretKeyPath;
   Path publicKeyPath;
-
 
   @Override
   public KeyPair loadKeys() throws KeyLoadException {
