@@ -47,6 +47,7 @@ fi
 
 if [[ -z $(which aws) ]]
 then
+  usage
   echo "ERROR: This script requires the aws CLI to upload the keys to Secrets Manager"
   exit 1
 fi
