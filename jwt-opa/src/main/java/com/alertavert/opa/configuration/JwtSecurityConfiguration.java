@@ -53,33 +53,34 @@ public class JwtSecurityConfiguration {
   JwtAuthenticationWebFilter jwtAuthenticationWebFilter;
 
 
+
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
     log.debug("Setting up Security Web Filter Chain");
     log.debug("Password Authentication uses {}", authenticationManager.getClass().getName());
 
-    // TODO: This is INSECURE, but makes testing using Postman easier
-    // See: https://stackoverflow.com/questions/27182701/how-do-i-send-spring-csrf-token-from-postman-rest-client
-    http.csrf().disable()
+    return http
+        // TODO: This is INSECURE, but makes testing using Postman easier
+        // See: https://stackoverflow.com/questions/27182701/how-do-i-send-spring-csrf-token-from-postman-rest-client
+        .csrf().disable()
+
         .addFilterAfter(jwtAuthenticationWebFilter, SecurityWebFiltersOrder.HTTP_BASIC)
         .authorizeExchange(authorizeExchangeSpec -> {
           authorizeExchangeSpec.pathMatchers("/**").access(authorizationManager);
-        });
+        })
 
-    return http.authenticationManager(authenticationManager)
+        .authenticationManager(authenticationManager)
         .httpBasic()
         .and()
-        .authorizeExchange()
 
+        .authorizeExchange()
         .pathMatchers(configuration.getProperties().getAllowed().toArray(String[]::new))
         .permitAll()
-
         .anyExchange()
         .authenticated()
-//        .access(authorizationManager)
-
         .and()
+
         .build();
   }
 }

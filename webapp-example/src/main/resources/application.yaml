@@ -12,6 +12,7 @@ management:
       exposure:
         include: "env, info, health"
 
+
 # This is used to build the Rule validation endpoint:
 #   /v1/data/kapsules/allow
 opa:
@@ -113,3 +114,12 @@ routes:
    - "/swagger-resources/**"
    - "/v3/api-docs"
    - "/v3/api-docs/**"
+
+# CORS Configuration
+#
+# See the SecurityConfiguration class for an example how to use this.
+cors:
+  allowed:
+    - "http://*.example.com"
+    - "http://*.alertavert.com:*"
+    - "http://localhost:*"
