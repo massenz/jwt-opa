@@ -40,13 +40,13 @@ import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
 
 @Slf4j
 @Configuration
-@EnableConfigurationProperties(KeyProperties.class)
+@EnableConfigurationProperties(TokensProperties.class)
 public class KeyMaterialConfiguration {
 
-  private final KeyProperties keyProperties;
+  private final TokensProperties tokensProperties;
 
-  public KeyMaterialConfiguration(KeyProperties properties) {
-    this.keyProperties = properties;
+  public KeyMaterialConfiguration(TokensProperties properties) {
+    this.tokensProperties = properties;
     if (properties.getSignature().getKeypair() == null) {
       throw new IllegalStateException(UNDEFINED_KEYPAIR);
     }
@@ -54,12 +54,12 @@ public class KeyMaterialConfiguration {
 
   @Bean
   public String issuer() {
-    return keyProperties.getIssuer();
+    return tokensProperties.getIssuer();
   }
 
   @Bean
   Algorithm hmac(KeyPair keyPair) {
-    KeyProperties.SignatureProperties properties = keyProperties.getSignature();
+    TokensProperties.SignatureProperties properties = tokensProperties.getSignature();
 
     return switch (properties.getAlgorithm()) {
       case PASSPHRASE -> Algorithm.HMAC256(properties.getSecret());
@@ -107,7 +107,7 @@ public class KeyMaterialConfiguration {
    */
   @Bean
   public KeypairReader filereader() {
-    KeyProperties.SignatureProperties props = keyProperties.getSignature();
+    TokensProperties.SignatureProperties props = tokensProperties.getSignature();
     return new KeypairFileReader(
         props.getAlgorithm(),
         Paths.get(props.getKeypair().getPriv()),

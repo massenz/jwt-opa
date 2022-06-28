@@ -19,7 +19,7 @@
 package com.alertavert.opa;
 
 import com.alertavert.opa.jwt.JwtTokenProvider;
-import com.alertavert.opa.configuration.KeyProperties;
+import com.alertavert.opa.configuration.TokensProperties;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -30,10 +30,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import java.sql.Date;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,7 @@ class JwtTokenProviderTest extends AbstractTestBase {
   JwtTokenProvider provider;
 
   @Autowired
-  KeyProperties properties;
+  TokensProperties properties;
 
   @Test
   public void createToken() {
@@ -90,6 +89,19 @@ class JwtTokenProviderTest extends AbstractTestBase {
 
     assertThat(decoded).isNotNull();
     assertThat(decoded.getClaim(EXPIRES_AT).isNull()).isTrue();
+  }
+
+  @Test
+  public void createTokenWithExpiresAt() {
+    Instant expires = Instant.now().plusSeconds(60);
+    String token = provider.createToken("alice", Lists.list("USER"), expires);
+
+    // We specifically here avoid using TokenProvider's own methods.
+    JWT jwt = new JWT();
+    DecodedJWT decoded = jwt.decodeJwt(token);
+
+    assertThat(decoded).isNotNull();
+    assertThat(decoded.getClaim(EXPIRES_AT).asLong()).isEqualTo(expires.getEpochSecond());
   }
 
   @Test
@@ -140,5 +152,24 @@ class JwtTokenProviderTest extends AbstractTestBase {
   public void invalidTokenFailsAuthentication() {
     assertThrows(AuthenticationException.class,
         () -> provider.getAuthentication("definitelynotatoken"));
+  }
+
+  @Test
+  public void expiryDate() {
+    Instant expiresAt = Instant.now().plusSeconds(60);
+    String token = provider.createToken("alice", Lists.list("USER"), expiresAt);
+    assertThat(provider.getExpiryDate(token)).isCloseTo(expiresAt, 999);
+  }
+
+  @Test
+  public void expiryDateUnset() {
+    boolean shouldExpire = properties.isShouldExpire();
+    properties.setShouldExpire(false);
+
+    String token = provider.createToken("alice", Lists.list("USER"));
+    assertThat(provider.getExpiryDate(token)).isNull();
+
+    // Restore state for subsequent tests.
+    properties.setShouldExpire(shouldExpire);
   }
 }

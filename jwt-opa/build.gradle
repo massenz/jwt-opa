@@ -58,6 +58,9 @@ jacocoTestCoverageVerification {
     }
 }
 
+javadoc.failOnError = false
+javadoc.title = 'AlertAvert JWT OPA'
+
 // Generating Source & Javadoc JARs for publication
 // See: https://central.sonatype.org/publish/publish-gradle/
 java {
