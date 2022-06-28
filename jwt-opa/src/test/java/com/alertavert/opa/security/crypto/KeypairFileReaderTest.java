@@ -19,7 +19,7 @@
 package com.alertavert.opa.security.crypto;
 
 import com.alertavert.opa.AbstractTestBase;
-import com.alertavert.opa.configuration.KeyProperties;
+import com.alertavert.opa.configuration.TokensProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,7 +40,7 @@ class KeypairFileReaderTest extends AbstractTestBase {
   KeypairReader reader;
 
   @Autowired
-  KeyProperties properties;
+  TokensProperties properties;
 
   @Test
   void loadKeys() {
