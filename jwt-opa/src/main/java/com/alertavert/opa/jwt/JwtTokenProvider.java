@@ -46,7 +46,9 @@ import java.util.List;
  * <p>Handles JWT tokens validation, creation and authentication.
  *
  * <p>Based on
- * <a href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com/example/demo/security/jwt/JwtTokenProvider.java">
+ * <a
+ * href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com
+ * /example/demo/security/jwt/JwtTokenProvider.java">
  * this example code</a>
  *
  * <p><strong>This class is a temporary implementation and need a lot of refinement</strong></p>
@@ -83,9 +85,11 @@ public class JwtTokenProvider {
    *
    * <p>The token is issued by {@link TokensProperties#getIssuer()}.
    *
-   * @param user the user for which to create the token
-   * @param roles the user's roles, which will be used for Authorization
-   * @param expiresAt the expiration time of the token
+   * @param user      the user for which to create the token
+   * @param roles     the user's roles, which will be used for Authorization
+   * @param expiresAt the expiration time of the token, if provided; otherwise it will be set based
+   *                  on {@link TokensProperties#getExpiresAfterSec()}, if
+   *                  {@link TokensProperties#isShouldExpire()} is true.
    * @return the newly created JWT token
    */
   public String createToken(String user, List<String> roles, @Nullable Instant expiresAt) {
@@ -98,6 +102,10 @@ public class JwtTokenProvider {
         .withIssuedAt(Date.from(now))
         .withArrayClaim(ROLES, roles.toArray(new String[0]));
 
+    if (expiresAt == null && tokensProperties.isShouldExpire()) {
+      expiresAt = Instant.now().plusSeconds(tokensProperties.getExpiresAfterSec());
+      log.debug("JWT will expire at {}", expiresAt);
+    }
     if (expiresAt != null) {
       builder.withExpiresAt(Date.from(expiresAt));
     }
@@ -109,20 +117,16 @@ public class JwtTokenProvider {
 
   /**
    * Creates a new JWT token for the given user.
-   * <p>If configured to do so ({@literal tokens.shouldExpire}) it will expire after the
-   * configured time, in seconds ({@literal tokens.expiresAfterSec}).
    *
-   * @param user the username for the JWT (sub)
+   * <p>If configured to do so ({@literal tokens.shouldExpire}) it will expire after the
+   * configured time, in seconds (set by {@literal tokens.expiresAfterSec}).
+   *
+   * @param user  the username for the JWT (sub)
    * @param roles the roles for the user, used for Authorization
    * @return the newly created JWT token
    */
   public String createToken(String user, List<String> roles) {
-    Instant expiresAt = null;
-    if (tokensProperties.isShouldExpire()) {
-      expiresAt = Instant.now().plusSeconds(tokensProperties.getExpiresAfterSec());
-      log.debug("JWT will expire at {}", expiresAt);
-    }
-    return createToken(user, roles, expiresAt);
+    return createToken(user, roles, null);
   }
 
   public boolean validateToken(String token) {
@@ -144,7 +148,7 @@ public class JwtTokenProvider {
       DecodedJWT decodedJWT = decode(token);
       String subject = decodedJWT.getSubject();
 
-      List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
+      List<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
           decodedJWT.getClaim(ROLES).asArray(String.class));
 
       log.debug("Token is valid: subject = `{}`, authorities = `{}`", subject, authorities);

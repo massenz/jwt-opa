@@ -46,7 +46,7 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
-    version '0.7.3'
+    version '0.7.4'
 
     sourceCompatibility = JavaVersion.VERSION_17
 
@@ -68,6 +68,12 @@ subprojects {
     apply plugin: 'org.springframework.boot'
 
     dependencies {
+        // Removes the annoying warning:
+        // warning: unknown enum constant When.MAYBE
+        //  reason: class file for javax.annotation.meta.When not found
+        // See: https://stackoverflow.com/questions/29805622/could-not-find-or-load-main-class-org-gradle-wrapper-gradlewrappermain/31622432
+        implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+
         annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
         annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
