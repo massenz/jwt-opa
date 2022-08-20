@@ -1,6 +1,9 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
+# Upon pushing to the release branch a new tag will be created
+# in preparation for the release.
+#
+# Copyright (c) 2022 AlertAvert.com.  All rights reserved.
+# Author: Marco Massenzio (marco@alertavert.com)
+#
 name: Create a Release Tag
 
 on:
@@ -8,19 +11,19 @@ on:
     branches: [ release ]
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  create-tag:
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 17
-      uses: actions/setup-java@v1
-      with:
-        java-version: 17
-    - name: Setup fake Credentials
-      run: cp gradle.properties.fake gradle.properties
-    - name: Build with Gradle
-      run: chmod +x gradlew && ./gradlew check
     - name: Create a Release Tag
       run: ./make-tag.sh
-
-# TODO: Automatically push the build artifacts to the nexus repository
+  release:
+    runs-on: ubuntu-22.04
+    # TODO: Automatically push the build artifacts to the nexus repository
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch Sonatype Credentials
+        run: |
+          echo "ossrhUsername=${{ secrets.SONATYPE_USERNAME }}" >> gradle.properties
+          echo "ossrhPassword=${{ secrets.SONATYPE_PASSWORD }}" >> gradle.properties
+          cat gradle.properties

@@ -101,5 +101,6 @@ subprojects {
 
     javadoc {
         destinationDir = file("${rootDir}/docs/javadoc/${project.name}")
+        options.addBooleanOption('Xdoclint:all,-missing', true)
     }
 }

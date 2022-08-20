@@ -1,5 +1,8 @@
-# This workflow will build a Java project with Gradle
+# This workflow will run all tests for every PR and subsequent merge to main.
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+#
+# Copyright (c) 2022 AlertAvert.com.  All rights reserved.
+# Author: Marco Massenzio (marco@alertavert.com)
 
 name: Build & Test
 
@@ -11,18 +14,13 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 17
-      uses: actions/setup-java@v1
+    - uses: actions/setup-java@v1
       with:
         java-version: 17
     - name: Setup fake Credentials
       run: cp gradle.properties.fake gradle.properties
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build test
+    - name: Build & Test
+      run: chmod +x gradlew && ./gradlew build test
