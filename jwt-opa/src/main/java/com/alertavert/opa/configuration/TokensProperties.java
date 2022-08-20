@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @ConfigurationProperties(prefix = "tokens")
-public class KeyProperties {
+public class TokensProperties {
 
   @Data
   public static class Pair {

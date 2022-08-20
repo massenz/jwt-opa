@@ -24,13 +24,13 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.alertavert.opa.configuration.KeyProperties;
+import com.alertavert.opa.configuration.TokensProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -46,7 +46,9 @@ import java.util.List;
  * <p>Handles JWT tokens validation, creation and authentication.
  *
  * <p>Based on
- * <a href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com/example/demo/security/jwt/JwtTokenProvider.java">
+ * <a
+ * href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com
+ * /example/demo/security/jwt/JwtTokenProvider.java">
  * this example code</a>
  *
  * <p><strong>This class is a temporary implementation and need a lot of refinement</strong></p>
@@ -69,32 +71,62 @@ public class JwtTokenProvider {
   String issuer;
 
   @Autowired
-  KeyProperties keyProperties;
+  TokensProperties tokensProperties;
 
-  public String createToken(String user, List<String> roles) {
+  /**
+   * <p>Creates a JWT token for the given user, signed with the private key of the issuer.
+   *
+   * <p>The token contains the user's username and the user's roles.
+   *
+   * <p>The token is valid for {@link TokensProperties#getExpiresAfterSec()} seconds.
+   *
+   * <p>The token is valid from {@link TokensProperties#getNotBeforeDelaySec()} seconds in the
+   * future, if this is configured; otherwise it will be valid from now.
+   *
+   * <p>The token is issued by {@link TokensProperties#getIssuer()}.
+   *
+   * @param user      the user for which to create the token
+   * @param roles     the user's roles, which will be used for Authorization
+   * @param expiresAt the expiration time of the token, if provided; otherwise it will be set based
+   *                  on {@link TokensProperties#getExpiresAfterSec()}, if
+   *                  {@link TokensProperties#isShouldExpire()} is true.
+   * @return the newly created JWT token
+   */
+  public String createToken(String user, List<String> roles, @Nullable Instant expiresAt) {
     Instant now = Instant.now();
 
+    log.debug("Issuing JWT for user = {}, roles = {}", user, roles);
     JWTCreator.Builder builder = JWT.create()
         .withIssuer(issuer)
         .withSubject(user)
-        .withClaim(ROLES, roles)
-        .withIssuedAt(Date.from(now));
+        .withIssuedAt(Date.from(now))
+        .withArrayClaim(ROLES, roles.toArray(new String[0]));
 
-    log.debug("Issuing JWT for user = {}, roles = {}", user, roles);
-    if (keyProperties.isShouldExpire()) {
-      Instant expires = now.plusSeconds(keyProperties.getExpiresAfterSec());
-      log.debug("JWT will expire at {}", expires);
-      builder.withExpiresAt(Date.from(expires));
+    if (expiresAt == null && tokensProperties.isShouldExpire()) {
+      expiresAt = Instant.now().plusSeconds(tokensProperties.getExpiresAfterSec());
+      log.debug("JWT will expire at {}", expiresAt);
     }
-
-    if (keyProperties.getNotBeforeDelaySec() > 0) {
-      Instant notBefore = now.plusSeconds(keyProperties.getNotBeforeDelaySec());
-      log.debug("JWT Not Valid Before {}", notBefore);
-      builder.withNotBefore(Date.from(notBefore));
+    if (expiresAt != null) {
+      builder.withExpiresAt(Date.from(expiresAt));
     }
+    if (tokensProperties.getNotBeforeDelaySec() > 0) {
+      builder.withNotBefore(Date.from(now.plusSeconds(tokensProperties.getNotBeforeDelaySec())));
+    }
+    return builder.sign(hmac);
+  }
 
-    String token = builder.sign(hmac);
-    return token;
+  /**
+   * Creates a new JWT token for the given user.
+   *
+   * <p>If configured to do so ({@literal tokens.shouldExpire}) it will expire after the
+   * configured time, in seconds (set by {@literal tokens.expiresAfterSec}).
+   *
+   * @param user  the username for the JWT (sub)
+   * @param roles the roles for the user, used for Authorization
+   * @return the newly created JWT token
+   */
+  public String createToken(String user, List<String> roles) {
+    return createToken(user, roles, null);
   }
 
   public boolean validateToken(String token) {
@@ -116,7 +148,7 @@ public class JwtTokenProvider {
       DecodedJWT decodedJWT = decode(token);
       String subject = decodedJWT.getSubject();
 
-      List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
+      List<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
           decodedJWT.getClaim(ROLES).asArray(String.class));
 
       log.debug("Token is valid: subject = `{}`, authorities = `{}`", subject, authorities);
@@ -129,5 +161,16 @@ public class JwtTokenProvider {
       log.warn("Could not authenticate Token: {}", error.getMessage());
       throw new BadCredentialsException("JWT invalid", error);
     }
+  }
+
+  /**
+   * Decodes the given token and returns the `expiry_at` claim, if it exists.
+   *
+   * @param token the JWT to decode
+   * @return the expiry time of the token, or null if it does not exist
+   */
+  public Date getExpiryDate(String token) {
+    return decode(token)
+        .getExpiresAt();
   }
 }

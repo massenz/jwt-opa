@@ -18,18 +18,20 @@
 
 package com.alertavert.opademo.configuration;
 
-import com.alertavert.opa.security.crypto.KeyLoadException;
-import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opademo.data.User;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
-import java.security.KeyPair;
+import java.util.List;
 
 import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 
@@ -41,7 +43,25 @@ import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 @Configuration
 @EnableWebFluxSecurity
 @Slf4j
+@EnableConfigurationProperties(SecurityConfiguration.CorsProperties.class)
 public class SecurityConfiguration {
+
+  /** CORS Configuration allows all routes ("*") */
+  public static final String DEFAULT_ALL_ALLOWED = "*";
+
+  private final CorsProperties properties;
+
+  public SecurityConfiguration(CorsProperties properties) {
+    this.properties = properties;
+  }
+
+  @Data
+    @ConfigurationProperties(prefix = "cors")
+    public static class CorsProperties {
+      List<String> allowed = List.of(DEFAULT_ALL_ALLOWED);
+      List<String> methods = List.of(DEFAULT_ALL_ALLOWED);
+      List<String> headers = List.of(DEFAULT_ALL_ALLOWED);
+    }
 
 
   @Bean
@@ -62,6 +82,25 @@ public class SecurityConfiguration {
           // org.springframework.security.authentication.UsernamePasswordAuthenticationToken"
           // error when simply returning an empty Mono, if the username does not exist.
           .defaultIfEmpty(EMPTY_USERDETAILS);
+    };
+  }
+
+  /**
+   * An example as to how to configure CORS for a web app using jwt-opa.
+   *
+   * @return a CORS Configuration which will respect all the allowed origins; by default this
+   *    bean allows all origins/methods/headers.
+   */
+  @Bean
+  public CorsConfigurationSource corsConfiguration() {
+    log.debug("CORS Configuration");
+    return exchange -> {
+      log.debug("Allowing Origins: {}", properties.allowed);
+      CorsConfiguration conf = new CorsConfiguration();
+      conf.setAllowedOriginPatterns(properties.allowed);
+      conf.setAllowedMethods(properties.methods);
+      conf.setAllowedHeaders(properties.headers);
+      return conf;
     };
   }
 }
