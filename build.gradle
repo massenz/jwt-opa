@@ -46,7 +46,7 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
-    version '0.7.4'
+    version '0.7.4-2'
     sourceCompatibility = JavaVersion.VERSION_17
 
     repositories {
@@ -105,5 +105,6 @@ subprojects {
 
     javadoc {
         destinationDir = file("${rootDir}/docs/javadoc/${project.name}")
+        options.addBooleanOption('Xdoclint:all,-missing', true)
     }
 }

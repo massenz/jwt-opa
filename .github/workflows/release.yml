@@ -1,0 +1,31 @@
+# Upon pushing to the release branch a new tag will be created
+# in preparation for the release.
+#
+# Copyright (c) 2022 AlertAvert.com.  All rights reserved.
+# Author: Marco Massenzio (marco@alertavert.com)
+#
+name: Create a Release Tag
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create a Release Tag
+      run: ./make-tag.sh
+  release:
+    runs-on: ubuntu-22.04
+    # TODO: Automatically push the build artifacts to the nexus repository
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch Sonatype Credentials
+        env:
+          SONATYPE_USERNAME: massenz
+        run: |
+          echo "ossrhUsername=$SONATYPE_USERNAME" >> gradle.properties
+          echo "ossrhPassword=${{ secrets.SONATYPE_PASSWORD }}" >> gradle.properties
+          cat gradle.properties
