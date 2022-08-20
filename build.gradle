@@ -46,8 +46,7 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
-    version '0.7.4-1'
-
+    version '0.7.4-4'
     sourceCompatibility = JavaVersion.VERSION_17
 
     repositories {
@@ -66,6 +65,11 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.springframework.boot'
+
+    if (javaVersion != JavaVersion.VERSION_17) {
+        throw new GradleException(
+                "This build must be run with OpenJDK 17, using instead version ${javaVersion}")
+    }
 
     dependencies {
         // Removes the annoying warning:
