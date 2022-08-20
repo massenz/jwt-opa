@@ -17,15 +17,35 @@ jobs:
     - uses: actions/checkout@v2
     - name: Create a Release Tag
       run: ./make-tag.sh
+
   release:
     runs-on: ubuntu-22.04
-    # TODO: Automatically push the build artifacts to the nexus repository
+    env:
+      KEYRING_FILE: /tmp/keyring.gpg
     steps:
       - uses: actions/checkout@v2
-      - name: Fetch Sonatype Credentials
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      # See https://docs.github.com/en/actions/security-guides/encrypted-secrets#storing-base64-binary-blobs-as-secrets
+      - name: Encode KeyRing file
         env:
-          SONATYPE_USERNAME: massenz
+          KEYRING_BASE64: "${{ secrets.SIGNING_KEYRING }}"
         run: |
-          echo "ossrhUsername=$SONATYPE_USERNAME" >> gradle.properties
-          echo "ossrhPassword=${{ secrets.SONATYPE_PASSWORD }}" >> gradle.properties
-          cat gradle.properties
+          echo "${KEYRING_BASE64}" | base64 -d > ${KEYRING_FILE}
+
+      - name: Build gradle.properties with Sonatype Credentials
+        run: |
+          cat <<EOF >gradle.properties 
+            ossrhUsername=${{ secrets.SONATYPE_USERNAME }}
+            ossrhPassword=${{ secrets.SONATYPE_PASSWORD }}
+            signing.keyId=${{ secrets.SIGNING_KEYID }}
+            signing.password=${{ secrets.SIGNING_PASSWORD }}
+            signing.secretKeyRingFile=${KEYRING_FILE}
+          EOF
+
+      # TODO: Automatically push the build artifacts to the nexus repository
+      - name: Publish to Sonatype
+        run: |
+          chmod +x gradlew && ./gradlew publish

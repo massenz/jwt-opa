@@ -46,7 +46,7 @@ task logCoverageRatio {
 
 allprojects {
     group 'com.alertavert'
-    version '0.7.4-2'
+    version '0.7.4-4'
     sourceCompatibility = JavaVersion.VERSION_17
 
     repositories {
