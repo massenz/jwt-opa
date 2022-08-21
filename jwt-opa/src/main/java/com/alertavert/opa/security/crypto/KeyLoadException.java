@@ -18,8 +18,6 @@
 
 package com.alertavert.opa.security.crypto;
 
-import java.io.IOException;
-
 /**
  * <H2>KeyLoadException</H2>
  *

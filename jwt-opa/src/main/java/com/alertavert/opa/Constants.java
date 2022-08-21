@@ -18,12 +18,12 @@
 
 package com.alertavert.opa;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -96,45 +96,17 @@ public class Constants {
    */
   public static final UserDetails EMPTY_USERDETAILS = new UserDetails() {
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<? extends GrantedAuthority> getAuthorities() {
       return Collections.EMPTY_LIST;
     }
-
-    /**
-     * @return    Inactive (fake) password.
-     */
-    @Override
-    public String getPassword() {return "{noop} fake";}
-
-    /**
-     * @return    Inactive (fake) username
-     */
-    @Override
-    public String getUsername() {return "fake";}
-
-    /**
-     * @return    Always {@literal false}, this account is always expired.
-     */
-    @Override
-    public boolean isAccountNonExpired() {return false;}
-
-    /**
-     * @return    Always {@literal false}, this account is always locked.
-     */
-    @Override
-    public boolean isAccountNonLocked() {return false;}
-
-    /**
-     * @return    Always {@literal false}, credentials are always expired.
-     */
-    @Override
-    public boolean isCredentialsNonExpired() {return false;}
-
-    /**
-     * @return    Always {@literal false}, this user is always disabled.
-     */
-    @Override
-    public boolean isEnabled() {return false;}
+    @Override public String getPassword() {return "{noop}";}
+    @Override public String getUsername() {return "";}
+    @Override public boolean isAccountNonExpired() {return false;}
+    @Override public boolean isAccountNonLocked() {return false;}
+    @Override public boolean isCredentialsNonExpired() {return false;}
+    @Override public boolean isEnabled() {return false;}
   };
   public static final int MAX_TOKEN_LEN_LOG = 6;
+  public static final ObjectMapper MAPPER = new ObjectMapper();
 }

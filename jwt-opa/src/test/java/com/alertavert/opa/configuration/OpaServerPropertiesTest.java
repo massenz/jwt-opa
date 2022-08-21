@@ -31,25 +31,25 @@ class OpaServerPropertiesTest extends AbstractTestBase {
 
   @Test
   public void endpoint() {
-    String ep = opaServerProperties.endpoint("foo");
-    assertThat(ep).isEqualTo("http://localhost:8181/v1/foo/kapsules");
+    assertThat(opaServerProperties.endpoint("foo"))
+        .isEqualTo("http://localhost:8181/v1/foo/com.alertavert.policies");
   }
 
   @Test
   public void policy() {
     assertThat(opaServerProperties.policyEndpoint())
-        .isEqualTo("http://localhost:8181/v1/policies/kapsules");
+        .isEqualTo("http://localhost:8181/v1/policies/com.alertavert.policies");
   }
 
   @Test
   public void data() {
     assertThat(opaServerProperties.dataEndpoint())
-        .isEqualTo("http://localhost:8181/v1/data/kapsules");
+        .isEqualTo("http://localhost:8181/v1/data/com.alertavert.policies");
   }
 
   @Test
   public void authorizationEndpoint() {
     assertThat(opaServerProperties.authorization())
-        .isEqualTo("http://localhost:8181/v1/data/kapsules/allow");
+        .isEqualTo("http://localhost:8181/v1/data/com.alertavert.policies/allow");
   }
 }

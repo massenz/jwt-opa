@@ -18,9 +18,6 @@
 
 package com.alertavert.opa.security.crypto;
 
-import org.springframework.context.annotation.Bean;
-
-import java.io.IOException;
 import java.security.KeyPair;
 
 /**
