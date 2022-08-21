@@ -52,6 +52,13 @@ allprojects {
     repositories {
         mavenCentral()
     }
+    // To emit the details of the error for the "uses or overrides a deprecated API" error.
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:deprecation"
+            options.compilerArgs << "-Xlint:unchecked"
+        }
+    }
 }
 
 configurations {

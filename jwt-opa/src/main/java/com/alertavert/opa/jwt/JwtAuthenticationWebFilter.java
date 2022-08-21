@@ -93,6 +93,6 @@ public class JwtAuthenticationWebFilter implements WebFilter {
 
     return authenticationSuccessHandler
         .onAuthenticationSuccess(filterExchange, authentication)
-        .subscriberContext(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
+        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
   }
 }

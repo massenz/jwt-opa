@@ -51,7 +51,7 @@ public class DbInit {
 
   @PostConstruct
   public void initDb() {
-    if (StringUtils.isEmpty(adminPassword)) {
+    if (!StringUtils.hasText(adminPassword)) {
       adminPassword = UUID.randomUUID().toString().substring(0, 10);
       log.info("Initializing DB with seed user ({}). Use the generated password: {}",
           adminUsername, adminPassword);
