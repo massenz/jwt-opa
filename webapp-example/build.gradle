@@ -16,26 +16,62 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-version = "0.2.0"
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '2.5.7'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+group 'com.alertavert.opademo'
+version = "0.3.0"
+
+repositories {
+    // Adding local repository for Gradle to find jwt-opa before it gets published.
+    // Use: ./gradlew :jwt-opa:publishToMavenLocal
+    // mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    // TODO: upgrade to the latest version when published (0.8.0)
+    // This can be changed to an yet-unpublished version by using mavenLocal()
+    // for local tests.
+    jwtOpaVersion = "0.7.5"
+    lombokVersion = "1.18.22"
+    tcVersion = "1.15.1"
+}
 
 bootJar {
     mainClassName = 'com.alertavert.opademo.JwtDemoApplication'
 }
 
 dependencies {
-    implementation project (':jwt-opa')
+    // We use the actual dependency here, instead of depending on the module in the repository so
+    // as to emulate an actual project using jwt-opa externally.
+    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+    implementation 'com.auth0:java-jwt:3.10.3'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'commons-codec:commons-codec:1.13'
 
     // Swagger 2 API & UI
     // "Raw" JSON at http://localhost:8081/v2/api-docs
     // UI at http://localhost:8081/swagger-ui/ (trailing slash matters)
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation "org.testcontainers:mongodb:$tcVersion"
 }
@@ -44,16 +80,9 @@ jacoco {
     toolVersion = '0.8.7'
 }
 
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                // This is just a demo application, we can be more lenient.
-                // TODO: increase this until it reaches 50%
-                minimum = 0.15
-            }
-        }
-    }
+test {
+    useJUnitPlatform()
+    // A build will fail unless test coverage reaches minimum.
+    // See: https://reflectoring.io/jacoco/
+    finalizedBy jacocoTestCoverageVerification
 }

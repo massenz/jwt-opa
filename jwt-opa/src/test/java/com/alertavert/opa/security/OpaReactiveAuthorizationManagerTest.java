@@ -78,21 +78,23 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8);
     String policy = FileCopyUtils.copyToString(reader);
 
-    ClientResponse response = client.put()
+    client.put()
         .uri(policyEndpoint)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.TEXT_PLAIN)
         .bodyValue(policy)
-        .exchange()
+        .exchangeToMono(response -> {
+          assertThat(response).isNotNull();
+          assertThat(response.statusCode()).isEqualTo(HttpStatus.OK);
+          return response.bodyToMono(String.class);
+        })
         .block();
-    assertThat(response).isNotNull();
-    assertThat(response.statusCode()).isEqualTo(HttpStatus.OK);
   }
 
   @Test
   void check() {
     Mono<Authentication> auth = factory.createAuthentication(
-      provider.createToken("test-user", Lists.list("USER"))
+        provider.createToken("test-user", Lists.list("USER"))
     );
 
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/users/test-user");
@@ -150,9 +152,9 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   public void authenticatedEndpointBypassesOpa() {
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/testauth");
     opaReactiveAuthorizationManager.check(
-        factory.createAuthentication(
-            provider.createToken("alice", Lists.list("USER"))
-        ), context)
+            factory.createAuthentication(
+                provider.createToken("alice", Lists.list("USER"))
+            ), context)
         .map(AuthorizationDecision::isGranted)
         .doOnNext(b -> assertThat(b).isTrue())
         .subscribe();
@@ -166,9 +168,9 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
 
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/match/one/this");
     opaReactiveAuthorizationManager.check(
-        factory.createAuthentication(
-            provider.createToken("alice", Lists.list("USER"))
-        ), context)
+            factory.createAuthentication(
+                provider.createToken("alice", Lists.list("USER"))
+            ), context)
         .map(AuthorizationDecision::isGranted)
         .doOnNext(b -> assertThat(b).isTrue())
         .subscribe();
@@ -176,18 +178,18 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     // This should NOT match
     context = getAuthorizationContext(HttpMethod.GET, "/match/one/two/this.html");
     opaReactiveAuthorizationManager.check(
-        factory.createAuthentication(
-            provider.createToken("alice", Lists.list("USER"))
-        ), context)
+            factory.createAuthentication(
+                provider.createToken("alice", Lists.list("USER"))
+            ), context)
         .map(AuthorizationDecision::isGranted)
         .doOnNext(b -> assertThat(b).isFalse())
         .subscribe();
 
     context = getAuthorizationContext(HttpMethod.GET, "/match/any/this/that.html");
     opaReactiveAuthorizationManager.check(
-        factory.createAuthentication(
-            provider.createToken("alice", Lists.list("USER"))
-        ), context)
+            factory.createAuthentication(
+                provider.createToken("alice", Lists.list("USER"))
+            ), context)
         .map(AuthorizationDecision::isGranted)
         .doOnNext(b -> assertThat(b).isTrue())
         .subscribe();

@@ -7,7 +7,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![OS Debian](https://img.shields.io/badge/OS-Linux-green)
 
-[![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml)
+[![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/verify.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/verify.yml)
+[![Release](https://github.com/massenz/jwt-opa/actions/workflows/release.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/release.yml)
 
 ### Copyright & Licensing
 
@@ -32,6 +33,45 @@ This library aims at simplifying the ability for an application/service to:
 - keeping the authorization logic (embedded in [Rego](https://www.openpolicyagent.org/docs/latest/policy-reference) policies) separate from the business logic (carried out by the application).
 
 It also provides a blueprint to inject OPA authorization in a Spring Reactive (WebFlux) application.
+
+# Usage
+
+*(aka: Guide for the impatient)*
+
+See either this repository [releases page](https://github.com/massenz/jwt-opa/releases) or [Maven Central](https://search.maven.org/artifact/com.alertavert/jwt-opa) for the most recently available release:
+
+```groovy
+ext {
+    jwtOpaVersion = '0.8.0'
+}
+```
+
+Configure your project dependencies to include all necessary Spring libraries (JWT-OPA requires at a minimum `starter-security`) as they are not included in the published artifact, the library itself, and other supporting libraries:
+
+```groovy
+dependencies {
+    // Spring Framework and Security Dependencies, via Boot Starter Kits.
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // JWT and Encryption dependencies, needed at runtime.
+    implementation 'com.auth0:java-jwt:3.10.3'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+
+    // JWT-OPA Integration, this library.
+    // See: https://search.maven.org/artifact/com.alertavert/jwt-opa
+    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
+
+    // All other dependencies for your project.
+    // For example Spring WebFlux and Spring Data MongoDB:
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // etc...
+}
+```
+
+For more details, take a look into the `webapp-example` demo project, including how to configure and run tests.
 
 # Architecture
 
@@ -168,11 +208,10 @@ You can use either an absolute path, or the relative path to the current directo
 
 ## Supporting Services
 
-The sample app (`jwt-vault`) uses the following services:
+The sample app (`webapp-example`) uses the following services:
 
   - Mongo (users DB);
-  - OPA Policy Server; and
-  - Hashicorp Vault (key store) -- `TODO:` we are currently storing keys on disk
+  - OPA Policy Server
 
 Use the following to run the servers locally:
 

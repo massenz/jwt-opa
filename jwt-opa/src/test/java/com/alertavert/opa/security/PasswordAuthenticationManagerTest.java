@@ -80,6 +80,7 @@ class PasswordAuthenticationManagerTest extends AbstractTestBase {
     assertThat(authentication).isNotNull();
     assertThat(authentication.isAuthenticated()).isTrue();
     assertThat(authentication.getAuthorities().size()).isEqualTo(1);
+    @SuppressWarnings("unchecked")
     List<SimpleGrantedAuthority> authorities = (List<SimpleGrantedAuthority>) authentication.getAuthorities();
     assertThat(authorities).contains(userRole);
   }
