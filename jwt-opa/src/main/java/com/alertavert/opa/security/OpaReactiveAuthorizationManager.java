@@ -18,13 +18,10 @@
 
 package com.alertavert.opa.security;
 
-import com.alertavert.opa.Constants;
 import com.alertavert.opa.configuration.OpaServerProperties;
 import com.alertavert.opa.configuration.RoutesConfiguration;
 import com.alertavert.opa.jwt.ApiTokenAuthentication;
 import com.alertavert.opa.jwt.JwtTokenProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,7 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -46,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.alertavert.opa.Constants.CANNOT_PARSE_AUTHORIZATION_REQUEST;
 import static com.alertavert.opa.Constants.UNEXPECTED_AUTHENTICATION_CLASS;
 import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
 
@@ -60,7 +56,7 @@ import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
  * <p>In this example implementation, we simply validate the user/roles contained in the JWT
  * against the API endpoint and method that are in the request; however, via the {@link
  * ServerHttpRequest request} object we would have access to the entire request attributes, headers,
- * etc. and those could be packaged into the JSON {@link TokenBasedAuthorizationRequestBody body} of
+ * etc. and those could be packaged into the JSON {@link TokenBasedAuthorizationRequest body} of
  * the request POSTed to the OPA server.
  *
  * @author M. Massenzio, 2020-11-22
@@ -73,7 +69,6 @@ public class OpaReactiveAuthorizationManager
 
   private final WebClient client;
   private final RoutesConfiguration configuration;
-  private final ObjectMapper mapper = new ObjectMapper();
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   /**
@@ -120,33 +115,35 @@ public class OpaReactiveAuthorizationManager
           return Mono.just(makeRequestBody(auth.getCredentials(), request));
         })
         .doOnNext(body -> {
-            log.debug("POST Authorization request:\n{}", body.prettyPrint());
+          log.debug("POST Authorization request:\n{}", body);
         })
         .flatMap(body -> client.post()
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
-            .exchange())
-        .flatMap(response -> response.bodyToMono(Map.class))
+            .exchangeToMono(response -> response.bodyToMono(Map.class)))
         .map(res -> {
           log.debug("OPA Server returned: {}", res);
           Object result = res.get("result");
-          boolean authorized = false;
-          if (!StringUtils.isEmpty(result)) {
-            authorized = Boolean.parseBoolean(result.toString());
-          }
-          return new AuthorizationDecision(authorized);
+          return new AuthorizationDecision(!ObjectUtils.isEmpty(result) &&
+              Boolean.parseBoolean(result.toString()));
         });
   }
 
-  private TokenBasedAuthorizationRequestBody.RequestBody makeRequestBody(
+  private TokenBasedAuthorizationRequest makeRequestBody(
       Object credentials,
       ServerHttpRequest request
   ) {
-    Objects.requireNonNull(credentials);
-    String token = credentials.toString();
-    return TokenBasedAuthorizationRequestBody.build(token, request.getPath().toString(),
-        Objects.requireNonNull(request.getMethod()).toString());
+    String token = Objects.requireNonNull(credentials).toString();
+    return TokenBasedAuthorizationRequest.builder()
+        .input(new TokenBasedAuthorizationRequest.AuthRequestBody(token,
+                new TokenBasedAuthorizationRequest.Resource(
+                    request.getMethodValue(),
+                    request.getPath().toString()
+                )
+            )
+        )
+        .build();
   }
 
   private WebClientResponseException unauthorized() {

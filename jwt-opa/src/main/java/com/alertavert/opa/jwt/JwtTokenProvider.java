@@ -18,13 +18,13 @@
 
 package com.alertavert.opa.jwt;
 
+import com.alertavert.opa.configuration.TokensProperties;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.alertavert.opa.configuration.TokensProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -44,14 +44,6 @@ import java.util.List;
  * <h2>JwtTokenProvider</h2>
  *
  * <p>Handles JWT tokens validation, creation and authentication.
- *
- * <p>Based on
- * <a
- * href="https://github.com/hantsy/spring-reactive-jwt-sample/blob/master/src/main/java/com
- * /example/demo/security/jwt/JwtTokenProvider.java">
- * this example code</a>
- *
- * <p><strong>This class is a temporary implementation and need a lot of refinement</strong></p>
  *
  * @author M. Massenzio, 2020-11-19
  */
@@ -76,21 +68,20 @@ public class JwtTokenProvider {
   /**
    * <p>Creates a JWT token for the given user, signed with the private key of the issuer.
    *
-   * <p>The token contains the user's username and the user's roles.
+   * <p>The token is issued by the {@literal tokens.issuer} ({@literal "iss"} claim), and
+   * contains the user's {@literal "username"} and {@literal "roles"}.
    *
-   * <p>The token is valid for {@link TokensProperties#getExpiresAfterSec()} seconds.
-   *
-   * <p>The token is valid from {@link TokensProperties#getNotBeforeDelaySec()} seconds in the
-   * future, if this is configured; otherwise it will be valid from now.
-   *
-   * <p>The token is issued by {@link TokensProperties#getIssuer()}.
+   * <p>The token is valid for {@literal tokens.expires_after_sec} seconds from
+   * {@literal  tokens.not_before_delay_sec} seconds in the
+   * future, if this is configured; otherwise it will be valid from {@literal now}.
    *
    * @param user      the user for which to create the token
    * @param roles     the user's roles, which will be used for Authorization
    * @param expiresAt the expiration time of the token, if provided; otherwise it will be set based
-   *                  on {@link TokensProperties#getExpiresAfterSec()}, if
-   *                  {@link TokensProperties#isShouldExpire()} is true.
+   *                  on {@literal tokens.expires_after_sec}, if {@literal  tokens.should_expire()}
+   *                  is true.
    * @return the newly created JWT token
+   * @see TokensProperties
    */
   public String createToken(String user, List<String> roles, @Nullable Instant expiresAt) {
     Instant now = Instant.now();

@@ -18,12 +18,12 @@
 
 package com.alertavert.opa;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -137,4 +137,5 @@ public class Constants {
     public boolean isEnabled() {return false;}
   };
   public static final int MAX_TOKEN_LEN_LOG = 6;
+  public static final ObjectMapper MAPPER = new ObjectMapper();
 }

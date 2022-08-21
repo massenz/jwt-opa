@@ -18,7 +18,6 @@
 
 package com.alertavert.opa.jwt;
 
-import com.alertavert.opa.Constants;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
