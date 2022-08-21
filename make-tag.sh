@@ -5,9 +5,17 @@
 
 set -eu
 
-declare -r tag=$($(dirname $0)/get-version.sh)
-echo "Creating new tag ${tag}"
+declare -r BASEDIR=$(dirname $0)
+declare -r BUILD=${BASEDIR}/jwt-opa/build.gradle
+declare -r tag=$(${BASEDIR}/get-version.sh ${BUILD})
 
+if [[ -z ${tag} ]]
+then
+  echo "[ERROR] Could not extract version information from build.gradler"
+  exit 1
+fi
+
+echo "Creating new tag ${tag}"
 if git tag | grep ${tag}
 then
     echo -n "Tag ${tag} exists: "
@@ -22,5 +30,5 @@ then
     fi
 fi
 
-git tag ${tag}
+git tag -am "Rel. ${tag}" ${tag}
 git push --tags
