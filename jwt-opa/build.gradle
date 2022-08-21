@@ -46,12 +46,6 @@ if (JavaVersion.current() != JavaVersion.VERSION_17) {
             "This build must be run with OpenJDK 17, using instead version ${javaVersion}")
 }
 
-// While we use the Spring Boot machinery (mostly around managing dependencies and configuration
-// properties) we do not want an executable Spring Boot application JAR to be generated, but only
-// the library JAR to be made available.
-bootJar.enabled = false
-jar.enabled = true
-
 repositories {
     mavenCentral()
 }
@@ -88,7 +82,7 @@ dependencies {
 
     implementation 'com.auth0:java-jwt:3.10.3'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
-    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'commons-codec:commons-codec:1.13'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -144,6 +138,18 @@ java {
     withSourcesJar()
 }
 
+// While we use the Spring Boot machinery (mostly around managing dependencies and configuration
+// properties) we do not want an executable Spring Boot application JAR to be generated, but only
+// the library JAR to be made available.
+bootJar.enabled = false
+jar.enabled = true
+
+// Boot modifies the name of the published JAR with a `-plain` suffix, we need to
+// rename it back to the original name.
+// See: https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
+tasks.named("jar") {
+    archiveClassifier = ''
+}
 
 // Publishing Artifact to Maven Central
 //

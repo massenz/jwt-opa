@@ -16,28 +16,6 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 plugins {
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.5.7'
-
-    // To upload the Artifact to Maven Central
-    // See: https://docs.gradle.org/current/userguide/publishing_maven.html
-    id 'maven-publish'
-    id 'signing'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'jacoco'
-    apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'org.springframework.boot'
-
-
 }

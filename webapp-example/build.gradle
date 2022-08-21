@@ -23,7 +23,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
-group 'com.alertavert.webapp'
+group 'com.alertavert.opademo'
 version = "0.3.0"
 
 repositories {
@@ -47,21 +47,38 @@ dependencies {
     // as to emulate an actual project using jwt-opa externally.
     implementation 'com.alertavert:jwt-opa:0.8.0'
 
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
+    implementation 'com.auth0:java-jwt:3.10.3'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'commons-codec:commons-codec:1.13'
 
     // Swagger 2 API & UI
     // "Raw" JSON at http://localhost:8081/v2/api-docs
     // UI at http://localhost:8081/swagger-ui/ (trailing slash matters)
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation "org.testcontainers:mongodb:$tcVersion"
 }
 
 jacoco {
     toolVersion = '0.8.7'
+}
+
+test {
+    useJUnitPlatform()
+    // A build will fail unless test coverage reaches minimum.
+    // See: https://reflectoring.io/jacoco/
+    finalizedBy jacocoTestCoverageVerification
 }
