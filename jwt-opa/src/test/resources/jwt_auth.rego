@@ -3,7 +3,7 @@
 #
 # This should be loaded to the OPA Policy Server via a PUT request to the /v1/policies endpoint.
 
-package kapsules
+package com.alertavert.policies
 
 default allow = false
 

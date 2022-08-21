@@ -34,7 +34,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,7 +69,7 @@ public class User implements UserDetails {
   public User(String username, String password, String role) {
     this.username = username;
     this.hashPassword = password;
-    if (!StringUtils.isEmpty(role)) {
+    if (StringUtils.hasText(role)) {
       roles.add(role);
     }
   }
@@ -94,9 +94,7 @@ public class User implements UserDetails {
     User newUser = new User();
     newUser.setUsername(user.username);
     newUser.setHashPassword(password);
-    if (!StringUtils.isEmpty(user.getUserId())) {
-      newUser.setUserId(user.userId);
-    }
+    newUser.setUserId(user.userId);
     newUser.roles.addAll(user.getRoles());
     return newUser;
   }
@@ -117,9 +115,7 @@ public class User implements UserDetails {
     User newUser = new User();
     newUser.setUsername(newUsername);
     newUser.setHashPassword(user.hashPassword);
-    if (!StringUtils.isEmpty(user.getUserId())) {
-      newUser.setUserId(user.userId);
-    }
+    newUser.setUserId(user.userId);
     newUser.roles.addAll(user.getRoles());
     return newUser;
   }

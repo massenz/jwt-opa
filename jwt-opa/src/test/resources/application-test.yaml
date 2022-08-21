@@ -15,10 +15,10 @@ tokens:
       pub: "../testdata/test-key-pub.pem"
 
 # This is used to build the Rule validation endpoint:
-#   http://localhost:8181/v1/data/kapsules/allow
+#   http://localhost:8181/v1/data/com.alertavert.policies/allow
 #
 opa:
-  policy: kapsules
+  policy: com.alertavert.policies
   rule: allow
   server: "localhost:8181"
 
