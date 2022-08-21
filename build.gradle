@@ -24,41 +24,7 @@ plugins {
     // To upload the Artifact to Maven Central
     // See: https://docs.gradle.org/current/userguide/publishing_maven.html
     id 'maven-publish'
-}
-
-// Disable the default Spring Boot executable JAR to be created.
-bootJar.enabled = false
-
-ext {
-    javaVersion = JavaVersion.current()
-    jsonpathVersion = "2.5.0"
-    lombokVersion = "1.18.22"
-    minCoverageRatio = 0.80
-    mockitoVersion = "3.6.0"
-    tcVersion = "1.15.1"
-}
-
-task logCoverageRatio {
-    doLast {
-        logger.lifecycle "Min Coverage: ${100 * minCoverageRatio}%"
-    }
-}
-
-allprojects {
-    group 'com.alertavert'
-    version '0.7.5'
-    sourceCompatibility = JavaVersion.VERSION_17
-
-    repositories {
-        mavenCentral()
-    }
-    // To emit the details of the error for the "uses or overrides a deprecated API" error.
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:deprecation"
-            options.compilerArgs << "-Xlint:unchecked"
-        }
-    }
+    id 'signing'
 }
 
 configurations {
@@ -73,45 +39,5 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.springframework.boot'
 
-    if (javaVersion != JavaVersion.VERSION_17) {
-        throw new GradleException(
-                "This build must be run with OpenJDK 17, using instead version ${javaVersion}")
-    }
 
-    dependencies {
-        // Removes the annoying warning:
-        // warning: unknown enum constant When.MAYBE
-        //  reason: class file for javax.annotation.meta.When not found
-        // See: https://stackoverflow.com/questions/29805622/could-not-find-or-load-main-class-org-gradle-wrapper-gradlewrappermain/31622432
-        implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
-
-        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-        compileOnly "org.projectlombok:lombok:${lombokVersion}"
-
-        implementation 'com.auth0:java-jwt:3.10.3'
-        implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
-        implementation 'commons-codec:commons-codec:1.6'
-
-        testImplementation('org.springframework.boot:spring-boot-starter-test') {
-            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-        }
-    }
-
-    // We want the test and coverage reports to be based on the
-    // most recent build.
-    jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
-    jacocoTestCoverageVerification.finalizedBy(logCoverageRatio)
-
-    test {
-        useJUnitPlatform()
-        // A build will fail unless test coverage reaches minimum.
-        // See: https://reflectoring.io/jacoco/
-        finalizedBy jacocoTestCoverageVerification
-    }
-
-    javadoc {
-        destinationDir = file("${rootDir}/docs/javadoc/${project.name}")
-        options.addBooleanOption('Xdoclint:all,-missing', true)
-    }
 }

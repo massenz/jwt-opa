@@ -17,10 +17,33 @@
  */
 
 plugins {
-    // Required to build a "fatjar" as we have to disable the `bootJar` task here.
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-    id 'signing'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '2.5.7'
+
+    // To upload the Artifact to Maven Central
+    // See: https://docs.gradle.org/current/userguide/publishing_maven.html
     id 'maven-publish'
+    id 'signing'
+}
+
+ext {
+    jsonpathVersion = "2.5.0"
+    lombokVersion = "1.18.22"
+    minCoverageRatio = 0.80
+    mockitoVersion = "3.6.0"
+    tcVersion = "1.15.1"
+}
+
+group 'com.alertavert'
+version '0.8.0'
+
+// OpenJDK 17 LTS is the only Java version supported
+sourceCompatibility = JavaVersion.VERSION_17
+if (JavaVersion.current() != JavaVersion.VERSION_17) {
+    throw new GradleException(
+            "This build must be run with OpenJDK 17, using instead version ${javaVersion}")
 }
 
 // While we use the Spring Boot machinery (mostly around managing dependencies and configuration
@@ -28,13 +51,49 @@ plugins {
 // the library JAR to be made available.
 bootJar.enabled = false
 jar.enabled = true
-jar.dependsOn shadowJar
+
+repositories {
+    mavenCentral()
+}
+
+// To emit the details of the error for the "uses or overrides a deprecated API" error.
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:unchecked"
+    }
+}
+
+
+task logCoverageRatio {
+    doLast {
+        logger.lifecycle "Min Coverage: ${100 * minCoverageRatio}%"
+    }
+}
 
 jacoco {
     toolVersion = '0.8.7'
 }
 
 dependencies {
+    // Removes the annoying warning:
+    // warning: unknown enum constant When.MAYBE
+    //  reason: class file for javax.annotation.meta.When not found
+    // See: https://stackoverflow.com/questions/29805622/could-not-find-or-load-main-class-org-gradle-wrapper-gradlewrappermain/31622432
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+    implementation 'com.auth0:java-jwt:3.10.3'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'commons-codec:commons-codec:1.11'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
@@ -56,10 +115,27 @@ jacocoTestCoverageVerification {
             }
         }
     }
+
+    // We want the test and coverage reports to be based on the
+    // most recent build.
+    dependsOn jacocoTestReport
+    finalizedBy logCoverageRatio
 }
 
-javadoc.failOnError = false
-javadoc.title = 'AlertAvert JWT OPA'
+test {
+    useJUnitPlatform()
+    // A build will fail unless test coverage reaches minimum.
+    // See: https://reflectoring.io/jacoco/
+    finalizedBy jacocoTestCoverageVerification
+}
+
+javadoc {
+    title = 'AlertAvert JWT OPA'
+    failOnError = true
+
+    destinationDir = file("${rootDir}/docs/javadoc/${project.name}/${version}")
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+}
 
 // Generating Source & Javadoc JARs for publication
 // See: https://central.sonatype.org/publish/publish-gradle/
@@ -68,11 +144,6 @@ java {
     withSourcesJar()
 }
 
-// Remove the -all extension from the "fat" Jar, or it can't be used
-// when published to Maven Central.
-shadowJar {
-    archiveClassifier.set('')
-}
 
 // Publishing Artifact to Maven Central
 //
@@ -84,7 +155,7 @@ publishing {
     publications {
         jwtopaLibrary(MavenPublication) {
             artifactId = 'jwt-opa'
-            artifacts = [ shadowJar, javadocJar, sourcesJar ]
+            artifacts = [ jar, javadocJar, sourcesJar ]
             pom {
                 name = 'Spring Security & OPA'
                 description = 'Spring Security & Open Policy Agent integration'
