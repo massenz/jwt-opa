@@ -7,7 +7,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![OS Debian](https://img.shields.io/badge/OS-Linux-green)
 
-[![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/gradle.yml)
+[![Build & Test](https://github.com/massenz/jwt-opa/actions/workflows/verify.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/verify.yml)
+[![Release](https://github.com/massenz/jwt-opa/actions/workflows/release.yml/badge.svg)](https://github.com/massenz/jwt-opa/actions/workflows/release.yml)
 
 ### Copyright & Licensing
 
