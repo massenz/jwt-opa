@@ -34,7 +34,9 @@ spring:
     default-property-inclusion: "non_null"
 ---
 spring:
-  profiles: debug
+  config:
+    activate:
+      on-profile: debug
 
 # Doing this only for debug builds, as it may leak sensitive information
 # to an attacker.
@@ -61,18 +63,14 @@ tokens:
   # larger than 0 to enforce a delay on using the token).
   not_before_delay_sec: 0
 
-  signature:
-    # We currently support Elliptic Curve signatures, and passphrase-based secrets.
-    # If using a passphrase (not recommended) use something like this:
-    # algorithm: "SECRET"
-    # secret: "my very zekret pa55phrase"
-    algorithm: "EC"
-    keypair:
-      # These can be absolute or relative paths to a pair of private/public keys
-      # used to sign/verify the API Token (JWTs).
-      # See README.md for more information on how to generate them.
-      priv: "../private/ec-key.pem"
-      pub: "../private/ec-key-pub.pem"
+keys:
+  # Elliptic Curve Signature algorithm
+  algorithm: "EC"
+  # Relative paths to a pair of private/public keys
+  # used to sign/verify the API Token (JWTs).
+  # See README.md for more information on how to generate them.
+  priv: "private/ec-key.pem"
+  pub: "private/ec-key-pub.pem"
 
 logging:
   level:

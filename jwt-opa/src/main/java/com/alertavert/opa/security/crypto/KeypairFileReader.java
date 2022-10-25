@@ -18,6 +18,7 @@
 
 package com.alertavert.opa.security.crypto;
 
+import com.alertavert.opa.Constants;
 import com.alertavert.opa.thirdparty.PemUtils;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -34,19 +35,14 @@ import static com.alertavert.opa.Constants.ERROR_CANNOT_READ_KEY;
 /**
  * <H2>KeypairFileReader</H2>
  *
- * <p>Loads a Private/Public keypair from the filesystem.
+ * <p>Loads a Private/Public keypair from the filesystem; the actual format of the keys should
+ * match the one expected by the {@link #algorithm}; we use here the {@link PemUtils} utility
+ * classes.
  *
- * <p>This will interpret the key names as paths (if not absolute paths, relative to the
- * directory from where the server was launched:
- * <pre>
- *   tokens:
- *     signature:
- *       algorithm: "EC"
- *       keypair:
- *         priv: "../testdata/test-key.pem"
- *         pub: "../testdata/test-key-pub.pem"
- * </pre>
+ * <p>For an example as to how to generate a pair {@link Constants#ELLIPTIC_CURVE Elliptic Curve}
+ * cryptography key pair see the {@literal keygen.sh} script.
  *
+ * @see PemUtils
  * @author M. Massenzio, 2022-01-24
  */
 @Slf4j @Value
@@ -58,6 +54,11 @@ public class KeypairFileReader implements KeypairReader {
   @Override
   public KeyPair loadKeys() throws KeyLoadException {
     return new KeyPair(loadPublicKey(), loadPrivateKey());
+  }
+
+  @Override
+  public String algorithm() {
+    return algorithm;
   }
 
   private PrivateKey loadPrivateKey() {

@@ -20,6 +20,7 @@ package com.alertavert.opa.security.crypto;
 
 import com.alertavert.opa.AbstractTestBase;
 import com.alertavert.opa.configuration.TokensProperties;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,11 +37,16 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class KeypairFileReaderTest extends AbstractTestBase {
 
-  @Autowired
-  KeypairReader reader;
+  KeypairFileReader reader;
 
   @Autowired
   TokensProperties properties;
+
+  @BeforeEach
+  public void setup() {
+    reader = new KeypairFileReader("EC",
+        Paths.get("testdata/test.pem"), Paths.get("testdata/test-pub.pem"));
+  }
 
   @Test
   void loadKeys() {
@@ -49,12 +55,12 @@ class KeypairFileReaderTest extends AbstractTestBase {
     assertThat(pair.getPrivate()).isNotNull();
     assertThat(pair.getPublic()).isNotNull();
 
-    assertThat(pair.getPublic().getAlgorithm()).isEqualTo(properties.getSignature().getAlgorithm());
+    assertThat(pair.getPublic().getAlgorithm()).isEqualTo("EC");
   }
 
   @Test
   void nonExistKeysThrows() {
-    KeypairReader reader = new KeypairFileReader(properties.getSignature().getAlgorithm(),
+    KeypairReader reader = new KeypairFileReader("EC",
         Paths.get("/etc/bogus/none.pub"), Paths.get("/etc/bogus/none.pem"));
     assertThrows(KeyLoadException.class, reader::loadKeys);
   }

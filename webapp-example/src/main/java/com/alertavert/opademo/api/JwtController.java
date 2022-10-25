@@ -19,6 +19,7 @@
 package com.alertavert.opademo.api;
 
 import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -45,14 +46,16 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 @RestController
 public class JwtController {
 
-  @Autowired
   JwtTokenProvider provider;
-
-  @Autowired
   ReactiveUsersRepository repository;
-
-  @Autowired
   KeyPair keyPair;
+
+  public JwtController(JwtTokenProvider provider, ReactiveUsersRepository repository,
+                       KeypairReader reader) {
+    this.provider = provider;
+    this.repository = repository;
+    keyPair = reader.loadKeys();
+  }
 
   @Data
   @AllArgsConstructor
