@@ -18,9 +18,13 @@
 
 package com.alertavert.opademo.configuration;
 
+import com.alertavert.opa.configuration.TokensProperties;
+import com.alertavert.opa.security.crypto.KeypairFileReader;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opademo.data.User;
 import lombok.Data;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,6 +35,8 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
@@ -43,25 +49,37 @@ import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 @Configuration
 @EnableWebFluxSecurity
 @Slf4j
-@EnableConfigurationProperties(SecurityConfiguration.CorsProperties.class)
+@EnableConfigurationProperties(
+    {SecurityConfiguration.CorsProperties.class,
+        SecurityConfiguration.KeyProperties.class})
 public class SecurityConfiguration {
 
   /** CORS Configuration allows all routes ("*") */
   public static final String DEFAULT_ALL_ALLOWED = "*";
 
   private final CorsProperties properties;
+  private final KeyProperties keyProperties;
 
-  public SecurityConfiguration(CorsProperties properties) {
+  public SecurityConfiguration(CorsProperties properties, KeyProperties keyProperties) {
     this.properties = properties;
+    this.keyProperties = keyProperties;
   }
 
   @Data
-    @ConfigurationProperties(prefix = "cors")
-    public static class CorsProperties {
-      List<String> allowed = List.of(DEFAULT_ALL_ALLOWED);
-      List<String> methods = List.of(DEFAULT_ALL_ALLOWED);
-      List<String> headers = List.of(DEFAULT_ALL_ALLOWED);
-    }
+  @ConfigurationProperties(prefix = "cors")
+  public static class CorsProperties {
+    List<String> allowed = List.of(DEFAULT_ALL_ALLOWED);
+    List<String> methods = List.of(DEFAULT_ALL_ALLOWED);
+    List<String> headers = List.of(DEFAULT_ALL_ALLOWED);
+  }
+
+  @Data
+  @ConfigurationProperties(prefix = "keys")
+  public static class KeyProperties {
+    String algorithm;
+    String priv;
+    String pub;
+  }
 
 
   @Bean
@@ -102,5 +120,39 @@ public class SecurityConfiguration {
       conf.setAllowedHeaders(properties.headers);
       return conf;
     };
+  }
+
+  /**
+   * Default key pair reader from the file system; to load a key pair from a different storage
+   * (e.g., Vault) implement your custom {@link KeypairReader} and inject it as a {@literal
+   * reader} bean.
+   *
+   * <p>This reader will interpret the {@literal keys.priv,pub} properties as paths.
+   *
+   * <p>To use your custom {@link KeypairReader} implementation, define your bean as primary:
+   *
+   //@formatter:off
+   <pre>
+   &#64;Bean &#64;Primary
+   public KeypairReader reader() {
+     return new KeypairReader() {
+       &#64;Override
+      public KeyPair loadKeys() throws KeyLoadException {
+          // do something here
+          return someKeypair;
+      }
+   };
+   </pre>
+   //@formatter:on
+   *
+   * @return a reader which will try and load the key pair from the filesystem.
+   */
+  @Bean
+  public KeypairReader filereader() {
+    Path priv = Paths.get(keyProperties.getPriv()).toAbsolutePath();
+    Path pub = Paths.get(keyProperties.getPub()).toAbsolutePath();
+
+    log.info("Loading keys from {} and {}", priv, pub);
+    return new KeypairFileReader(keyProperties.getAlgorithm(), priv, pub);
   }
 }

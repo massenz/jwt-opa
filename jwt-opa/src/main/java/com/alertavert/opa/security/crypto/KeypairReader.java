@@ -24,10 +24,12 @@ import java.security.KeyPair;
  * <H2>KeypairReader</H2>
  *
  * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * application, in a format compatible with the expected {@link #algorithm()}.
  *
  * @author M. Massenzio, 2022-01-24
  */
 public interface KeypairReader {
   KeyPair loadKeys() throws KeyLoadException;
+
+  String algorithm();
 }

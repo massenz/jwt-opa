@@ -47,9 +47,6 @@ public class KeyMaterialConfiguration {
 
   public KeyMaterialConfiguration(TokensProperties properties) {
     this.tokensProperties = properties;
-    if (properties.getSignature().getKeypair() == null) {
-      throw new IllegalStateException(UNDEFINED_KEYPAIR);
-    }
   }
 
   @Bean
@@ -58,59 +55,24 @@ public class KeyMaterialConfiguration {
   }
 
   @Bean
-  Algorithm hmac(KeyPair keyPair) {
-    TokensProperties.SignatureProperties properties = tokensProperties.getSignature();
-
-    return switch (properties.getAlgorithm()) {
-      case PASSPHRASE -> Algorithm.HMAC256(properties.getSecret());
-      case ELLIPTIC_CURVE -> Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
-          (ECPrivateKey) keyPair.getPrivate());
-      default -> throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
-          properties.getAlgorithm()));
-    };
+  Algorithm hmac(KeypairReader reader) {
+    switch (reader.algorithm()) {
+      case PASSPHRASE:
+        return Algorithm.HMAC256(tokensProperties.getSecret());
+      case ELLIPTIC_CURVE:
+        KeyPair keyPair = reader.loadKeys();
+        return Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
+            (ECPrivateKey) keyPair.getPrivate());
+      default:
+        throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
+          reader.algorithm()));
+    }
   }
 
   @Bean
-  JWTVerifier verifier(KeypairReader reader) throws IOException {
-    return JWT.require(hmac(keyPair(reader)))
+  JWTVerifier verifier(Algorithm algorithm) throws IOException {
+    return JWT.require(algorithm)
         .withIssuer(issuer())
         .build();
-  }
-
-  @Bean
-  public KeyPair keyPair(KeypairReader reader) throws IOException {
-    return reader.loadKeys();
-  }
-
-  /**
-   * Default key pair reader from the file system; to load a key pair from a different storage
-   * (e.g., Vault) implement your custom {@link KeypairReader} and inject it as a {@literal
-   * reader} bean.
-   *
-   * <p>This reader will interpret the {@literal keypair.priv,pub} properties as paths.
-   *
-   * <p>To use your custom {@link KeypairReader} implementation, define your bean as primary:
-   *
-   <pre>
-       &#64;Bean &#64;Primary
-       public KeypairReader reader() {
-         return new KeypairReader() {
-           &#64;Override
-           public KeyPair loadKeys() throws KeyLoadException {
-              // do something here
-              return someKeypair;
-           }
-         };
-   </pre>
-   *
-   * @return      a reader which will try and load the key pair from the filesystem.
-   */
-  @Bean
-  public KeypairReader filereader() {
-    TokensProperties.SignatureProperties props = tokensProperties.getSignature();
-    return new KeypairFileReader(
-        props.getAlgorithm(),
-        Paths.get(props.getKeypair().getPriv()),
-        Paths.get(props.getKeypair().getPub()));
   }
 }

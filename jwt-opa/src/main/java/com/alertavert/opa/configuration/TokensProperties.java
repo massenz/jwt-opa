@@ -30,23 +30,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "tokens")
 public class TokensProperties {
 
-  @Data
-  public static class Pair {
-    String priv;
-    String pub;
-  }
-
-  @Data
-  public static class SignatureProperties {
-    private String algorithm;
-    private Pair keypair;
-    private String secret;
-  }
-
   /**
    * Corresponds to the {@literal "iss"} claim; the authority that has issued the token
    */
   private String issuer;
+
+  /**
+   * Passphrase-based signature uses this secret.
+   *
+   * <strong>NOT recommended</strong> as this is insecure, prefer the use of private/public key
+   * pairs.
+   *
+   * @see com.alertavert.opa.security.crypto.KeypairReader
+   */
+  private String secret;
 
   /**
    * {@literal true} by default, used in conjunction with {@link #expiresAfterSec} to determine
@@ -68,6 +65,4 @@ public class TokensProperties {
    * By default this value is 0, i.e., the token is immediately available for use.
    */
   long notBeforeDelaySec = 0L;
-
-  SignatureProperties signature;
 }
