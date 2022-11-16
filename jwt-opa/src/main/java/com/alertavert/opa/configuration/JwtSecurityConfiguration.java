@@ -53,7 +53,6 @@ public class JwtSecurityConfiguration {
   JwtAuthenticationWebFilter jwtAuthenticationWebFilter;
 
 
-
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 

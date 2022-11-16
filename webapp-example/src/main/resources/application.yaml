@@ -23,6 +23,13 @@ opa:
   policy: com/alertavert/userauth
   rule: allow
 
+# List of request headers that will be submitted to OPA for policy evaluation.
+# `Host` and `User-Agent` are always included.
+#
+# NOTE: this is a quirk of Spring Boot: configure this with a comma-separated list
+#       NOT a YAML array, as that will NOT work as expected.
+headers: x-demoapp-auth, Accept-Encoding
+
 db:
   server: localhost
   port: 27017
@@ -97,6 +104,7 @@ management:
 #    docker run -d --rm -p 8181:8181 --name opa openpolicyagent/opa run --server
 opa:
   server: "localhost:8181"
+
 
 routes:
   # These endpoints will be accessible without authentication

@@ -18,12 +18,14 @@
 
 package com.alertavert.opa.security;
 
+import com.alertavert.opa.configuration.HeadersConfiguration;
 import com.alertavert.opa.configuration.OpaServerProperties;
 import com.alertavert.opa.configuration.RoutesConfiguration;
 import com.alertavert.opa.jwt.ApiTokenAuthentication;
 import com.alertavert.opa.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -39,6 +41,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,6 +72,7 @@ public class OpaReactiveAuthorizationManager
 
   private final WebClient client;
   private final RoutesConfiguration configuration;
+  private final HeadersConfiguration headersConfiguration;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   /**
@@ -134,12 +138,22 @@ public class OpaReactiveAuthorizationManager
       Object credentials,
       ServerHttpRequest request
   ) {
+    Map<String, String> requestHeaders = new HashMap<>();
+    headersConfiguration.getHeaders()
+            .forEach(key -> {
+              var value = request.getHeaders().getFirst(key);
+              if (value != null) {
+                requestHeaders.put(key, value);
+              }
+            });
+
     String token = Objects.requireNonNull(credentials).toString();
     return TokenBasedAuthorizationRequest.builder()
         .input(new TokenBasedAuthorizationRequest.AuthRequestBody(token,
                 new TokenBasedAuthorizationRequest.Resource(
                     request.getMethodValue(),
-                    request.getPath().toString()
+                    request.getPath().toString(),
+                    requestHeaders
                 )
             )
         )

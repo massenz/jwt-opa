@@ -38,13 +38,15 @@ public class OpaServerConfiguration {
 
   private final OpaServerProperties opaServerProperties;
   private final RoutesConfiguration configuration;
+  private final HeadersConfiguration headersConfiguration;
 
   public OpaServerConfiguration(
       OpaServerProperties opaServerProperties,
-      RoutesConfiguration configuration
-  ) {
+      RoutesConfiguration configuration,
+      HeadersConfiguration headersConfiguration) {
     this.opaServerProperties = opaServerProperties;
     this.configuration = configuration;
+    this.headersConfiguration = headersConfiguration;
   }
 
   /**
@@ -76,6 +78,6 @@ public class OpaServerConfiguration {
 
   @Bean
   public OpaReactiveAuthorizationManager authorizationManager(WebClient client) {
-    return new OpaReactiveAuthorizationManager(client, configuration);
+    return new OpaReactiveAuthorizationManager(client, configuration, headersConfiguration);
   }
 }
