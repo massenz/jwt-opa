@@ -14,9 +14,13 @@ management:
 
 
 # This is used to build the Rule validation endpoint:
-#   /v1/data/kapsules/allow
+#   /v1/data/com/alertavert/userauth/allow
+#
+# Note the package in the Rego source (jwt_auth.rego) uses dotted notation:
+#   package com.alertavert.userauth
+#
 opa:
-  policy: kapsules
+  policy: com/alertavert/userauth
   rule: allow
 
 db:
@@ -24,6 +28,7 @@ db:
   port: 27017
   name: opa-demo-db
 
+  # Obviously, well, DON'T DO THIS for a real server.
   admin:
     username: admin
     password: 8535b9c4-a
@@ -69,8 +74,8 @@ keys:
   # Relative paths to a pair of private/public keys
   # used to sign/verify the API Token (JWTs).
   # See README.md for more information on how to generate them.
-  priv: "private/ec-key.pem"
-  pub: "private/ec-key-pub.pem"
+  priv: "../private/ec-key.pem"
+  pub: "../private/ec-key-pub.pem"
 
 logging:
   level:

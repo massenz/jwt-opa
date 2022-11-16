@@ -1,0 +1,40 @@
+# Copyright AlertAvert.com (c) 2022. All rights reserved.
+
+version: '3.2'
+
+services:
+  opa:
+    container_name: opa
+    hostname: opa
+    image: openpolicyagent/opa:0.42.2
+    command: run --server --addr :8181
+    ports:
+      - "8181:8181"
+    networks:
+      - backend
+
+  mongo:
+    container_name: "mongo"
+    image: "mongo:4"
+    hostname: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
+    volumes:
+      - mongo_data:/data
+
+### INFRASTRUCTURE
+
+volumes:
+  mongo_data:
+
+# To connect to the servers in this stack, from a container run
+# via Docker, use `--network docker_backend`.
+# The hosts listed above will then be reachable at the given names,
+# on whatever ports are exposed.
+networks:
+  backend:
+    ipam:
+      config:
+      - subnet: 172.1.2.0/24

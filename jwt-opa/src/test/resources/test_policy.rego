@@ -3,7 +3,7 @@
 #
 # This should be loaded to the OPA Policy Server via a PUT request to the /v1/policies endpoint.
 
-package com.alertavert.policies
+package com.alertavert.test
 
 default allow = false
 

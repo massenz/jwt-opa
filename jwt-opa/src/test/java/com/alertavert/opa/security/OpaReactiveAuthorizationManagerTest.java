@@ -37,9 +37,7 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -70,7 +68,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   @Autowired
   String policyEndpoint;
 
-  @Value("classpath:jwt_auth.rego")
+  @Value("classpath:test_policy.rego")
   private Resource resource;
 
   @BeforeEach
