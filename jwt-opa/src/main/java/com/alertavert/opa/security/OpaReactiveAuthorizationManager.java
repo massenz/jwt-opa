@@ -24,6 +24,7 @@ import com.alertavert.opa.jwt.ApiTokenAuthentication;
 import com.alertavert.opa.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -38,7 +39,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
+import javax.sound.midi.Soundbank;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,15 +65,19 @@ import static com.alertavert.opa.Constants.USER_NOT_AUTHORIZED;
  *
  * @author M. Massenzio, 2020-11-22
  */
-@Component
-@Slf4j
-@RequiredArgsConstructor
+@Slf4j @RequiredArgsConstructor
 public class OpaReactiveAuthorizationManager
     implements ReactiveAuthorizationManager<AuthorizationContext> {
 
   private final WebClient client;
   private final RoutesConfiguration configuration;
+  private final List<String> requiredHeaders;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+  @PostConstruct
+  private void info() {
+    log.info("Configured Headers, headers = {}", requiredHeaders);
+  }
 
   /**
    * Determines if access is granted for a specific request, given a user's credentials (API
@@ -134,12 +142,26 @@ public class OpaReactiveAuthorizationManager
       Object credentials,
       ServerHttpRequest request
   ) {
+    Map<String, String> authnHeaders = new HashMap<>();
+    HttpHeaders requestHeaders = request.getHeaders();
+    log.debug("Adding headers, request = {}, required = {}", requestHeaders,
+        requiredHeaders);
+    if (requestHeaders != null) {
+      requiredHeaders.forEach(key -> {
+        var value = requestHeaders.getFirst(key);
+        if (value != null) {
+          authnHeaders.put(key, value);
+        }
+      });
+    }
+
     String token = Objects.requireNonNull(credentials).toString();
     return TokenBasedAuthorizationRequest.builder()
         .input(new TokenBasedAuthorizationRequest.AuthRequestBody(token,
                 new TokenBasedAuthorizationRequest.Resource(
                     request.getMethodValue(),
-                    request.getPath().toString()
+                    request.getPath().toString(),
+                    authnHeaders
                 )
             )
         )

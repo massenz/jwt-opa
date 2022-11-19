@@ -25,21 +25,10 @@ OPA_PORT=8181
 OPA_SERVER=http://localhost:${OPA_PORT}
 POLICY_API=${OPA_SERVER}/v1/policies/userauth
 
-if [[ -z $(docker ps -q --filter name=mongo) ]]; then
-    echo "Starting MongoDB container"
-    docker run --rm -d -p 27017:27017 --name mongo mongo:4.0
-fi
-if [[ -z $(docker ps -q --filter name=opa) ]]; then
-    echo "Starting Open Policy Agent (OPA) container"
-    docker run --rm -d -p ${OPA_PORT}:${OPA_PORT} --name opa openpolicyagent/opa:0.25.2 run --server
-fi
-
-echo "curl -s ${POLICY_API}"
-curl -s ${POLICY_API}| jq .result.id
-
+docker-compose up -d
 if [[ $(curl -s ${POLICY_API} | jq .result.id) != "userauth" ]]; then
     echo "Uploading userauth Policy"
-    curl -T "${WORKDIR}/jwt-opa/src/test/resources/jwt_auth.rego" -X PUT ${POLICY_API}
+    curl -T "${WORKDIR}/webapp-example/src/main/rego/jwt_auth.rego" -X PUT ${POLICY_API}
 fi
 
 export SPRING_PROFILES_ACTIVE="debug"

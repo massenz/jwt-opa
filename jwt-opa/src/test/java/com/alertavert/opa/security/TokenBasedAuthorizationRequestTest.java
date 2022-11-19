@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.alertavert.opa.security.TokenBasedAuthorizationRequest.AuthRequestBody;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static com.alertavert.opa.Constants.MAPPER;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,10 +32,10 @@ import static org.hamcrest.Matchers.equalTo;
 class TokenBasedAuthorizationRequestTest {
 
   @Test
-  void serialize() throws JsonProcessingException {
+  void serialize() throws Exception {
     TokenBasedAuthorizationRequest request = TokenBasedAuthorizationRequest.builder()
         .input(new AuthRequestBody("tokenAAjwtDEF123456.anothertoken.yetanothertoken",
-            new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar"))
+            new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar", Map.of()))
         )
         .build();
     String json = MAPPER.writeValueAsString(request);
@@ -45,10 +47,10 @@ class TokenBasedAuthorizationRequestTest {
   }
 
   @Test
-  void obfuscatesJwt() throws JsonProcessingException {
+  void obfuscatesJwt() {
     TokenBasedAuthorizationRequest request = TokenBasedAuthorizationRequest.builder()
         .input(new AuthRequestBody("tokenAAjwtDEF123456.anothertoken.yetanothertoken",
-            new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar"))
+            new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar", Map.of()))
         )
         .build();
     String json = request.toString();

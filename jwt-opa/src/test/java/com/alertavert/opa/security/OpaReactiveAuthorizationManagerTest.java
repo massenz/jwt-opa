@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,15 +38,15 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,7 +71,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   @Autowired
   String policyEndpoint;
 
-  @Value("classpath:jwt_auth.rego")
+  @Value("classpath:test_policy.rego")
   private Resource resource;
 
   @BeforeEach
@@ -114,31 +115,41 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     assertThat(auth.isAuthenticated()).isTrue();
     AuthorizationContext context = getAuthorizationContext(HttpMethod.POST, "/users");
 
-    AuthorizationDecision decision = opaReactiveAuthorizationManager.check(
-        Mono.just(auth), context).block();
-    assertThat(decision).isNotNull();
-    assertThat(decision.isGranted()).isFalse();
+    assertThat(opaReactiveAuthorizationManager.check(
+        Mono.just(auth), context)
+        .map(AuthorizationDecision::isGranted)
+        .block()).isFalse();
   }
 
   @Test
   public void checkUnauthenticatedFails() {
     Authentication auth = new UsernamePasswordAuthenticationToken("bob", "pass");
-    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/whocares");
 
-    opaReactiveAuthorizationManager.check(Mono.just(auth), context)
-        .doOnNext(decision -> assertThat(decision.isGranted()).isFalse())
-        .block();
+    // As this endpoint is not mapped in `routes` (application-test.yaml) it expects by default
+    // a JWT Authorization Bearer token; finding a Username/Password credentials will deny access.
+    AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/whocares");
+    assertThat(opaReactiveAuthorizationManager.check(Mono.just(auth), context).block()).isNull();
   }
 
   private AuthorizationContext getAuthorizationContext(
       HttpMethod method, String path
   ) {
+    return getAuthorizationContextWithHeaders(method, path, Map.of());
+  }
+
+  private AuthorizationContext getAuthorizationContextWithHeaders(
+      HttpMethod method, String path, Map<String, String> headers
+  ) {
     ServerHttpRequest request = mock(ServerHttpRequest.class);
     RequestPath requestPath = mock(RequestPath.class);
 
-    when(request.getMethod()).thenReturn(method);
+    when(request.getMethodValue()).thenReturn(method.name());
     when(request.getPath()).thenReturn(requestPath);
     when(requestPath.toString()).thenReturn(path);
+
+    HttpHeaders mockHeaders = new HttpHeaders();
+    headers.forEach((k,v) -> mockHeaders.put(k, List.of(v)));
+    when(request.getHeaders()).thenReturn(mockHeaders);
 
     ServerWebExchange exchange = mock(ServerWebExchange.class);
     when(exchange.getRequest()).thenReturn(request);
@@ -151,13 +162,12 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   @Test
   public void authenticatedEndpointBypassesOpa() {
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/testauth");
-    opaReactiveAuthorizationManager.check(
+    assertThat(opaReactiveAuthorizationManager.check(
             factory.createAuthentication(
                 provider.createToken("alice", Lists.list("USER"))
             ), context)
         .map(AuthorizationDecision::isGranted)
-        .doOnNext(b -> assertThat(b).isTrue())
-        .subscribe();
+        .block()).isTrue();
   }
 
   @Test
@@ -167,31 +177,49 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     // Here we test that an authenticated user gains access to them without needing authorization.
 
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/match/one/this");
-    opaReactiveAuthorizationManager.check(
+    assertThat(opaReactiveAuthorizationManager.check(
             factory.createAuthentication(
                 provider.createToken("alice", Lists.list("USER"))
             ), context)
         .map(AuthorizationDecision::isGranted)
-        .doOnNext(b -> assertThat(b).isTrue())
-        .subscribe();
+        .block()).isTrue();
 
     // This should NOT match
     context = getAuthorizationContext(HttpMethod.GET, "/match/one/two/this.html");
-    opaReactiveAuthorizationManager.check(
+    assertThat(opaReactiveAuthorizationManager.check(
             factory.createAuthentication(
                 provider.createToken("alice", Lists.list("USER"))
             ), context)
         .map(AuthorizationDecision::isGranted)
-        .doOnNext(b -> assertThat(b).isFalse())
-        .subscribe();
+        .block()).isFalse();
 
     context = getAuthorizationContext(HttpMethod.GET, "/match/any/this/that.html");
-    opaReactiveAuthorizationManager.check(
+    assertThat(opaReactiveAuthorizationManager.check(
             factory.createAuthentication(
                 provider.createToken("alice", Lists.list("USER"))
             ), context)
         .map(AuthorizationDecision::isGranted)
-        .doOnNext(b -> assertThat(b).isTrue())
-        .subscribe();
+        .block()).isTrue();
+  }
+
+  @Test
+  public void testHeaders() {
+    AuthorizationContext context = getAuthorizationContextWithHeaders(HttpMethod.GET, "/whatever",
+        Map.of("x-test-header", "test-value", HttpHeaders.USER_AGENT, "TestAgent"));
+    assertThat(opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", List.of("USER"))), context
+        )
+        .map(AuthorizationDecision::isGranted)
+        .block()).isTrue();
+
+    context = getAuthorizationContextWithHeaders(HttpMethod.GET, "/whatever",
+        Map.of("x-test-header", "wrong-value", HttpHeaders.USER_AGENT, "TestAgent"));
+    assertThat(opaReactiveAuthorizationManager.check(
+        factory.createAuthentication(
+            provider.createToken("alice", List.of("USER"))), context
+        )
+        .map(AuthorizationDecision::isGranted)
+        .block()).isFalse();
   }
 }

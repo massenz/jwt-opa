@@ -14,9 +14,11 @@ tokens:
 #   http://localhost:8181/v1/data/com.alertavert.policies/allow
 #
 opa:
-  policy: com.alertavert.policies
+  policy: com/alertavert/test
   rule: allow
   server: "localhost:8181"
+  headers:
+    - "x-test-header"
 
 # Add an endpoint which won't trigger OPA Authorization
 routes:

@@ -18,7 +18,6 @@
 
 package com.alertavert.opa.configuration;
 
-import com.alertavert.opa.security.crypto.KeypairFileReader;
 import com.alertavert.opa.security.crypto.KeypairReader;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -29,14 +28,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
 import static com.alertavert.opa.Constants.ELLIPTIC_CURVE;
 import static com.alertavert.opa.Constants.PASSPHRASE;
-import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
 
 @Slf4j
 @Configuration

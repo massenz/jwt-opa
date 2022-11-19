@@ -14,16 +14,28 @@ management:
 
 
 # This is used to build the Rule validation endpoint:
-#   /v1/data/kapsules/allow
+#   /v1/data/com/alertavert/userauth/allow
+#
+# Note the package in the Rego source (jwt_auth.rego) uses dotted notation:
+#   package com.alertavert.userauth
+#
 opa:
-  policy: kapsules
+  policy: com/alertavert/userauth
   rule: allow
+
+# List of request headers that will be submitted to OPA for policy evaluation.
+# `Host` and `User-Agent` are always included.
+#
+# NOTE: this is a quirk of Spring Boot: configure this with a comma-separated list
+#       NOT a YAML array, as that will NOT work as expected.
+  headers: x-demoapp-auth, Accept-Encoding
 
 db:
   server: localhost
   port: 27017
   name: opa-demo-db
 
+  # Obviously, well, DON'T DO THIS for a real server.
   admin:
     username: admin
     password: 8535b9c4-a
@@ -69,8 +81,8 @@ keys:
   # Relative paths to a pair of private/public keys
   # used to sign/verify the API Token (JWTs).
   # See README.md for more information on how to generate them.
-  priv: "private/ec-key.pem"
-  pub: "private/ec-key-pub.pem"
+  priv: "../private/ec-key.pem"
+  pub: "../private/ec-key-pub.pem"
 
 logging:
   level:
@@ -92,6 +104,7 @@ management:
 #    docker run -d --rm -p 8181:8181 --name opa openpolicyagent/opa run --server
 opa:
   server: "localhost:8181"
+
 
 routes:
   # These endpoints will be accessible without authentication

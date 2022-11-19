@@ -26,6 +26,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 /**
  * <h2>OpaServerConfiguration</h2>
  *
@@ -41,8 +43,7 @@ public class OpaServerConfiguration {
 
   public OpaServerConfiguration(
       OpaServerProperties opaServerProperties,
-      RoutesConfiguration configuration
-  ) {
+      RoutesConfiguration configuration) {
     this.opaServerProperties = opaServerProperties;
     this.configuration = configuration;
   }
@@ -73,9 +74,14 @@ public class OpaServerConfiguration {
         .build();
   }
 
+  @Bean
+  public List<String> requiredHeaders() {
+    return opaServerProperties.getHeaders();
+  }
 
   @Bean
-  public OpaReactiveAuthorizationManager authorizationManager(WebClient client) {
-    return new OpaReactiveAuthorizationManager(client, configuration);
+  public OpaReactiveAuthorizationManager authorizationManager() {
+    return new OpaReactiveAuthorizationManager(client(), configuration,
+        opaServerProperties.getHeaders());
   }
 }

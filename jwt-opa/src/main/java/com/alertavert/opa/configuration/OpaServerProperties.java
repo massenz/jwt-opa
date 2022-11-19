@@ -20,7 +20,14 @@ package com.alertavert.opa.configuration;
 
 import com.alertavert.opa.Constants;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.HttpHeaders;
+
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -45,14 +52,32 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @see OpaServerConfiguration
  * @author M. Massenzio, 2020-11-22
  */
-@Data
+@Data @Slf4j
 @ConfigurationProperties(prefix = "opa")
 public class OpaServerProperties {
+
+  public static final Collection<String> DEFAULT_HEADERS = List.of(
+      HttpHeaders.HOST,
+      HttpHeaders.USER_AGENT);
 
   Boolean secure = false;
   String server;
   String policy;
   String rule;
+
+  /**
+   * The list of headers to be sent to OPA to evaluate for authorization.
+   *
+   * <p> {@link #DEFAULT_HEADERS default headers} are always sent</p>
+   */
+  List<String> headers = new ArrayList<>();
+
+
+  @PostConstruct
+  public void log() {
+    headers.addAll(DEFAULT_HEADERS);
+    log.info("Headers configured: headers = {}", headers);
+  }
 
   protected String versionedApi(String api) {
     return String.format("/%s/%s", Constants.OPA_VERSION, api);

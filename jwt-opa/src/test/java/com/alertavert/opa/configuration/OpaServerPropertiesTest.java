@@ -21,6 +21,8 @@ package com.alertavert.opa.configuration;
 import com.alertavert.opa.AbstractTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,27 +31,40 @@ class OpaServerPropertiesTest extends AbstractTestBase {
   @Autowired
   OpaServerProperties opaServerProperties;
 
+  @Value("${opa.policy}")
+  String policy;
+  @Value("${opa.rule}")
+  String rule;
+
   @Test
   public void endpoint() {
-    assertThat(opaServerProperties.endpoint("foo"))
-        .isEqualTo("http://localhost:8181/v1/foo/com.alertavert.policies");
+    String api = "foo";
+    assertThat(opaServerProperties.endpoint(api))
+        .isEqualTo(String.format("http://localhost:8181/v1/%s/%s", api, policy));
   }
 
   @Test
   public void policy() {
     assertThat(opaServerProperties.policyEndpoint())
-        .isEqualTo("http://localhost:8181/v1/policies/com.alertavert.policies");
+        .isEqualTo(String.format("http://localhost:8181/v1/policies/%s", policy));
   }
 
   @Test
   public void data() {
     assertThat(opaServerProperties.dataEndpoint())
-        .isEqualTo("http://localhost:8181/v1/data/com.alertavert.policies");
+        .isEqualTo(String.format("http://localhost:8181/v1/data/%s", policy));
   }
 
   @Test
   public void authorizationEndpoint() {
     assertThat(opaServerProperties.authorization())
-        .isEqualTo("http://localhost:8181/v1/data/com.alertavert.policies/allow");
+        .isEqualTo(String.format("http://localhost:8181/v1/data/%s/%s",policy, rule));
+  }
+
+  @Test
+  public void testHeaders() {
+    assertThat(opaServerProperties.getHeaders()).containsExactlyInAnyOrder(
+        HttpHeaders.HOST, HttpHeaders.USER_AGENT, "x-test-header"
+    );
   }
 }
