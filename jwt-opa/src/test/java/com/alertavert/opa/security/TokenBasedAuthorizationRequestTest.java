@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.equalTo;
 class TokenBasedAuthorizationRequestTest {
 
   @Test
-  void serialize() throws JsonProcessingException {
+  void serialize() throws Exception {
     TokenBasedAuthorizationRequest request = TokenBasedAuthorizationRequest.builder()
         .input(new AuthRequestBody("tokenAAjwtDEF123456.anothertoken.yetanothertoken",
             new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar", Map.of()))
@@ -47,7 +47,7 @@ class TokenBasedAuthorizationRequestTest {
   }
 
   @Test
-  void obfuscatesJwt() throws JsonProcessingException {
+  void obfuscatesJwt() {
     TokenBasedAuthorizationRequest request = TokenBasedAuthorizationRequest.builder()
         .input(new AuthRequestBody("tokenAAjwtDEF123456.anothertoken.yetanothertoken",
             new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar", Map.of()))

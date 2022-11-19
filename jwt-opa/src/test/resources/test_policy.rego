@@ -54,6 +54,10 @@ segments = split_path(input.resource.path)
 entity := segments[0]
 entity_id := segments[1]
 
+headers := h {
+    h = input.resource.headers
+}
+
 # System accounts are allowed to make all API calls.
 allow {
     is_sysadmin
@@ -75,4 +79,10 @@ allow {
     is_admin
     entity == "users"
     input.resource.method == allowed_methods[_]
+}
+
+# To test that a custom header is passed, and evaluated correctly
+allow {
+  headers["x-test-header"] == "test-value"
+  headers["User-Agent"] == "TestAgent"
 }
