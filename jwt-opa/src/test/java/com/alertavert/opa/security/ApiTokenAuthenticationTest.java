@@ -18,10 +18,10 @@
 
 package com.alertavert.opa.security;
 
-import com.alertavert.opa.jwt.JwtTokenProvider;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.alertavert.opa.AbstractTestBase;
 import com.alertavert.opa.jwt.ApiTokenAuthenticationFactory;
+import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

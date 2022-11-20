@@ -16,20 +16,21 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa.security.crypto;
+package com.alertavert.opa.security;
 
 import reactor.core.publisher.Mono;
 
-import java.security.KeyPair;
-
 /**
- * <H2>KeypairReader</H2>
+ * <H2>NoopSecretResolver</H2>
  *
- * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * <p>Placeholder resolver, for when the secret configuration does not need one (e.g., for
+ * file-based keypair).
  *
  * @author M. Massenzio, 2022-11-19
  */
-public interface KeypairReader {
-  Mono<KeyPair> loadKeys() throws KeyLoadException;
+public class NoopSecretResolver implements SecretsResolver {
+  @Override
+  public Mono<String> getSecret(String secretName) {
+    return Mono.empty();
+  }
 }

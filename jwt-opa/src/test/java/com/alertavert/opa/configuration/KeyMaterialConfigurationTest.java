@@ -19,23 +19,16 @@
 package com.alertavert.opa.configuration;
 
 import com.alertavert.opa.AbstractTestBase;
-import com.alertavert.opa.Constants;
-import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opa.security.NoopSecretResolver;
+import com.alertavert.opa.security.SecretsResolver;
 import com.alertavert.opa.security.crypto.KeypairFileReader;
 import com.alertavert.opa.security.crypto.KeypairReader;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.KeyPair;
+import java.time.Duration;
 
-import static com.alertavert.opa.Constants.ELLIPTIC_CURVE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class KeyMaterialConfigurationTest extends AbstractTestBase {
@@ -43,38 +36,35 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
   @Autowired
   KeyMaterialConfiguration configuration;
 
-  @Value("${tokens.issuer}")
-  private String issuer;
-
   @Autowired
   Algorithm hmac;
 
+  @Autowired
+  SecretsResolver resolver;
+
+  @Autowired
+  KeypairReader keypairReader;
+
   @Test
-  void issuer() {
-    assertThat(configuration.issuer()).isEqualTo(issuer);
+  void context() {
+    assertThat(hmac).isNotNull();
+    assertThat(configuration).isNotNull();
+    assertThat(keypairReader).isNotNull();
   }
 
   @Test
-  void hmacGetsSecret() {
-    // This simply tests the injection works as intended.
-    assertThat(hmac.getName()).isEqualTo("HS256");
+  void hmac() {
+    assertThat(hmac.getName()).isEqualTo("ES256");
   }
 
   @Test
-  void verifier() throws IOException {
-    // We test here that we can get a JWT Verifier, using a Key pair, loaded from file.
-    KeypairReader fileReader = new KeypairFileReader(ELLIPTIC_CURVE,
-        Paths.get("../testdata/test.pem"), Paths.get("../testdata/test-pub.pem"));
-    Algorithm algo = configuration.hmac(fileReader);
-    JWTVerifier verifier = configuration.verifier(algo);
-    assertThat(verifier).isNotNull();
+  void resolver() {
+    assertThat(resolver.getClass()).isEqualTo(NoopSecretResolver.class);
+  }
 
-    String token = JWT.create()
-        .withIssuer(issuer)
-        .withSubject("test-user")
-        .withClaim(JwtTokenProvider.ROLES, Lists.list("TEST"))
-        .sign(hmac);
-
-    assertThat(verifier.verify(token)).isNotNull();
+  @Test
+  void keypairReader() {
+    assertThat(keypairReader.getClass()).isEqualTo(KeypairFileReader.class);
+    assertThat(keypairReader.loadKeys().block(Duration.ofMillis(100))).isNotNull();
   }
 }

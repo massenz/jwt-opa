@@ -48,9 +48,6 @@ public class AwsClientConfiguration {
   @Value("${aws.endpoint:}")
   String endpoint;
 
-  @Value("${aws.keypair.secret_name:}")
-  private String keypairSecretName;
-
   public Region region() {
     return Region.of(region);
   }
@@ -94,13 +91,9 @@ public class AwsClientConfiguration {
     // Typically this is overridden in tests, to point to a local Secrets Manager (e.g. using
     // LocalStack, pointing to http://localhost:4566)
     if (StringUtils.hasText(endpoint)) {
+      log.info("Using non-default endpoint, uri = {}", endpoint);
       builder.endpointOverride(URI.create(endpoint));
     }
     return builder.build();
-  }
-
-  @Bean
-  String keypairSecretName() {
-    return keypairSecretName;
   }
 }

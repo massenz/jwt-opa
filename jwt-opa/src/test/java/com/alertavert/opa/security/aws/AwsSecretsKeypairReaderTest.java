@@ -53,8 +53,7 @@ class AwsSecretsKeypairReaderTest {
   String secret = """
     {
       "priv": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYEIUVkTtwBilNcNoEzsP3jdslIlOtXQ5pByuzxhLJTChRANCAAS+gitL0EgxyFCvdT6rJ39DbCrLLwLReTA5OXahcIEeCBygfyh35H8T9r9uHszSOCpAk1QQMuhqURzyWEaKjk92",
-      "pub": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvoIrS9BIMchQr3U+qyd/Q2wqyy8C0XkwOTl2oXCBHggcoH8od+R/E/a/bh7M0jgqQJNUEDLoalEc8lhGio5Pdg==",
-      "algorithm": "EC"
+      "pub": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvoIrS9BIMchQr3U+qyd/Q2wqyy8C0XkwOTl2oXCBHggcoH8od+R/E/a/bh7M0jgqQJNUEDLoalEc8lhGio5Pdg=="
     }
   """;
   String priv = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgYEIUVkTtwBilNcNoEzsP3jdslIlO"
@@ -74,10 +73,9 @@ class AwsSecretsKeypairReaderTest {
   public void getSecret() {
     KeypairReader reader = new AwsSecretsKeypairReader(
         new AwsSecretsManagerResolver(secretsManagerClient), keypairName);
-    KeyPair keyPair = reader.loadKeys();
+    KeyPair keyPair = reader.loadKeys().block();
     assertNotNull(keyPair);
     assertThat(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()))
         .isEqualTo(priv);
-    assertThat(reader.algorithm()).isEqualTo("EC");
   }
 }

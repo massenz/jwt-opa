@@ -18,11 +18,10 @@
 
 package com.alertavert.opa.security.crypto;
 
-import com.alertavert.opa.Constants;
 import com.alertavert.opa.thirdparty.PemUtils;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,26 +38,22 @@ import static com.alertavert.opa.Constants.ERROR_CANNOT_READ_KEY;
  * match the one expected by the {@link #algorithm}; we use here the {@link PemUtils} utility
  * classes.
  *
- * <p>For an example as to how to generate a pair {@link Constants#ELLIPTIC_CURVE Elliptic Curve}
- * cryptography key pair see the {@literal keygen.sh} script.
+ * <p>For an example as to how to generate a pair of
+ * {@link com.alertavert.opa.configuration.KeysProperties.AlgorithmType#EC Elliptic Curve}
+ * cryptography keys, see the {@literal keygen.sh} script.
  *
  * @see PemUtils
  * @author M. Massenzio, 2022-01-24
  */
-@Slf4j @Value
-public class KeypairFileReader implements KeypairReader {
-  String algorithm;
-  Path secretKeyPath;
-  Path publicKeyPath;
-
+@Slf4j
+public record KeypairFileReader(
+    String algorithm,
+    Path secretKeyPath,
+    Path publicKeyPath
+) implements KeypairReader {
   @Override
-  public KeyPair loadKeys() throws KeyLoadException {
-    return new KeyPair(loadPublicKey(), loadPrivateKey());
-  }
-
-  @Override
-  public String algorithm() {
-    return algorithm;
+  public Mono<KeyPair> loadKeys() throws KeyLoadException {
+    return Mono.just(new KeyPair(loadPublicKey(), loadPrivateKey()));
   }
 
   private PrivateKey loadPrivateKey() {
@@ -72,7 +67,7 @@ public class KeypairFileReader implements KeypairReader {
     if (pk == null) {
       log.error(ERROR_CANNOT_READ_KEY, secretKeyPath, algorithm);
       throw new KeyLoadException(
-          MessageFormatter.format(ERROR_CANNOT_READ_KEY,  secretKeyPath, algorithm).getMessage());
+          MessageFormatter.format(ERROR_CANNOT_READ_KEY, secretKeyPath, algorithm).getMessage());
     }
     log.info("Read private key, format: {}", pk.getFormat());
     return pk;
@@ -82,14 +77,14 @@ public class KeypairFileReader implements KeypairReader {
     log.info("Reading public key from file {}", publicKeyPath.toAbsolutePath());
     PublicKey pk;
     try {
-     pk = PemUtils.readPublicKeyFromFile(publicKeyPath.toString(), algorithm);
+      pk = PemUtils.readPublicKeyFromFile(publicKeyPath.toString(), algorithm);
     } catch (IOException e) {
       throw new KeyLoadException(e);
     }
     if (pk == null) {
       log.error(ERROR_CANNOT_READ_KEY, publicKeyPath, algorithm);
       throw new KeyLoadException(
-          MessageFormatter.format(ERROR_CANNOT_READ_KEY,  publicKeyPath, algorithm).getMessage());
+          MessageFormatter.format(ERROR_CANNOT_READ_KEY, publicKeyPath, algorithm).getMessage());
     }
     log.info("Read public key, format: {}", pk.getFormat());
     return pk;

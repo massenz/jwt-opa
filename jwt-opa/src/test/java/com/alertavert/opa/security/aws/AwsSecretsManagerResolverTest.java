@@ -18,15 +18,13 @@
 
 package com.alertavert.opa.security.aws;
 
-import com.alertavert.opa.JwtOpa;
-import com.alertavert.opa.configuration.JwtSecurityConfiguration;
 import com.alertavert.opa.configuration.KeyMaterialConfiguration;
-import com.alertavert.opa.configuration.OpaServerConfiguration;
+import com.alertavert.opa.security.SecretsResolver;
 import com.alertavert.opa.security.crypto.KeyLoadException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
@@ -35,14 +33,20 @@ import org.springframework.lang.NonNull;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
+import software.amazon.awssdk.services.secretsmanager.model.ResourceExistsException;
 
+import java.net.URI;
+
+import static com.alertavert.opa.configuration.KeysProperties.AlgorithmType.EC;
+import static com.alertavert.opa.configuration.KeysProperties.AlgorithmType.PASSPHRASE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * <H2>AwsSecretsManagerResolverTest</H2>
@@ -51,18 +55,16 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(classes = {
     AwsClientConfiguration.class,
+    KeyMaterialConfiguration.class
 })
 @ActiveProfiles(profiles = {"test", "aws"})
 @ContextConfiguration(initializers = {AwsSecretsManagerResolverTest.Initializer.class})
 class AwsSecretsManagerResolverTest {
 
   @Autowired
-  SecretsManagerClient client;
-
-  @Autowired
-  String keypairSecretName;
-
-  AwsSecretsManagerResolver resolver;
+  SecretsResolver resolver;
+  @Value("${keys.name}")
+  String secretName;
 
   public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Container
@@ -73,36 +75,40 @@ class AwsSecretsManagerResolverTest {
     @Override
     public void initialize(@NonNull ConfigurableApplicationContext context) {
       AWS_LOCAL.start();
-      TestPropertyValues.of(
-              "aws.region:" + AWS_LOCAL.getRegion(),
-              "aws.profile:default",
-              "aws.endpoint:" + AWS_LOCAL.getEndpointOverride(LocalStackContainer.Service.SECRETSMANAGER),
-              "aws.keypair.secret_name:test-secret"
-          )
+      URI endpoint = AWS_LOCAL.getEndpointOverride(LocalStackContainer.Service.SECRETSMANAGER);
+      TestPropertyValues.of("aws.endpoint:" + endpoint)
           .applyTo(context.getEnvironment());
+
+      SecretsManagerClient client = SecretsManagerClient.builder()
+          .region(Region.US_WEST_2)
+          .credentialsProvider(ProfileCredentialsProvider.create())
+          .endpointOverride(endpoint)
+          .build();
+      try {
+        var response = client.createSecret(CreateSecretRequest.builder()
+            .name("test-secret")
+            .secretString("test-secret-value")
+            .build());
+      } catch (ResourceExistsException ex) {
+        // ignore
+      }
     }
   }
 
   @BeforeEach
   public void setup() {
-    resolver = new AwsSecretsManagerResolver(client);
     assertThat(resolver).isNotNull();
   }
 
   @Test
   void getSecret() {
-    client.createSecret(CreateSecretRequest.builder()
-            .name(keypairSecretName)
-        .secretString("test-secret-value")
-        .build());
-
-    String secret = resolver.getSecret(keypairSecretName).block();
+    String secret = resolver.getSecret(secretName).block();
     assertThat(secret).isNotNull();
     assertThat(secret).isEqualTo("test-secret-value");
   }
 
   @Test
   void getSecretNotFound() {
-    assertThrows(KeyLoadException.class, () -> resolver.getSecret("not-found").block());
+    assertThrows(KeyLoadException.class, () -> resolver.getSecret("fake-name").block());
   }
 }

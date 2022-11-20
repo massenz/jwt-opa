@@ -6,6 +6,7 @@
 package com.alertavert.opa.security.aws;
 
 import com.alertavert.opa.ExcludeFromCoverageGenerated;
+import com.alertavert.opa.security.SecretsResolver;
 import com.alertavert.opa.security.crypto.KeyLoadException;
 import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opa.thirdparty.PemUtils;
@@ -26,6 +27,7 @@ import static com.alertavert.opa.Constants.KEYPAIR_ERROR;
 import static com.alertavert.opa.Constants.KEYPAIR_LOADED;
 import static com.alertavert.opa.Constants.PRIVATE_KEY;
 import static com.alertavert.opa.Constants.PUBLIC_KEY;
+import static com.alertavert.opa.configuration.KeysProperties.AlgorithmType.EC;
 
 /**
  * <H2>AwsSecretsKeypairReader</H2>
@@ -44,7 +46,6 @@ public class AwsSecretsKeypairReader implements KeypairReader {
    */
   @Data
   public static class SecretKeys {
-    String algorithm;
     String priv;
     String pub;
   }
@@ -83,31 +84,22 @@ public class AwsSecretsKeypairReader implements KeypairReader {
   }
 
   @Override
-  public KeyPair loadKeys() throws KeyLoadException {
-    // TODO @MM: This is a bad pattern, blocking on a Reactive stream; we need to fix this API.
+  public Mono<KeyPair> loadKeys() throws KeyLoadException {
     return getSecret()
         .map(keys -> new KeyPair(loadPublicKey(keys), loadPrivateKey(keys)))
         .doOnSuccess(kp -> log.info(KEYPAIR_LOADED, secretName))
         .onErrorMap(KeyLoadException::new)
         .switchIfEmpty(Mono.error(new KeyLoadException("Cannot load keys from secret " + secretName)))
-        .doOnError(ex -> log.error(KEYPAIR_ERROR, secretName, ex.getMessage()))
-        .block();
-  }
-
-  @Override
-  public String algorithm() {
-    return getSecret()
-        .map(SecretKeys::getAlgorithm)
-        .block();
+        .doOnError(ex -> log.error(KEYPAIR_ERROR, secretName, ex.getMessage()));
   }
 
   private PublicKey loadPublicKey(SecretKeys secretKeys) {
     PemObject object = new PemObject(PUBLIC_KEY, Base64.decode(secretKeys.pub));
-    return PemUtils.getPublicKey(object.getContent(), secretKeys.algorithm);
+    return PemUtils.getPublicKey(object.getContent(), EC.name());
   }
 
   private PrivateKey loadPrivateKey(SecretKeys secretKeys) {
     PemObject object = new PemObject(PRIVATE_KEY, Base64.decode(secretKeys.priv));
-    return PemUtils.getPrivateKey(object.getContent(), secretKeys.algorithm);
+    return PemUtils.getPrivateKey(object.getContent(), EC.name());
   }
 }

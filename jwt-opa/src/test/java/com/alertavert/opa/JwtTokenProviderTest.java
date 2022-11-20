@@ -18,8 +18,8 @@
 
 package com.alertavert.opa;
 
-import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.alertavert.opa.configuration.TokensProperties;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -31,7 +31,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
-import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -18,7 +18,6 @@
 
 package com.alertavert.opa.thirdparty;
 
-import com.alertavert.opa.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import static com.alertavert.opa.configuration.KeysProperties.AlgorithmType.EC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -33,8 +33,8 @@ class PemUtilsTest {
 
   @Test
   public void readKeys() throws IOException {
-    PrivateKey pk = PemUtils.readPrivateKeyFromFile("testdata/test.pem", Constants.ELLIPTIC_CURVE);
-    PublicKey pubk = PemUtils.readPublicKeyFromFile("testdata/test-pub.pem", Constants.ELLIPTIC_CURVE);
+    PrivateKey pk = PemUtils.readPrivateKeyFromFile("testdata/test.pem", EC.name());
+    PublicKey pubk = PemUtils.readPublicKeyFromFile("testdata/test-pub.pem", EC.name());
     assertThat(pk).isNotNull();
     assertThat(pubk).isNotNull();
   }
@@ -42,7 +42,7 @@ class PemUtilsTest {
   @Test
   public void readKeysThrowsNotFound() throws IOException {
     assertThrows(FileNotFoundException.class, () ->
-      PemUtils.readPublicKeyFromFile("bogus.pem", Constants.ELLIPTIC_CURVE));
+      PemUtils.readPublicKeyFromFile("bogus.pem", EC.name()));
   }
 
   @Test

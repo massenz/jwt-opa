@@ -41,22 +41,11 @@ public class Constants {
    */
   public static final String BEARER_TOKEN = "Bearer";
 
-  /**
-   * The type of encryption accepted by the {@link com.alertavert.opa.jwt.JwtTokenProvider}
-   */
-  public static final String ELLIPTIC_CURVE = "EC";
-
   /** Marker for a Public Key object */
   public static final String PUBLIC_KEY = "PUBLIC KEY";
 
   /** Marker for a Private Key object */
   public static final String PRIVATE_KEY = "PRIVATE KEY";
-
-  /**
-   * Passphrase-based encryption (see
-   * {@link com.alertavert.opa.configuration.KeyMaterialConfiguration}.
-   */
-  public static final String PASSPHRASE = "SECRET";
 
   /**
    * The name of the Env Var which contains the name of the file storing the AWS API Token in a
@@ -129,4 +118,7 @@ public class Constants {
   };
   public static final int MAX_TOKEN_LEN_LOG = 6;
   public static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final String PEM_EXT = ".pem";
+  public static final String PUB_EXT = ".pub";
+
 }

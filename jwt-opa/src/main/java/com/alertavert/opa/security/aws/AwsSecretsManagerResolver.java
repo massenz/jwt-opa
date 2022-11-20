@@ -5,6 +5,7 @@
 
 package com.alertavert.opa.security.aws;
 
+import com.alertavert.opa.security.SecretsResolver;
 import com.alertavert.opa.security.crypto.KeyLoadException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
