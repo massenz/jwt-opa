@@ -18,6 +18,7 @@
 
 package com.alertavert.opa.security;
 
+import com.alertavert.opa.ExcludeFromCoverageGenerated;
 import reactor.core.publisher.Mono;
 
 /**
@@ -28,6 +29,7 @@ import reactor.core.publisher.Mono;
  *
  * @author M. Massenzio, 2022-11-19
  */
+@ExcludeFromCoverageGenerated
 public class NoopSecretResolver implements SecretsResolver {
   @Override
   public Mono<String> getSecret(String secretName) {

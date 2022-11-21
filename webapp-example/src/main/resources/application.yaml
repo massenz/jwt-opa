@@ -98,7 +98,7 @@ keys:
   #       For a PASSPHRASE, the secret is simply read from SecretsManager/Vault
   #       The keypair is stored as a JSON-formatted secret, with two keys: "priv" and "pub".
   location: keypair
-  name: ../private/ec-key
+  name: ../private/ec-key-1
 
 logging:
   level:
@@ -181,3 +181,15 @@ keys:
   algorithm: PASSPHRASE
   location: aws_secret
   name: demo-secret
+---
+# Example setting the signing secret via an env var
+
+spring:
+  config:
+    activate:
+      on-profile: env
+
+keys:
+  algorithm: PASSPHRASE
+  location: env
+  name: JWT_SIGNING_ENV

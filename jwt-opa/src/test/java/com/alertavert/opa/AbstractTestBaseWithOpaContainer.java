@@ -44,7 +44,7 @@ public abstract class AbstractTestBaseWithOpaContainer extends AbstractTestBase 
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       opaServer.start();
       TestPropertyValues.of(
-          String.format("opa.server=%s:%d", opaServer.getHost(), opaServer.getFirstMappedPort())
+          String.format("opa.server = %s:%d", opaServer.getHost(), opaServer.getFirstMappedPort())
       ).applyTo(configurableApplicationContext.getEnvironment());
     }
   }

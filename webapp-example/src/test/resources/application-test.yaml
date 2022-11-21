@@ -20,9 +20,9 @@ tokens:
   not_before_delay_sec: 15
 
 keys:
-  algorithm: "EC"
-  priv: "../testdata/test-key.pem"
-  pub: "../testdata/test-key.pub"
+  algorithm: ec
+  location: keypair
+  name: ../testdata/test
 
 
 # This is used to build the Rule validation endpoint:

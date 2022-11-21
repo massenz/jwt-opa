@@ -25,6 +25,9 @@ import reactor.core.publisher.Mono;
  *
  * <p>Reads a secret from an environment variable.
  *
+ * <p>In all its triviality, this class is virtually untestable, due to
+ * the JVM limitations on setting test env vars (see {@literal EnvSecretReaderTest}).
+ *
  * @author M. Massenzio, 2022-11-19
  */
 public class EnvSecretResolver implements SecretsResolver {

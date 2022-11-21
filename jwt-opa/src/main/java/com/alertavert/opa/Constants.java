@@ -31,6 +31,7 @@ import java.util.Collections;
  * All constants are grouped here for ease of reference.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@ExcludeFromCoverageGenerated
 public class Constants {
   /**
    * Basic Authorization header type.

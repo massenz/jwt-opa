@@ -18,6 +18,7 @@
 
 package com.alertavert.opa.security;
 
+import com.alertavert.opa.ExcludeFromCoverageGenerated;
 import com.alertavert.opa.security.crypto.KeyLoadException;
 import com.alertavert.opa.security.crypto.KeypairReader;
 import reactor.core.publisher.Mono;
@@ -32,6 +33,7 @@ import java.security.KeyPair;
  *
  * @author M. Massenzio, 2022-11-20
  */
+@ExcludeFromCoverageGenerated
 public class NoopKeypairReader implements KeypairReader {
   @Override
   public Mono<KeyPair> loadKeys() throws KeyLoadException {
