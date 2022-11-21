@@ -16,20 +16,23 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa.security.crypto;
+package com.alertavert.opa.security;
 
 import reactor.core.publisher.Mono;
 
-import java.security.KeyPair;
-
 /**
- * <H2>KeypairReader</H2>
+ * <H2>EnvSecretResolver</H2>
  *
- * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * <p>Reads a secret from an environment variable.
+ *
+ * <p>In all its triviality, this class is virtually untestable, due to
+ * the JVM limitations on setting test env vars (see {@literal EnvSecretReaderTest}).
  *
  * @author M. Massenzio, 2022-11-19
  */
-public interface KeypairReader {
-  Mono<KeyPair> loadKeys() throws KeyLoadException;
+public class EnvSecretResolver implements SecretsResolver {
+  @Override
+  public Mono<String> getSecret(String secretName) {
+    return Mono.justOrEmpty(System.getenv(secretName));
+  }
 }

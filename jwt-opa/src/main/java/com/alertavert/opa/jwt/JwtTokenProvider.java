@@ -21,10 +21,10 @@ package com.alertavert.opa.jwt;
 import com.alertavert.opa.configuration.TokensProperties;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -57,13 +57,13 @@ public class JwtTokenProvider {
   Algorithm hmac;
 
   @Autowired
-  JWTVerifier verifier;
-
-  @Autowired
-  String issuer;
-
-  @Autowired
   TokensProperties tokensProperties;
+
+  public JWTVerifier verifier() {
+    return JWT.require(hmac)
+        .withIssuer(tokensProperties.getIssuer())
+        .build();
+  }
 
   /**
    * <p>Creates a JWT token for the given user, signed with the private key of the issuer.
@@ -88,7 +88,7 @@ public class JwtTokenProvider {
 
     log.debug("Issuing JWT for user = {}, roles = {}", user, roles);
     JWTCreator.Builder builder = JWT.create()
-        .withIssuer(issuer)
+        .withIssuer(tokensProperties.getIssuer())
         .withSubject(user)
         .withIssuedAt(Date.from(now))
         .withArrayClaim(ROLES, roles.toArray(new String[0]));
@@ -131,7 +131,7 @@ public class JwtTokenProvider {
   }
 
   public DecodedJWT decode(String token) throws JWTVerificationException {
-    return verifier.verify(token);
+    return verifier().verify(token);
   }
 
   public Authentication getAuthentication(String token) {

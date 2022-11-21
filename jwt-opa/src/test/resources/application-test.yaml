@@ -20,9 +20,45 @@ opa:
   headers:
     - "x-test-header"
 
+# TODO: we should test more combinations of this configurations, but not sure how.
+keys:
+  algorithm: ec
+  location: keypair
+  name: ../testdata/test
+
 # Add an endpoint which won't trigger OPA Authorization
 routes:
    authenticated:
      - "/testauth"
      - "/match/*/this"
      - "/match/any/**"
+
+---
+# AWS Profile
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+# Use this with a locally running instance of localstack, configured to port 4566
+# Prior to running the webapp, upload the secret with:
+#     export AWS_REGION=us-west-2
+#     export AWS_ENDPOINT=http://localhost:4566
+#     aws --endpoint-url $AWS_ENDPOINT secretsmanager create-secret --name demo-secret \
+#         --secret-string "astrong-secret-dce44st"
+#
+# To use a keypair instead, generate keys with keygen.sh, upload them with aws-upload-keys.sh
+# (run those scripts with -h to see more details) and use:
+# keys:
+#   algorithm: EC
+#   location: aws_secret
+#   name: demo-pair
+
+aws:
+  region: us-west-2
+  profile: default
+
+keys:
+  algorithm: PASSPHRASE
+  location: aws_secret
+  name: test-secret

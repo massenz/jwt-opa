@@ -18,6 +18,7 @@
 
 package com.alertavert.opademo;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,9 +31,16 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableReactiveMongoRepositories(basePackages = "com.alertavert.opademo")
 @ComponentScan(basePackages = {"com.alertavert.opa", "com.alertavert.opademo"})
 @EnableSwagger2
+@Slf4j
 public class JwtDemoApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(JwtDemoApplication.class, args);
+    try {
+      SpringApplication.run(JwtDemoApplication.class, args);
+    } catch (Exception ex) {
+      // Suppresses the insane amount of stacktrace Spring emits, and only logs the
+      // cause of the error.
+      log.error("Could not start application: {}", ex.getMessage());
+    }
   }
 }

@@ -197,7 +197,7 @@ Save both keys in a `private` folder (not under source control) and then point t
 secrets:
   keypair:
     private: "private/ec-key-1.pem"
-    pub: "private/ec-key-pub.pem"
+    pub: "private/ec-key.pub"
 ```
 
 You can use either an absolute path, or the relative path to the current directory from where you are launching the Web server.

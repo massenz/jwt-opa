@@ -48,13 +48,10 @@ public class JwtController {
 
   JwtTokenProvider provider;
   ReactiveUsersRepository repository;
-  KeyPair keyPair;
 
-  public JwtController(JwtTokenProvider provider, ReactiveUsersRepository repository,
-                       KeypairReader reader) {
+  public JwtController(JwtTokenProvider provider, ReactiveUsersRepository repository) {
     this.provider = provider;
     this.repository = repository;
-    keyPair = reader.loadKeys();
   }
 
   @Data
@@ -105,14 +102,5 @@ public class JwtController {
         String.format("API Token [%s] is valid for user %s ",
             apiToken.substring(BEARER_TOKEN.length() + 1),
             user)));
-  }
-
-  /**
-   * "Demo" endpoint only accessible to SYSTEM administrators.
-   */
-  // TODO: implement the Rego policy to only allow SYSTEM role to acces this API
-  @GetMapping(path = "/keypair", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
-  public Mono<ResponseEntity<?>> getKeypair() {
-    return Mono.just(ResponseEntity.ok(keyPair));
   }
 }

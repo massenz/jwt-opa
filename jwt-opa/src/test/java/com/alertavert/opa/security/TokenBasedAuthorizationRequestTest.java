@@ -18,7 +18,6 @@
 
 package com.alertavert.opa.security;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.alertavert.opa.security.TokenBasedAuthorizationRequest.AuthRequestBody;
 import org.junit.jupiter.api.Test;
 

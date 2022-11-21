@@ -16,20 +16,18 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa.security.crypto;
+package com.alertavert.opa.security;
 
 import reactor.core.publisher.Mono;
 
-import java.security.KeyPair;
-
 /**
- * <H2>KeypairReader</H2>
+ * <h2>Secrets Resolver</h2>
  *
- * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * <p>Interface to resolve secrets in the application.
  *
- * @author M. Massenzio, 2022-11-19
+ * <p>Concrete classes will extract secrets from whatever store (local filesystem, env vars,
+ * Hashicorp Vault, AWS Secrets Manager) as configured and return to the caller.
  */
-public interface KeypairReader {
-  Mono<KeyPair> loadKeys() throws KeyLoadException;
+public interface SecretsResolver {
+  Mono<String> getSecret(String secretName);
 }

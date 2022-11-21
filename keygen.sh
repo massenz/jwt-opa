@@ -29,7 +29,7 @@ function usage {
 
     DIR     optionally, a directory where to store the keys.
 
-This script generates a private (KEY.pem) and public (KEY.pub) pair using openssl;
+This script generates a private (KEY.pem) and public (KEY.pub) keypair using openssl;
 the keys are generated using Elliptic Cryptography.
 
 See also: https://github.com/auth0/java-jwt/issues/270
@@ -63,4 +63,4 @@ openssl ec -in ${PRIV} -pubout -out ${PUB}
 
 rm ${KEY}-param.pem
 
-echo "[SUCCESS] Key Pair generated: ${PRIV} / ${PUB}"
+echo "[SUCCESS] Key Pair generated: ${PRIV}, ${PUB}"
