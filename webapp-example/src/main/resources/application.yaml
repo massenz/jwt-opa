@@ -101,7 +101,7 @@ keys:
   #       For a PASSPHRASE, the secret is simply read from SecretsManager/Vault
   #       The keypair is stored as a JSON-formatted secret, with two keys: "priv" and "pub".
   location: keypair
-  name: ../private/ec-key-1
+  name: ../private/ec-key
 
 logging:
   level:

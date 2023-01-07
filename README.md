@@ -39,7 +39,7 @@ See either this repository [releases page](https://github.com/massenz/jwt-opa/re
 
 ```groovy
 ext {
-    jwtOpaVersion = '0.8.0'
+    jwtOpaVersion = '0.9.0'
 }
 ```
 
@@ -163,10 +163,78 @@ This will eventually send a `TokenBasedAuthorizationRequestBody` (encoded as JSO
 
 Depending on what the `allow` rule maps to, this will eventually grant/deny access to the requested endpoint (given the HTTP Method and, optionally, the request's body content).
 
-See [OPA Policies](#opa-policies) for what this maps to, and the [OPA Documentation](https://www.openpolicyagent.org/docs/latest/policy-reference) for more details on Rego and the server REST API.
+There is a relationship between the `policy` endpoint and the Rego `package` in your policy: they **must** match, with dots in the package replaced by slashes in the policy path:
+
+```
+# Rego:
+package com.alertavert.policies
+
+grant {
+  # the policy
+}
+
+# application.yaml
+opa:
+  policy: com/alertavert/policies
+  rule: grant
+```
+
+See [OPA Policies](#opa-policies) for more details, and the [OPA Documentation](https://www.openpolicyagent.org/docs/latest/policy-reference) for more on Rego and the OPA server API.
 
 
-# Running
+# Signing Secrets
+
+## Overview
+
+In order to ensure validity of its contents, a JWT needs to be cryptographically signed and the signature added to its body; see [the JWT Handbook](https://auth0.com/resources/ebooks/jwt-handbook) for more details.
+
+`jwt-opa` offers currently two signature methods for JWTs:
+
+* a passphrase (secret), using symmetric encryption which needs to be used for both signing and authenticating the JWT; and
+
+* asymmetric Private/Public keypair (using Elliptic Cryptography) where the private key is used to sign and the public key can be used to validate the JWT.
+
+The advantage of the latter is that the Public key can be distributed, and any service (including others completely unrelated to `jwt-opa`) can validate the API Token.
+
+This is being used, for example, by [Copilot IQ](https://copilotiq.com) to use `jwt-opa` (integrated within its Spring Boot API server) to provide API Token for its Lambda Go functions, where they ask `jwt-opa` to generate trusted API Token, but then authentication can be carried out indipedently by the Lambdas, without ever needing to incur the cost of an additional call to the API server.
+
+This also points to the advantage of using OPA as an authorization service, which can serve several disparate other services, completely abstracting away the authorization logic.
+
+## Secrets Configuration
+
+Key configuration is done via Spring Boot externalized configuration (e.g., in [`application.yaml`](https://github.com/massenz/jwt-opa/blob/main/webapp-example/src/main/resources/application.yaml#L81-L104)) via the `keys` object; this in turn has the following fields:
+
+```yaml
+keys:
+  algorithm: EC
+  location: keypair
+  name: /var/local/keys/ec-key
+```
+
+Possible values for `algorithm` are:
+
+- `PASSPHRASE`:  plaintext secret
+- `EC`: Elliptic Curve cryptography key pair
+
+Depending on the value of `location` the `name` property has a different meaning:
+
+- only available for `PASSPHRASE`
+  - `env`<br/> env var name which contains the signing secret
+  - `file`<br/> the path to file whose contents are the plaintext secret this is **NOT** secure and should only be used for dev/testing
+
+
+- only available for `EC`
+  - `keypair`<br/> the relative or absolute path to the keypair, without extension, to which `.pem` and `.pub` will be added
+
+
+- either of `EC` or `PASSPHRASE`:
+  - `awssecret`<br/> name of AWS SecretsManager secret
+  - `vaultpath`<br/> path in HashiCorp Vault (**not implemented yet**)
+
+In the above, file paths can be absolute or relative (in production use, we recommend full absolute paths to avoid hard-to-debug issues - at any rate, the error message should be sufficient to locate the source of the issue).
+
+When using `aswsecret`, a `PASSPHRASE` is simply read from SecretsManager/Vault as plaintext, while for an `EC` `KeyPair` it is stored as a JSON-formatted secret, with two keys: `priv` and `pub` (see [AWS SecretsManager support](#aws-secretsmanager-support)).
+
 
 ## Generating a `KeyPair`
 
@@ -176,32 +244,120 @@ Use the `keygen.sh` script, specifying the name of the keys and, optionally, a f
 
 See [this](https://github.com/auth0/java-jwt/issues/270) for more details.
 
-Briefly, an "elliptic cryptography" key pair can be generated with:
-
-1. generate the EC param
-
-        openssl ecparam -name prime256v1 -genkey -noout -out ec-key.pem
-
-2. generate EC private key
-
-        openssl pkcs8 -topk8 -inform pem -in ec-key.pem -outform pem \
-            -nocrypt -out ec-key-1.pem
-
-3. generate EC public key
-
-        openssl ec -in ec-key-1.pem -pubout -out public.pem
-
-Save both keys in a `private` folder (not under source control) and then point the relevant application configuration (`application.yaml`) to them:
+Make sure the keys are in a **private** folder (not under source control) and then point the relevant application configuration (`application.yaml`) to them:
 
 ```yaml
-secrets:
-  keypair:
-    private: "private/ec-key-1.pem"
-    pub: "private/ec-key.pub"
+keys:
+  algorithm: ec
+  location: keypair
+  name: "private/ec-key"
 ```
 
-You can use either an absolute path, or the relative path to the current directory from where you are launching the Web server.
+You can use either an absolute path, or the relative path to the current directory from where you are launching the Web server, and make sure to includ the keys' filename, but **not** the extension(s) (`.pem` and `.pub`) as the `KeypairFileReader` will add them automatically.
 
+## AWS SecretsManager support
+
+**This is the recommended secure way to store and access signing secrets**
+
+We support storing signing secrets (both plaintext passphrase or a private/public key pair) in [AWS SecretsManager](https://aws.amazon.com/secrets-manager) by simply configuring access to AWS:
+
+```yaml
+aws:
+  region: us-west-2
+  profile: my-profile
+```
+
+the `profile` must match one of those configured in the `~/.aws/credentials` file:
+
+```
+# my-profile
+[my-profile]
+aws_access_key_id = AJIA2....XT
+aws_secret_access_key = 22Y8...YM
+```
+
+we also support direct acces to SM via IAM Roles when `jwt-opa` is embedded in a service running on AWS (e.g., as a pod in [Amazon Kubernetes](https://aws.amazon.com/eks/)) via a Token file whose name is stored in the `AWS_TOKEN_FILE` env var (see the documentation for AWS SDK's `WebIdentityTokenFileCredentialsProvider`) -- in this case you should **not** specify a `aws.profile` or the client will fail to authenticate.
+
+We also support connecting to a running instance of [LocalStack](https://localstack.io) via the `endpoint_url` configuration:
+
+```
+aws:
+  region: us-west-2
+  profile: default
+  endpoint: http://localhost:4566
+```
+
+Run LocalStack via docker with something like (this is a `compose.yaml` fragment, YMMV):
+
+```
+  19   │   localstack:
+  20   │     container_name: "awslocal"
+  21   │     image: "localstack/localstack:1.3"
+  22   │     hostname: awslocal
+  23   │     environment:
+  24   │       - AWS_REGION=us-west-2
+  25   │       - EDGE_PORT=4566
+  26   │       - SERVICES=sqs
+  27   │     ports:
+  28   │       - '4566:4566'
+  29   │     volumes:
+  30   │       - "${TMPDIR:-/tmp}/localstack:/var/lib/localstack"
+  31   │       - "/var/run/docker.sock:/var/run/docker.sock"
+  32   │     networks:
+  33   │       - sm-net
+```
+
+Prior to running the webapp, upload the secret with:
+
+```
+     export AWS_REGION=us-west-2
+     export AWS_ENDPOINT=http://localhost:4566
+     aws --endpoint-url $AWS_ENDPOINT secretsmanager create-secret --name demo-secret \
+         --secret-string "astrong-secret-dce44st"
+```
+
+To upload a keypair to AWS SM, the easiest way is to use the `aws-upload-keys` script, after having set the `AWS_PROFILE` env var and generated the keys:
+
+```
+export AWS_PROFILE=my-profile
+export AWS_REGION=us-east-1
+./keygen.sh dev-keys testdata
+./aws-upload-keys.sh testdata/dev-keys dev-keypair
+```
+
+these can then be made available to the application via the following `application.yaml` configuration:
+
+```yaml
+aws:
+  region: us-east-1
+  profile: my-profile
+
+keys:
+  algorithm: EC
+  location: awssecret
+  name: dev-keypair
+```
+
+*Key Format*<br/>
+While not relevant for library users, the KeyPair is stored in SM as a JSON object, with two `pub` and `priv` fields, which are the contents of the keys (base-64 encoded binary) without delimiters:
+
+```
+└─( aws --output json secretsmanager list-secrets \
+    | jq -r ".SecretList[].Name" | grep dev
+
+└─( echo -e $(aws --output json secretsmanager get-secret-value \
+    --secret-id dev-keypair | jq -r .SecretString)
+
+{ "priv": "AMB....Pi/88", "pub": "MF....v+A==" }
+```
+
+
+## Hashicorp Vault support
+
+**This is not implemented yet**, see [Issue #49](https://github.com/massenz/jwt-opa/issues/49).
+
+
+# Running the Server
 
 ## Supporting Services
 
@@ -216,7 +372,25 @@ Use the following to run the servers locally:
 ./run-example.sh
 ```
 
-`TODO:` a full Kubernetes service/pod spec to run all services.
+You can also optionally pass in a value for the Spring Boot profile to use (and relative configuration to use, if defined):
+
+```
+./run-example.sh debug,dev
+
+2023-01-07 15:07:37.015  INFO : Starting JwtDemoApplication using Java 17 on gondor with PID 363820
+2023-01-07 15:07:37.017  INFO : The following profiles are active: debug,dev
+...
+```
+
+The service will continue running after you stop the server via Ctrl-C (as you may want to re-run it via `./gradlew bootRun`): to stop the `opa` and `mongo` containers too, simply use:
+
+    docker compose down
+
+from the same directory as the `compose.yaml` is stored, or point to it via the `-f` option.
+
+
+`TODO:` a Helm chart to run *all* services on a Kubernetes cluster.
+
 
 ## Web Server (Demo app)
 
@@ -230,18 +404,31 @@ In future releases of the `jwt-opa` library we may also provide "default" implem
 
 `TODO:` there are stil a few rough edges in the demo app and its APIs.
 
+
 ### Trying out the demo
 
 
-After starting the server (`./gradlew bootRun`), you will see in the log the generated password
-for the `admin` user:
+> **NOTE**
+>
+> As this is a toy demo, we happily store the password in a source-controlled configuration file: you should easily realize that **this is an extremely dumb thing to do**, please don't do it.
 
-    INFO Initializing DB with seed user (admin)
-    INFO Use the generated password: 342dfa7b-4
+The `admin` password is stored in `application.yaml`:
+
+```
+db:
+  server: localhost
+  port: 27017
+  name: opa-demo-db
+
+  # Obviously, well, DON'T DO THIS for a real server.
+  admin:
+    username: admin
+    password: 8535b9c4-a
+```
 
 
 **Note**
-> The system user does not get re-created, if it already exists: if you lose the random password, you will need to manually delete it from Mongo directly:
+> The system user does not get re-created, if it already exists: if you change (and then forget) the password, you will need to manually delete it from Mongo directly:
 
 ```
 docker exec -it mongo mongo
@@ -265,22 +452,48 @@ this will generate a new API Token, that can then be used in subsequent HTTP API
     http :8080/users Authorization:"Bearer ... JWT goes here ..."
 
 
-
 # OPA Policies
 
 They are stored in `src/main/rego` and can be uploaded to the OPA policy server via a `curl POST` (see `REST API` in [Useful Links](useful-links#)); examples of policy evaulations are in `src/test/policies_tests` as JSON files; they can be executed against the policy server using the `/data` endpoint:
 
 
-    POST http://localhost:8181/v1/data/kapsules/valid_token
+    POST http://localhost:8181/v1/data/com/alertavert/userauth/allow
 
     {
-      "input": {
-          "user": "myuser",
-          "role": "USER",
-          "token": "eyJ0eXAi....iCzY"
+      "input" : {
+        "api_token" : "eyJ0eX****e9ZuZA",
+        "resource" : {
+          "method" : "GET",
+          "path" : "/users",
+        }
       }
     }
 
+The actual format of the request POSTed to OPA can be seen in the Debug logs of the server:
+
+```
+2023-01-07 15:21:29.335 DEBUG : POST Authorization request:
+{
+  "input" : {
+    "api_token" : "eyJ0eX****e9ZuZA",
+    "resource" : {
+      "method" : "GET",
+      "path" : "/users",
+      "headers" : {
+        "User-Agent" : "PostmanRuntime/7.30.0",
+        "Host" : "localhost:8081",
+        "Accept-Encoding" : "gzip, deflate, br"
+      }
+    }
+  }
+}
+2023-01-07 15:21:29.458 DEBUG : OPA Server returned: {result=true}
+2023-01-07 15:21:29.458 DEBUG : JWT Auth Web Filter :: GET /users
+2023-01-07 15:21:29.458 DEBUG : Authenticating token eyJ0eX...
+2023-01-07 15:21:29.462 DEBUG : API Token valid: sub = `admin`, authorities = [SYSTEM]
+2023-01-07 15:21:29.462 DEBUG : Validated API Token for Principal: `admin`
+2023-01-07 15:21:29.462 DEBUG : Auth success, principal = `JwtPrincipal(sub=admin)`
+```
 
 
 ### Useful links
