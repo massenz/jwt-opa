@@ -5,30 +5,31 @@
 # Author: Marco Massenzio (marco@alertavert.com)
 #
 name: Release
-
 on:
   push:
-    branches: [ release ]
+    branches:
+      - release
+
+env:
+  AUTHOR: ${{ github.event.pusher.name }}
+  EMAIL: ${{ github.event.pusher.email }}
+  KEYRING_FILE: /tmp/keyring.gpg
 
 jobs:
-  create-tag:
-    runs-on: ubuntu-22.04
-    env:
-      AUTHOR: ${{ github.event.pusher.name }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Create a Release Tag
-      run: |
-        git config user.name "$AUTHOR"
-        git config user.email "<gh-actions@github.com>"
-        ./make-tag.sh
-
   release:
     runs-on: ubuntu-22.04
-    env:
-      KEYRING_FILE: /tmp/keyring.gpg
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Create a Release Tag
+        run: |
+          git config user.name "$AUTHOR"
+          git config user.email "<$EMAIL>"
+          TAG=$(./get-version.sh)
+          git tag -a $TAG -m "Release $TAG"
+          git push --tags
+          echo TAG=${TAG} >> $GITHUB_ENV
+
       - uses: actions/setup-java@v1
         with:
           java-version: 17
@@ -54,3 +55,9 @@ jobs:
       - name: Publish to Sonatype
         run: |
           chmod +x gradlew && ./gradlew publish
+
+      # Creates a new release in GitHub, with auto-generated content.
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.TAG }}
+          generateReleaseNotes: true

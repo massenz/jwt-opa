@@ -18,99 +18,105 @@
 
 package com.alertavert.opa.configuration;
 
+import com.alertavert.opa.security.EnvSecretResolver;
+import com.alertavert.opa.security.FileSecretResolver;
+import com.alertavert.opa.security.NoopKeypairReader;
+import com.alertavert.opa.security.NoopSecretResolver;
+import com.alertavert.opa.security.SecretsResolver;
+import com.alertavert.opa.security.aws.AwsSecretsKeypairReader;
+import com.alertavert.opa.security.aws.AwsSecretsManagerResolver;
+import com.alertavert.opa.security.crypto.KeyLoadException;
 import com.alertavert.opa.security.crypto.KeypairFileReader;
 import com.alertavert.opa.security.crypto.KeypairReader;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
-import java.io.IOException;
-import java.nio.file.Paths;
+import javax.annotation.PostConstruct;
+import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 
-import static com.alertavert.opa.Constants.ELLIPTIC_CURVE;
-import static com.alertavert.opa.Constants.PASSPHRASE;
-import static com.alertavert.opa.Constants.UNDEFINED_KEYPAIR;
+import static com.alertavert.opa.Constants.PEM_EXT;
+import static com.alertavert.opa.Constants.PUB_EXT;
 
 @Slf4j
 @Configuration
-@EnableConfigurationProperties(TokensProperties.class)
+@EnableConfigurationProperties({
+    KeysProperties.class,
+    TokensProperties.class
+})
+@RequiredArgsConstructor
 public class KeyMaterialConfiguration {
 
-  private final TokensProperties tokensProperties;
+  private final KeysProperties keyProperties;
 
-  public KeyMaterialConfiguration(TokensProperties properties) {
-    this.tokensProperties = properties;
-    if (properties.getSignature().getKeypair() == null) {
-      throw new IllegalStateException(UNDEFINED_KEYPAIR);
-    }
+  /**
+   * AWS SecretsManager client, will only be configured by the
+   * {@link com.alertavert.opa.security.aws.AwsClientConfiguration AWS Configuration} if the
+   * {@literal aws} profile is active.
+   */
+  @Autowired(required = false)
+  SecretsManagerClient secretsManagerClient;
+
+  @PostConstruct
+  private void log() {
+    log.info("Configuring key material, algorithm = {}, location = {}",
+        keyProperties.algorithm, keyProperties.location);
   }
 
   @Bean
-  public String issuer() {
-    return tokensProperties.getIssuer();
-  }
-
-  @Bean
-  Algorithm hmac(KeyPair keyPair) {
-    TokensProperties.SignatureProperties properties = tokensProperties.getSignature();
-
-    return switch (properties.getAlgorithm()) {
-      case PASSPHRASE -> Algorithm.HMAC256(properties.getSecret());
-      case ELLIPTIC_CURVE -> Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
-          (ECPrivateKey) keyPair.getPrivate());
-      default -> throw new IllegalArgumentException(String.format("Algorithm [%s] not supported",
-          properties.getAlgorithm()));
+  SecretsResolver secretsResolver() {
+    return switch (keyProperties.getLocation()) {
+      case env -> new EnvSecretResolver();
+      case file -> new FileSecretResolver();
+      case keypair -> new NoopSecretResolver();
+      case awsSecret -> new AwsSecretsManagerResolver(secretsManagerClient);
+      case vaultPath -> throw new UnsupportedOperationException("Support for Vault not "
+          + "implemented yet");
     };
   }
 
   @Bean
-  JWTVerifier verifier(KeypairReader reader) throws IOException {
-    return JWT.require(hmac(keyPair(reader)))
-        .withIssuer(issuer())
-        .build();
+  KeypairReader keypairReader() {
+    return switch (keyProperties.getLocation()) {
+      case env, file -> new NoopKeypairReader();
+      case keypair -> new KeypairFileReader(keyProperties.algorithm.name(),
+          Path.of(keyProperties.name + PEM_EXT), Path.of(keyProperties.name + PUB_EXT));
+      case awsSecret -> new AwsSecretsKeypairReader(secretsResolver(), keyProperties.name);
+      case vaultPath -> throw new UnsupportedOperationException("Support for Vault not "
+          + "implemented yet");
+    };
   }
 
-  @Bean
-  public KeyPair keyPair(KeypairReader reader) throws IOException {
-    return reader.loadKeys();
-  }
 
-  /**
-   * Default key pair reader from the file system; to load a key pair from a different storage
-   * (e.g., Vault) implement your custom {@link KeypairReader} and inject it as a {@literal
-   * reader} bean.
-   *
-   * <p>This reader will interpret the {@literal keypair.priv,pub} properties as paths.
-   *
-   * <p>To use your custom {@link KeypairReader} implementation, define your bean as primary:
-   *
-   <pre>
-       &#64;Bean &#64;Primary
-       public KeypairReader reader() {
-         return new KeypairReader() {
-           &#64;Override
-           public KeyPair loadKeys() throws KeyLoadException {
-              // do something here
-              return someKeypair;
-           }
-         };
-   </pre>
-   *
-   * @return      a reader which will try and load the key pair from the filesystem.
-   */
   @Bean
-  public KeypairReader filereader() {
-    TokensProperties.SignatureProperties props = tokensProperties.getSignature();
-    return new KeypairFileReader(
-        props.getAlgorithm(),
-        Paths.get(props.getKeypair().getPriv()),
-        Paths.get(props.getKeypair().getPub()));
+  Algorithm hmac(SecretsResolver resolver, KeypairReader reader) {
+    return switch (keyProperties.getAlgorithm()) {
+      case PASSPHRASE -> {
+        log.warn("Using insecure passphrase signing secret, name = {}", keyProperties.name);
+        String passphrase = resolver.getSecret(keyProperties.getName()).block();
+        if (passphrase == null) {
+          log.error("Could not resolve secret {}, with SecretsResolver {}",
+              keyProperties.name, resolver.getClass().getSimpleName());
+          throw new IllegalArgumentException("Signing secret cannot be resolved");
+        }
+        yield  Algorithm.HMAC256(passphrase);
+      }
+      case EC -> {
+        KeyPair keyPair = reader.loadKeys().block();
+        if (keyPair == null) {
+          throw new KeyLoadException("Cannot load keypair " + keyProperties.name);
+        }
+        yield Algorithm.ECDSA256((ECPublicKey) keyPair.getPublic(),
+            (ECPrivateKey) keyPair.getPrivate());
+      }
+    };
   }
 }

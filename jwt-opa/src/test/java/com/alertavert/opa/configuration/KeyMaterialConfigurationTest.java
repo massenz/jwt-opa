@@ -19,19 +19,15 @@
 package com.alertavert.opa.configuration;
 
 import com.alertavert.opa.AbstractTestBase;
-import com.alertavert.opa.Constants;
-import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opa.security.NoopSecretResolver;
+import com.alertavert.opa.security.SecretsResolver;
+import com.alertavert.opa.security.crypto.KeypairFileReader;
 import com.alertavert.opa.security.crypto.KeypairReader;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
-import java.security.KeyPair;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,51 +37,34 @@ class KeyMaterialConfigurationTest extends AbstractTestBase {
   KeyMaterialConfiguration configuration;
 
   @Autowired
-  KeypairReader reader;
+  Algorithm hmac;
 
-  @Value("${tokens.issuer}")
-  private String issuer;
+  @Autowired
+  SecretsResolver resolver;
+
+  @Autowired
+  KeypairReader keypairReader;
 
   @Test
-  void issuer() {
-    assertThat(configuration.issuer()).isEqualTo(issuer);
+  void context() {
+    assertThat(hmac).isNotNull();
+    assertThat(configuration).isNotNull();
+    assertThat(keypairReader).isNotNull();
   }
 
   @Test
-  void hmac() throws IOException {
-    KeyPair pair = configuration.keyPair(reader);
-    assertThat(pair).isNotNull();
-    Algorithm hmac = configuration.hmac(pair);
-    assertThat(hmac).isNotNull();
+  void hmac() {
     assertThat(hmac.getName()).isEqualTo("ES256");
   }
 
   @Test
-  void verifier() throws IOException {
-    JWTVerifier verifier = configuration.verifier(reader);
-    assertThat(verifier).isNotNull();
+  void resolver() {
+    assertThat(resolver.getClass()).isEqualTo(NoopSecretResolver.class);
   }
 
   @Test
-  void keyPair() throws IOException {
-    KeyPair pair = configuration.keyPair(reader);
-    assertThat(pair).isNotNull();
-    assertThat(pair.getPrivate().getFormat()).isEqualTo("PKCS#8");
-    assertThat(pair.getPrivate().getAlgorithm()).isEqualTo(Constants.ELLIPTIC_CURVE);
-  }
-
-  @Test
-  void signVerify() throws IOException {
-    KeyPair pair = configuration.keyPair(reader);
-    Algorithm hmac = configuration.hmac(pair);
-
-    String token = JWT.create()
-        .withIssuer(issuer)
-        .withSubject("test-user")
-        .withClaim(JwtTokenProvider.ROLES, Lists.list("TEST"))
-        .sign(hmac);
-
-    JWTVerifier verifier = configuration.verifier(reader);
-    assertThat(verifier.verify(token)).isNotNull();
+  void keypairReader() {
+    assertThat(keypairReader.getClass()).isEqualTo(KeypairFileReader.class);
+    assertThat(keypairReader.loadKeys().block(Duration.ofMillis(100))).isNotNull();
   }
 }

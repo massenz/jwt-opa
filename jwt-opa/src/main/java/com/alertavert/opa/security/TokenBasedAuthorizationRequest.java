@@ -24,6 +24,8 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.Map;
+
 import static com.alertavert.opa.Constants.MAPPER;
 import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
@@ -62,7 +64,7 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 @Jacksonized
 public class TokenBasedAuthorizationRequest {
 
-  public record Resource(String method, String path) {
+  public record Resource(String method, String path, Map<String, ?> headers) {
   }
 
   public record AuthRequestBody(@JsonProperty("api_token") String token, Resource resource) {

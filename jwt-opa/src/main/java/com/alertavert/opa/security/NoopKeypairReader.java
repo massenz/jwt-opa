@@ -16,20 +16,27 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa.security.crypto;
+package com.alertavert.opa.security;
 
+import com.alertavert.opa.ExcludeFromCoverageGenerated;
+import com.alertavert.opa.security.crypto.KeyLoadException;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import reactor.core.publisher.Mono;
 
 import java.security.KeyPair;
 
 /**
- * <H2>KeypairReader</H2>
+ * <H2>NoopKeypairReader</H2>
  *
- * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * <p>Placeholder for configurations where a keypair reader is not needed, but Spring still wants
+ * an injectable bean.
  *
- * @author M. Massenzio, 2022-11-19
+ * @author M. Massenzio, 2022-11-20
  */
-public interface KeypairReader {
-  Mono<KeyPair> loadKeys() throws KeyLoadException;
+@ExcludeFromCoverageGenerated
+public class NoopKeypairReader implements KeypairReader {
+  @Override
+  public Mono<KeyPair> loadKeys() throws KeyLoadException {
+    return Mono.empty();
+  }
 }

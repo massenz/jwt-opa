@@ -18,10 +18,11 @@
 
 package com.alertavert.opa;
 
-import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.alertavert.opa.configuration.TokensProperties;
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.InvalidClaimException;
+import com.auth0.jwt.impl.NullClaim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -31,9 +32,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
-import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.auth0.jwt.impl.PublicClaims.EXPIRES_AT;
@@ -171,5 +172,32 @@ class JwtTokenProviderTest extends AbstractTestBase {
 
     // Restore state for subsequent tests.
     properties.setShouldExpire(shouldExpire);
+  }
+
+  @Test
+  public void canSetProprietaryClaims() {
+    var claims = Map.of("profession", "wizard",
+        "can_cast_spells", true,
+        "spells", 99);
+    String token = provider.createToken("oz", List.of("WIZARD"), null, claims);
+
+    DecodedJWT jwt = provider.decode(token);
+    assertThat(jwt).isNotNull();
+    for (var k : claims.keySet()) {
+      var c = jwt.getClaim(k);
+      assertThat(c.getClass()).isNotEqualTo(NullClaim.class);
+      assertThat(c.asString()).isEqualTo(claims.get(k).toString());
+    }
+  }
+
+  @Test
+  public void canSetComplexTypesClaims() {
+    String token = provider.createToken("fake", List.of("USER"), null,
+        Map.of("profession", List.of("driver", "nurse", "banker")));
+
+    DecodedJWT jwt = provider.decode(token);
+    var c = jwt.getClaim("profession");
+    assertThat(c.getClass()).isNotEqualTo(NullClaim.class);
+    assertThat(c.asString()).isEqualTo("[driver, nurse, banker]");
   }
 }

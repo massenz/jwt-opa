@@ -16,20 +16,34 @@
  * Author: Marco Massenzio (marco@alertavert.com)
  */
 
-package com.alertavert.opa.security.crypto;
+package com.alertavert.opa.security;
 
+import lombok.SneakyThrows;
 import reactor.core.publisher.Mono;
 
-import java.security.KeyPair;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 /**
- * <H2>KeypairReader</H2>
+ * <H2>FileSecretResolver</H2>
  *
- * <p>Classes implementing this interface will retrieve keys from their storage for use with the
- * application.
+ * <p>Reads the secret from a file, if it exists.
  *
  * @author M. Massenzio, 2022-11-19
  */
-public interface KeypairReader {
-  Mono<KeyPair> loadKeys() throws KeyLoadException;
+public class FileSecretResolver implements SecretsResolver {
+  @SneakyThrows
+  @Override
+  public Mono<String> getSecret(String secretName) {
+    Path secretFile = Paths.get(secretName);
+    if (secretFile.toFile().exists()) {
+      BufferedReader reader = new
+          BufferedReader(new FileReader(secretFile.toFile()));
+      return Mono.just(reader.lines().collect(Collectors.joining()));
+    }
+    return Mono.empty();
+  }
 }

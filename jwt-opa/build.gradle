@@ -29,6 +29,7 @@ plugins {
 }
 
 ext {
+    awsSdkVersion = '2.17.102'
     jsonpathVersion = "2.5.0"
     lombokVersion = "1.18.22"
     minCoverageRatio = 0.80
@@ -37,7 +38,7 @@ ext {
 }
 
 group 'com.alertavert'
-version '0.8.0'
+version '0.9.0'
 
 // OpenJDK 17 LTS is the only Java version supported
 sourceCompatibility = JavaVersion.VERSION_17
@@ -47,6 +48,7 @@ if (JavaVersion.current() != JavaVersion.VERSION_17) {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -91,12 +93,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // AWS SDK for Secrets Manager, see: https://docs.aws.amazon.com/code-samples/latest/catalog/code-catalog-javav2-example_code-secretsmanager.html
+    implementation "software.amazon.awssdk:secretsmanager:${awsSdkVersion}"
+
     testImplementation "com.jayway.jsonpath:json-path-assert:$jsonpathVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
     // Test Containers: https://www.testcontainers.org/
     testImplementation "org.testcontainers:testcontainers:$tcVersion"
     testImplementation "org.testcontainers:junit-jupiter:$tcVersion"
+    testImplementation "org.testcontainers:localstack:$tcVersion"
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.326'
+
 }
 
 jacocoTestCoverageVerification {

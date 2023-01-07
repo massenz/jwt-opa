@@ -1,46 +1,44 @@
 # JWT Authorization Policy
-# Created M. Massenzio, 2020-11-22
+# Created M. Massenzio, 2022-11-15
 #
 # This should be loaded to the OPA Policy Server via a PUT request to the /v1/policies endpoint.
 
-package kapsules
-
-default allow = false
+package com.alertavert.userauth
+import future.keywords.in
 
 # The JWT carries the username and roles, which will be used
 # to authorize access to the endpoint (`input.resource.path`)
-# TODO: roles should be an array
-token := t {
+token := t[1] {
     t := io.jwt.decode(input.api_token)
 }
 
 user := u {
-    some i
-    token[i].iss == "demo"
-    u = token[i].sub
+    token.iss == "demo-issuer"
+    u = token.sub
 }
 
-role := r {
-    some i
-    token[i].iss == "demo"
-    r = token[i].role
+roles := r {
+    r = token.roles
 }
 
-# System administrators can modify all entities
-is_sysadmin {
-    role == "SYSTEM"
+# SYSTEM roles (typically, only bots) are allowed to make any
+# API calls, with whatever HTTP Method.
+is_system {
+    some i, "SYSTEM" in roles
 }
 
 # Admin users can only create/modify a subset
-# of entities
+# of entities, but is still a powerful role, ASSIGN WITH CARE.
 is_admin {
-    role == "ADMIN"
+    some i, "ADMIN" in roles
 }
 
 # Users can only modify self, and entities associated
 # with the users themselves.
+# We assume that the user is valid if it could obtain a valid JWT and
+# has at least one Role.
 is_user {
-    role == "USER"
+    count(roles) > 0
 }
 
 split_path(path) = s {
@@ -55,7 +53,7 @@ entity_id := segments[1]
 
 # System accounts are allowed to make all API calls.
 allow {
-    is_sysadmin
+    is_system
 }
 
 # User is allowed to view/modify self

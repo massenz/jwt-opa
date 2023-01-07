@@ -19,6 +19,7 @@
 package com.alertavert.opademo.api;
 
 import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -45,14 +46,13 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 @RestController
 public class JwtController {
 
-  @Autowired
   JwtTokenProvider provider;
-
-  @Autowired
   ReactiveUsersRepository repository;
 
-  @Autowired
-  KeyPair keyPair;
+  public JwtController(JwtTokenProvider provider, ReactiveUsersRepository repository) {
+    this.provider = provider;
+    this.repository = repository;
+  }
 
   @Data
   @AllArgsConstructor
@@ -102,14 +102,5 @@ public class JwtController {
         String.format("API Token [%s] is valid for user %s ",
             apiToken.substring(BEARER_TOKEN.length() + 1),
             user)));
-  }
-
-  /**
-   * "Demo" endpoint only accessible to SYSTEM administrators.
-   */
-  // TODO: implement the Rego policy to only allow SYSTEM role to acces this API
-  @GetMapping(path = "/keypair", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
-  public Mono<ResponseEntity<?>> getKeypair() {
-    return Mono.just(ResponseEntity.ok(keyPair));
   }
 }

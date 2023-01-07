@@ -20,7 +20,16 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: 17
-    - name: Setup fake Credentials
-      run: cp gradle.properties.fake gradle.properties
+    - name: Setup fake Credentials for Tests
+      run: |
+        cp gradle.properties.fake gradle.properties
+        mkdir -p ~/.aws
+        cat <<EOF > ~/.aws/credentials
+        [default]
+        aws_access_key_id = fake
+        aws_secret_access_key = fake
+        EOF
     - name: Build & Test
-      run: chmod +x gradlew && ./gradlew build test
+      run: |
+        echo "keys: $(ls -l testdata)"
+        chmod +x gradlew && ./gradlew test

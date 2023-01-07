@@ -29,27 +29,27 @@ version = "0.3.0"
 repositories {
     // Adding local repository for Gradle to find jwt-opa before it gets published.
     // Use: ./gradlew :jwt-opa:publishToMavenLocal
-    // mavenLocal()
+    //     mavenLocal()
     mavenCentral()
 }
 
 ext {
-    // TODO: upgrade to the latest version when published (0.8.0)
     // This can be changed to an yet-unpublished version by using mavenLocal()
     // for local tests.
-    jwtOpaVersion = "0.7.5"
+    jwtOpaVersion = "0.9.0"
     lombokVersion = "1.18.22"
     tcVersion = "1.15.1"
 }
 
 bootJar {
-    mainClassName = 'com.alertavert.opademo.JwtDemoApplication'
+    mainClass.set('com.alertavert.opademo.JwtDemoApplication')
 }
 
 dependencies {
     // We use the actual dependency here, instead of depending on the module in the repository so
     // as to emulate an actual project using jwt-opa externally.
-    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
+        implementation project (':jwt-opa')
+//    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
@@ -85,4 +85,9 @@ test {
     // A build will fail unless test coverage reaches minimum.
     // See: https://reflectoring.io/jacoco/
     finalizedBy jacocoTestCoverageVerification
+
+    testLogging {
+        showExceptions = true
+        showCauses = true
+    }
 }

@@ -43,7 +43,9 @@ import static com.alertavert.opa.Constants.EMPTY_USERDETAILS;
 @Configuration
 @EnableWebFluxSecurity
 @Slf4j
-@EnableConfigurationProperties(SecurityConfiguration.CorsProperties.class)
+@EnableConfigurationProperties(
+    {SecurityConfiguration.CorsProperties.class,
+        SecurityConfiguration.KeyProperties.class})
 public class SecurityConfiguration {
 
   /** CORS Configuration allows all routes ("*") */
@@ -56,12 +58,20 @@ public class SecurityConfiguration {
   }
 
   @Data
-    @ConfigurationProperties(prefix = "cors")
-    public static class CorsProperties {
-      List<String> allowed = List.of(DEFAULT_ALL_ALLOWED);
-      List<String> methods = List.of(DEFAULT_ALL_ALLOWED);
-      List<String> headers = List.of(DEFAULT_ALL_ALLOWED);
-    }
+  @ConfigurationProperties(prefix = "cors")
+  public static class CorsProperties {
+    List<String> allowed = List.of(DEFAULT_ALL_ALLOWED);
+    List<String> methods = List.of(DEFAULT_ALL_ALLOWED);
+    List<String> headers = List.of(DEFAULT_ALL_ALLOWED);
+  }
+
+  @Data
+  @ConfigurationProperties(prefix = "keys")
+  public static class KeyProperties {
+    String algorithm;
+    String priv;
+    String pub;
+  }
 
 
   @Bean

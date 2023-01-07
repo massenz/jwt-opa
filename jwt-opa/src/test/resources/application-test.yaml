@@ -8,19 +8,23 @@ logging:
 
 tokens:
   issuer: "demo-issuer"
-  signature:
-    algorithm: "EC"
-    keypair:
-      priv: "../testdata/test-key.pem"
-      pub: "../testdata/test-key-pub.pem"
+  secret: "test-passphrase"
 
 # This is used to build the Rule validation endpoint:
 #   http://localhost:8181/v1/data/com.alertavert.policies/allow
 #
 opa:
-  policy: com.alertavert.policies
+  policy: com/alertavert/test
   rule: allow
   server: "localhost:8181"
+  headers:
+    - "x-test-header"
+
+# TODO: we should test more combinations of this configurations, but not sure how.
+keys:
+  algorithm: ec
+  location: keypair
+  name: ../testdata/test
 
 # Add an endpoint which won't trigger OPA Authorization
 routes:
@@ -28,3 +32,33 @@ routes:
      - "/testauth"
      - "/match/*/this"
      - "/match/any/**"
+
+---
+# AWS Profile
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+# Use this with a locally running instance of localstack, configured to port 4566
+# Prior to running the webapp, upload the secret with:
+#     export AWS_REGION=us-west-2
+#     export AWS_ENDPOINT=http://localhost:4566
+#     aws --endpoint-url $AWS_ENDPOINT secretsmanager create-secret --name demo-secret \
+#         --secret-string "astrong-secret-dce44st"
+#
+# To use a keypair instead, generate keys with keygen.sh, upload them with aws-upload-keys.sh
+# (run those scripts with -h to see more details) and use:
+# keys:
+#   algorithm: EC
+#   location: awssecret
+#   name: demo-pair
+
+aws:
+  region: us-west-2
+  profile: default
+
+keys:
+  algorithm: PASSPHRASE
+  location: awssecret
+  name: test-secret

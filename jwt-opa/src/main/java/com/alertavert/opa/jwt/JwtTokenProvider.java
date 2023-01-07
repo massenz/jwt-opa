@@ -21,10 +21,10 @@ package com.alertavert.opa.jwt;
 import com.alertavert.opa.configuration.TokensProperties;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <h2>JwtTokenProvider</h2>
@@ -57,13 +58,13 @@ public class JwtTokenProvider {
   Algorithm hmac;
 
   @Autowired
-  JWTVerifier verifier;
-
-  @Autowired
-  String issuer;
-
-  @Autowired
   TokensProperties tokensProperties;
+
+  public JWTVerifier verifier() {
+    return JWT.require(hmac)
+        .withIssuer(tokensProperties.getIssuer())
+        .build();
+  }
 
   /**
    * <p>Creates a JWT token for the given user, signed with the private key of the issuer.
@@ -80,15 +81,19 @@ public class JwtTokenProvider {
    * @param expiresAt the expiration time of the token, if provided; otherwise it will be set based
    *                  on {@literal tokens.expires_after_sec}, if {@literal  tokens.should_expire()}
    *                  is true.
+   * @param claims    a map of named claims to be added to the token; we currently support only
+   *                  String, Integer and Boolean values. Can be null, in which case only the
+   *                  default claims are set for the token.
    * @return the newly created JWT token
    * @see TokensProperties
    */
-  public String createToken(String user, List<String> roles, @Nullable Instant expiresAt) {
+  public String createToken(String user, List<String> roles, @Nullable Instant expiresAt,
+                            @Nullable Map<String, ?> claims) {
     Instant now = Instant.now();
 
     log.debug("Issuing JWT for user = {}, roles = {}", user, roles);
     JWTCreator.Builder builder = JWT.create()
-        .withIssuer(issuer)
+        .withIssuer(tokensProperties.getIssuer())
         .withSubject(user)
         .withIssuedAt(Date.from(now))
         .withArrayClaim(ROLES, roles.toArray(new String[0]));
@@ -103,21 +108,62 @@ public class JwtTokenProvider {
     if (tokensProperties.getNotBeforeDelaySec() > 0) {
       builder.withNotBefore(Date.from(now.plusSeconds(tokensProperties.getNotBeforeDelaySec())));
     }
+
+    if (claims != null) {
+      for (String claim : claims.keySet()) {
+        Object value = claims.get(claim);
+// TODO: once we upgrade to JDK 18 or greater use the Pattern Match in the switch and
+//  allow for more types than String
+//        switch (value) {
+//          case String s -> builder.withClaim(claim, s);
+//          case Boolean b -> builder.withClaim(claim, b);
+//          case Integer n -> builder.withClaim(claim, n);
+//          default -> throw new IllegalArgumentException("Supported types for claims are only "
+//              + "string, boolean and integer, type " + value.getClass().getSimpleName() + " not "
+//              + "supported");
+//        }
+        // This code compiles and works, but may cause unwanted (or surprising) results for
+        // non-string types.
+        if (!(value instanceof String)) {
+          log.warn("Claim {} is not a string ({}) and adding it to the token may cause unexpected"
+              + " results", claim, value.getClass().getSimpleName());
+        }
+        builder.withClaim(claim, value.toString());
+      }
+
+    }
     return builder.sign(hmac);
   }
 
   /**
-   * Creates a new JWT token for the given user.
+   * Uses configuration to derive the Token expiration time.
    *
-   * <p>If configured to do so ({@literal tokens.shouldExpire}) it will expire after the
-   * configured time, in seconds (set by {@literal tokens.expiresAfterSec}).
+   * <p>If {@literal tokens.shouldExpire} is set to {@literal true} it will expire after
+   * {@literal tokens.expiresAfterSec} seconds.
+   *
+   * <p>Simply calls {@link #createToken(String, List, Instant, Map)}.
    *
    * @param user  the username for the JWT (sub)
    * @param roles the roles for the user, used for Authorization
    * @return the newly created JWT token
    */
   public String createToken(String user, List<String> roles) {
-    return createToken(user, roles, null);
+    return createToken(user, roles, null, null);
+  }
+
+  /**
+   * Creates a Token with a given expiration time, and default claims.
+   *
+   * <p>Simply calls {@link #createToken(String, List, Instant, Map)} with a null {@literal
+   * claims} map.
+   *
+   * @param user  the username for the JWT (sub)
+   * @param roles the roles for the user, used for Authorization
+   * @param expiresAt the time when the JWT will expire
+   * @return the newly created JWT token
+   */
+  public String createToken(String user, List<String> roles, Instant expiresAt) {
+    return createToken(user, roles, expiresAt, null);
   }
 
   public boolean validateToken(String token) {
@@ -131,7 +177,7 @@ public class JwtTokenProvider {
   }
 
   public DecodedJWT decode(String token) throws JWTVerificationException {
-    return verifier.verify(token);
+    return verifier().verify(token);
   }
 
   public Authentication getAuthentication(String token) {

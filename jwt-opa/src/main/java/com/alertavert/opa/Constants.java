@@ -31,6 +31,7 @@ import java.util.Collections;
  * All constants are grouped here for ease of reference.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@ExcludeFromCoverageGenerated
 public class Constants {
   /**
    * Basic Authorization header type.
@@ -41,16 +42,17 @@ public class Constants {
    */
   public static final String BEARER_TOKEN = "Bearer";
 
-  /**
-   * The type of encryption accepted by the {@link com.alertavert.opa.jwt.JwtTokenProvider}
-   */
-  public static final String ELLIPTIC_CURVE = "EC";
+  /** Marker for a Public Key object */
+  public static final String PUBLIC_KEY = "PUBLIC KEY";
+
+  /** Marker for a Private Key object */
+  public static final String PRIVATE_KEY = "PRIVATE KEY";
 
   /**
-   * Passphrase-based encryption (see
-   * {@link com.alertavert.opa.configuration.KeyMaterialConfiguration}.
+   * The name of the Env Var which contains the name of the file storing the AWS API Token in a
+   * running EKS container.
    */
-  public static final String PASSPHRASE = "SECRET";
+  public static final String AWS_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
 
   /** OPA API version */
   public static final String OPA_VERSION = "v1";
@@ -66,7 +68,7 @@ public class Constants {
   public static final String DEFAULT_HEALTH_ROUTE = "/health";
 
   /**
-   * The default login endpoing, by default only allowed using HTTP Basic auth, but will not
+   * The default login endpoint, by default only allowed using HTTP Basic auth, but will not
    * require a valid API Token and won't try to authorize access.
    */
   public static final String DEFAULT_LOGIN_ROUTE = "/login";
@@ -86,6 +88,14 @@ public class Constants {
   public static final String ERROR_CANNOT_READ_KEY = "Could not read key: path = {}, algorithm = {}";
 
   public static final String API_TOKEN = "api_token";
+
+  public static final String KEYPAIR_LOADED = "Keypair loaded from AWS Secrets Manager: "
+      + "secret-name = {}";
+  public static final String KEYPAIR_ERROR = "Cannot load secret from AWS: secret-name = {}, "
+      + "error = {}";
+
+  public static final String CREDENTIALS_PROVIDER_LOG = "Creating a {} Credentials Provider: {}";
+  public static final String CREDENTIALS_PROVIDER_ERROR = "Cannot create Credentials Provider: {}";
 
   /**
    * A completely inactive user, that needs to act as a placeholder when the `username` is not
@@ -109,4 +119,7 @@ public class Constants {
   };
   public static final int MAX_TOKEN_LEN_LOG = 6;
   public static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final String PEM_EXT = ".pem";
+  public static final String PUB_EXT = ".pub";
+
 }

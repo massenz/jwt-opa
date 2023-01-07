@@ -28,9 +28,8 @@ generated/
 
 # Key Material is never a good candidate for source control,
 # unless they are used for test purposes (only).
-*.pub
 *.pem
-!**/testdata/*.pem
+!**/testdata/test-key.*
 
 # Code Coverage
 .coverage
@@ -39,7 +38,6 @@ tests/cover
 # Gradle related files
 .gradle
 gradlew.bat
-build/
 !*/gradle/wrapper/gradle-wrapper.jar
 
 ### STS ###

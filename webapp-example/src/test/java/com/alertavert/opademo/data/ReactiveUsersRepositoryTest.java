@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(initializers = {ReactiveUsersRepositoryTest.Initializer.class})
 public
 class ReactiveUsersRepositoryTest {
-  public static final String IMAGE_NAME = "mongo:4.0.10";
+  public static final String IMAGE_NAME = "mongo:4";
 
   private final static MongoDBContainer mongoDBContainer = new MongoDBContainer(
       DockerImageName.parse(IMAGE_NAME));
