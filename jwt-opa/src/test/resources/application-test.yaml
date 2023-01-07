@@ -51,7 +51,7 @@ spring:
 # (run those scripts with -h to see more details) and use:
 # keys:
 #   algorithm: EC
-#   location: aws_secret
+#   location: awssecret
 #   name: demo-pair
 
 aws:
@@ -60,5 +60,5 @@ aws:
 
 keys:
   algorithm: PASSPHRASE
-  location: aws_secret
+  location: awssecret
   name: test-secret

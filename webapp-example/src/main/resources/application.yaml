@@ -1,7 +1,9 @@
 # JWT / OPA Demo application configuration
 #
 # Created by M. Massenzio, 2020-11-22
-
+#
+# Default properties, some may be overridden by specifying
+# an active profile with SPRINT_PROFILES_ACTIVE.
 logging:
   level:
     com.alertavert: info
@@ -45,10 +47,11 @@ spring:
   jackson:
     default-property-inclusion: "non_null"
 ---
+# Main development profile, use this for dev/testing.
 spring:
   config:
     activate:
-      on-profile: debug
+      on-profile: dev
 
 # Doing this only for debug builds, as it may leak sensitive information
 # to an attacker.
@@ -91,8 +94,8 @@ keys:
   # file:     the file whose contents are the plaintext secret (NOT secure)
   #
   # keypair:    the filename without extension, to which `.pem` and `.pub` will be added
-  # aws_secret: name of AWS SecretsManager secret
-  # vault_path: path in HashiCorp Vault
+  # awssecret:  name of AWS SecretsManager secret
+  # vaultpath:  path in HashiCorp Vault
   #
   #       File paths can be absolute or relative.
   #       For a PASSPHRASE, the secret is simply read from SecretsManager/Vault
@@ -152,43 +155,49 @@ cors:
     - "http://localhost:*"
 
 ---
-# AWS Profile
+# AWS Profile, uses SecretsManager for the secret passphrase.
 spring:
   config:
     activate:
       on-profile: aws
 
-# Use this with a locally running instance of localstack, configured to port 4566
+# AWS Configuration
+#
+# The following is only really useful when connecting to LocalStack for local
+# development.
+# Remember to export AWS_PROFILE to configure a valid user profile
+# and AWS credentials (~/.aws/credentials) if using actual AWS.
+aws:
+  region: us-west-2
+  profile: default
+  # Use this with a locally running instance of localstack, configured to port 4566
+  endpoint: http://localhost:4566
+
 # Prior to running the webapp, upload the secret with:
 #     export AWS_REGION=us-west-2
 #     export AWS_ENDPOINT=http://localhost:4566
 #     aws --endpoint-url $AWS_ENDPOINT secretsmanager create-secret --name demo-secret \
 #         --secret-string "astrong-secret-dce44st"
-#
-# To use a keypair instead, generate keys with keygen.sh, upload them with aws-upload-keys.sh
-# (run those scripts with -h to see more details) and use:
-# keys:
-#   algorithm: EC
-#   location: aws_secret
-#   name: demo-pair
-
-aws:
-  region: us-west-2
-  profile: default
-  endpoint: http://localhost:4566
-
 keys:
   algorithm: PASSPHRASE
-  location: aws_secret
+  location: awssecret
   name: demo-secret
+
+# To use a keypair instead, generate keys with keygen.sh, upload them with aws-upload-keys.sh
+# (run those scripts with -h to see more details) and use:
+#
+# keys:
+#   algorithm: EC
+#   location: awssecret
+#   name: demo-pair
 ---
 # Example setting the signing secret via an env var
-
 spring:
   config:
     activate:
       on-profile: env
 
+# Prior to running this export JWT_SIGNING_ENV in the same shell.
 keys:
   algorithm: PASSPHRASE
   location: env
