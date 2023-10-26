@@ -106,7 +106,7 @@ class ReactiveUsersRepositoryTest {
   }
 
   @Test
-  void jsongen() throws JsonProcessingException {
+  void jsongen() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
 
     User me = new User("me", "myself", "USER");

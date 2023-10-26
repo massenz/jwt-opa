@@ -72,14 +72,14 @@ class LoginControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(JwtController.ApiToken.class)
-        .value(t -> assertThat(t.getUsername().equals("bob")))
+        .value(t -> assertThat(t.username().equals("bob")))
         .returnResult()
         .getResponseBody();
 
     assertThat(apiToken).isNotNull();
-    assertThat(apiToken.getUsername()).isEqualTo("bob");
-    assertThat(apiToken.getRoles()).contains("USER");
-    assertThat(apiToken.getApiToken()).isNotEmpty();
+    assertThat(apiToken.username()).isEqualTo("bob");
+    assertThat(apiToken.roles()).contains("USER");
+    assertThat(apiToken.apiToken()).isNotEmpty();
   }
 
   @Test

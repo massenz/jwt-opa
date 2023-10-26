@@ -82,7 +82,7 @@ public class LoginController {
         })
         .doOnNext(apiToken ->
             log.debug("User authenticated, user = {}, token = {}...",
-                apiToken.getUsername(), apiToken.getApiToken().substring(0, MAX_TOKEN_LEN_LOG)));
+                apiToken.username(), apiToken.apiToken().substring(0, MAX_TOKEN_LEN_LOG)));
   }
 
   @GetMapping("/reset/{username}")

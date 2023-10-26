@@ -68,7 +68,7 @@ public class DbInit {
           }
         })
         .doOnError(ResponseStatusException.class, ex -> {
-          if (ex.getStatus().equals(HttpStatus.CONFLICT)) {
+          if (ex.getStatusCode().equals(HttpStatus.CONFLICT)) {
             log.info("User [{}] already exists in database, use existing credentials",
                 adminUsername);
           } else {
