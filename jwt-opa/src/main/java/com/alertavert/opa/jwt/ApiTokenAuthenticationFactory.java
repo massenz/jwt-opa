@@ -44,8 +44,11 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 @Service @Slf4j
 public class ApiTokenAuthenticationFactory {
 
-  @Autowired
-  JwtTokenProvider provider;
+  private final JwtTokenProvider provider;
+
+  public ApiTokenAuthenticationFactory(JwtTokenProvider provider) {
+    this.provider = provider;
+  }
 
   /**
    * Creates an implementation of the {@link Authentication} interface which implements the
