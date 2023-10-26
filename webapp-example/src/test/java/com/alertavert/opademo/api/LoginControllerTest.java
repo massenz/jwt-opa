@@ -38,17 +38,6 @@ class LoginControllerTest {
 
   User bob, pete;
 
-  /**
-   * Takes a User with the password field in plaintext, and converts into a hashed one, then saves
-   * it to the DB.
-   *
-   * @param user
-   * @return the same user, but with a hashed password
-   */
-  private Flux<User> hashPasswordAndSave(User user) {
-    return hashPasswordAndSaveAll(List.of(user));
-  }
-
   private Flux<User> hashPasswordAndSaveAll(List<User> users) {
     return repository.saveAll(
         users.stream()
@@ -83,7 +72,7 @@ class LoginControllerTest {
   }
 
   @Test
-  public void validUserWrongPwdFailsLogin() {
+  void validUserWrongPwdFailsLogin() {
     client.get()
         .uri("/login")
         .header(HttpHeaders.AUTHORIZATION, LoginController.credentialsToHeader("bob:foo").block())
@@ -92,7 +81,7 @@ class LoginControllerTest {
   }
 
   @Test
-  public void invalidUserFailsLogin() {
+  void invalidUserFailsLogin() {
     client.get()
         .uri("/login")
         .header(HttpHeaders.AUTHORIZATION,
@@ -102,7 +91,7 @@ class LoginControllerTest {
   }
 
   @Test
-  public void validUserCanResetPassword() {
+  void validUserCanResetPassword() {
     client.get()
         .uri("/login/reset/pete")
         .exchange()

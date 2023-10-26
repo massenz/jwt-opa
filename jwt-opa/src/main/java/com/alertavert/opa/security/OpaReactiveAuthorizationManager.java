@@ -105,7 +105,7 @@ public class OpaReactiveAuthorizationManager
     String path = request.getPath().toString();
     for (String pattern : authRoutes) {
       if (pathMatcher.match(pattern, path)) {
-        log.debug("Route is allowed to bypass authorization");
+        log.debug("Route {} is allowed to bypass authorization (matches: {})", path, pattern);
         return Mono.just(new AuthorizationDecision(true));
       }
     }

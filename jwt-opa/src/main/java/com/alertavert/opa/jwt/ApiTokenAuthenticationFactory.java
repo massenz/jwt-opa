@@ -62,7 +62,7 @@ public class ApiTokenAuthenticationFactory {
     log.debug("Authenticating token {}...", token.substring(0, Math.min(MAX_TOKEN_LEN_LOG, token.length())));
     try {
       DecodedJWT jwt = provider.decode(token);
-      List<? extends  GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
+      List<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
           jwt.getClaim(JwtTokenProvider.ROLES).asArray(String.class));
       String subject = jwt.getSubject();
 
@@ -72,6 +72,12 @@ public class ApiTokenAuthenticationFactory {
     } catch (JWTVerificationException exception) {
       log.warn("Cannot validate API Token: {}", exception.getMessage());
       return Mono.error(new BadCredentialsException("API Token invalid", exception));
+    } catch (IllegalArgumentException exception) {
+      log.warn("The Token is malformed: {}", exception.getMessage());
+      return Mono.error(new BadCredentialsException("API Token malformed", exception));
+    } catch (Exception ex) {
+      log.error("Unexpected error while validating token: {}", ex.getMessage());
+      return Mono.error(new BadCredentialsException("API Token malformed"));
     }
   }
 }

@@ -21,9 +21,7 @@ package com.alertavert.opademo;
 import com.alertavert.opademo.api.UserController;
 import com.alertavert.opademo.data.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -35,18 +33,20 @@ import java.util.UUID;
 /**
  * Initializes the DB with a seed `admin` user and a random password, if it doesn't already exist.
  */
-@Profile("debug")
 @Slf4j
 @Component
 public class DbInit {
-  @Autowired
-  UserController controller;
+  private final UserController controller;
 
   @Value("${db.admin.username:admin}")
   String adminUsername;
 
   @Value("${db.admin.password}")
   String adminPassword;
+
+  public DbInit(UserController controller) {
+    this.controller = controller;
+  }
 
 
   @PostConstruct
@@ -57,7 +57,7 @@ public class DbInit {
           adminUsername, adminPassword);
     }
     User admin = new User(adminUsername, adminPassword, "SYSTEM");
-
+    log.info("Creating admin user: {}", adminUsername);
     controller.create(admin)
         .doOnSuccess(responseEntity -> {
           if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
@@ -76,6 +76,7 @@ public class DbInit {
             System.exit(1);
           }
         })
+        .onErrorComplete()
         .subscribe();
   }
 }

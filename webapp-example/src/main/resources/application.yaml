@@ -101,7 +101,7 @@ keys:
   #       For a PASSPHRASE, the secret is simply read from SecretsManager/Vault
   #       The keypair is stored as a JSON-formatted secret, with two keys: "priv" and "pub".
   location: keypair
-  name: ../private/ec-key
+  name: private/ec-key
 
 logging:
   level:
@@ -131,7 +131,7 @@ routes:
     - "/health"
     - "/demo"
     - "/favicon.ico"
-    - "/login/reset/*"
+    #- "/login/reset/*"
 
   # These will require the user to authenticate, but will not
   # be subject to OPA Policies authorization check.
