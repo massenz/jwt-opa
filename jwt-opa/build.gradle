@@ -106,7 +106,7 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$tcVersion"
     testImplementation "org.testcontainers:junit-jupiter:$tcVersion"
     testImplementation "org.testcontainers:localstack:$tcVersion"
-    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.326'
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.472'
 }
 
 jacocoTestCoverageVerification {
