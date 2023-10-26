@@ -24,6 +24,8 @@ import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -54,14 +56,7 @@ public class JwtController {
     this.repository = repository;
   }
 
-  @Data
-  @AllArgsConstructor
-  static class ApiToken {
-    String username;
-    List<String> roles;
-    @JsonProperty(API_TOKEN)
-    String apiToken;
-  }
+  record ApiToken(String username, List<String> roles, @JsonProperty(API_TOKEN) String apiToken) { }
 
   @GetMapping(path = "/token/{user}", produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<ApiToken>> getToken(@PathVariable String user) {

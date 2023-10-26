@@ -18,16 +18,12 @@
 
 package com.alertavert.opademo.api;
 
-import com.alertavert.opademo.DbInit;
-import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opa.jwt.JwtTokenProvider;
+import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.alertavert.opademo.data.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.Base64Utils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 
 import static com.alertavert.opa.Constants.BASIC_AUTH;
@@ -56,14 +53,13 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
     consumes = MimeTypeUtils.ALL_VALUE)
 public class LoginController {
 
-  @Autowired
-  JwtTokenProvider provider;
+  private final JwtTokenProvider provider;
+  private final ReactiveUsersRepository repository;
 
-  @Autowired
-  ReactiveUsersRepository repository;
-
-  @Autowired
-  PasswordEncoder encoder;
+  public LoginController(JwtTokenProvider provider, ReactiveUsersRepository repository) {
+    this.provider = provider;
+    this.repository = repository;
+  }
 
 
   @GetMapping
@@ -82,7 +78,7 @@ public class LoginController {
         })
         .doOnNext(apiToken ->
             log.debug("User authenticated, user = {}, token = {}...",
-                apiToken.getUsername(), apiToken.getApiToken().substring(0, MAX_TOKEN_LEN_LOG)));
+                apiToken.username(), apiToken.apiToken().substring(0, MAX_TOKEN_LEN_LOG)));
   }
 
   @GetMapping("/reset/{username}")
@@ -114,7 +110,7 @@ public class LoginController {
     log.debug("Extracting username from Authorization header");
     if (credentials.startsWith(BASIC_AUTH)) {
       return Mono.just(credentials.substring(BASIC_AUTH.length() + 1))
-          .map(enc -> Base64Utils.decode(enc.getBytes(StandardCharsets.UTF_8)))
+          .map(enc -> Base64.getDecoder().decode(enc.getBytes(StandardCharsets.UTF_8)))
           .map(String::new)
           .map(creds -> {
             String[] userPass = creds.split(":");
@@ -126,7 +122,7 @@ public class LoginController {
   }
 
   public static Mono<String> credentialsToHeader(String credentials) {
-    String encoded = Base64Utils.encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+    String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
     return Mono.just(String.format("%s %s", BASIC_AUTH, encoded));
   }
 }
