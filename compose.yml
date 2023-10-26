@@ -4,7 +4,7 @@ version: '3.2'
 
 services:
   opa:
-    container_name: opa
+    container_name: "opa"
     hostname: opa
     image: openpolicyagent/opa:0.42.2
     command: run --server --addr :8181
@@ -37,4 +37,4 @@ networks:
   backend:
     ipam:
       config:
-      - subnet: 172.1.2.0/24
+      - subnet: 172.10.2.0/24

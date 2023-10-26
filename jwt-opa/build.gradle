@@ -17,10 +17,10 @@
  */
 
 plugins {
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'io.spring.dependency-management' version '1.1.3'
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.5.7'
+    id 'org.springframework.boot' version '3.1.5'
 
     // To upload the Artifact to Maven Central
     // See: https://docs.gradle.org/current/userguide/publishing_maven.html
@@ -38,7 +38,7 @@ ext {
 }
 
 group 'com.alertavert'
-version '0.9.0'
+version '0.10.0'
 
 // OpenJDK 17 LTS is the only Java version supported
 sourceCompatibility = JavaVersion.VERSION_17
@@ -78,7 +78,6 @@ dependencies {
     // See: https://stackoverflow.com/questions/29805622/could-not-find-or-load-main-class-org-gradle-wrapper-gradlewrappermain/31622432
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
@@ -86,15 +85,19 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
     implementation 'commons-codec:commons-codec:1.13'
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
-
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // AWS SDK for Secrets Manager, see: https://docs.aws.amazon.com/code-samples/latest/catalog/code-catalog-javav2-example_code-secretsmanager.html
     implementation "software.amazon.awssdk:secretsmanager:${awsSdkVersion}"
+
+    // For the @PostConstruct annotation
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 
     testImplementation "com.jayway.jsonpath:json-path-assert:$jsonpathVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
@@ -104,7 +107,6 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:$tcVersion"
     testImplementation "org.testcontainers:localstack:$tcVersion"
     testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.326'
-
 }
 
 jacocoTestCoverageVerification {
