@@ -51,8 +51,8 @@ dependencies {
     // as to emulate an actual project using jwt-opa externally.
     // Uncomment the following line (and comment out the one below) to use the local version
     // while developing.
-    //     implementation project (':jwt-opa')
-    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
+         implementation project (':jwt-opa')
+//    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
 
     // For the @PostConstruct annotation
     implementation 'javax.annotation:javax.annotation-api:1.3.2'

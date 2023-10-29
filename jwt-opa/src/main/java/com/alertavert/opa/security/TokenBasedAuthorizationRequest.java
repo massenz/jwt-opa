@@ -18,16 +18,17 @@
 
 package com.alertavert.opa.security;
 
+import com.alertavert.opa.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
 import static com.alertavert.opa.Constants.MAPPER;
-import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
 
 /**
@@ -40,17 +41,17 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
  * "input"} object, we use this class to simplify the construction of the JSON body.
  *
  // {{ formatter:off }}
-    <pre>
-      {
-        "input": {
-            "api_token": ".... API Token Base-64 encoded ...",
-            "resource": {
-                "method": "POST",
-                "path": "/path/to/resource"
-           }
-        }
-      }
-    </pre>
+ <pre>
+ {
+   "input": {
+     "api_token": ".... API Token Base-64 encoded ...",
+     "resource": {
+       "method": "POST",
+       "path": "/path/to/resource"
+     }
+   }
+ }
+ </pre>
  // {{ formatter:on }}
  *
  * <p>When serializing to String (e.g., in debug logs output) the API Token (JWT) is obfuscated
@@ -62,8 +63,8 @@ import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 @Value
 @Builder
 @Jacksonized
+@Slf4j
 public class TokenBasedAuthorizationRequest {
-
   public record Resource(String method, String path, Map<String, ?> headers) {
   }
 
@@ -75,17 +76,13 @@ public class TokenBasedAuthorizationRequest {
   @Override
   public String toString() {
     try {
-      String token = "";
-      if (input.token.length() > 2 * MAX_TOKEN_LEN_LOG) {
-        token = input.token.substring(0, MAX_TOKEN_LEN_LOG) + "****" +
-            input.token.substring(input.token.length() - MAX_TOKEN_LEN_LOG);
-      }
       TokenBasedAuthorizationRequest copy = TokenBasedAuthorizationRequest.builder()
-          .input(new AuthRequestBody(token, input.resource))
+          .input(new AuthRequestBody(JwtTokenProvider.maskToken(input.token), input.resource))
           .build();
       return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(copy);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      log.error("Cannot serialize to JSON: {}", e.getMessage());
+      return "invalid JSON";
     }
   }
 }

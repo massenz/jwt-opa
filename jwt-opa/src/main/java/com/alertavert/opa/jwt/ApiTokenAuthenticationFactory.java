@@ -21,7 +21,6 @@ package com.alertavert.opa.jwt;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,8 +29,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-
-import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
 /**
  * <h2>ApiTokenAuthenticationFactory</h2>
@@ -62,7 +59,7 @@ public class ApiTokenAuthenticationFactory {
    *                  grant with the {@link JwtTokenProvider#ROLES} carried by the JWT.
    */
   public Mono<Authentication> createAuthentication(String token) {
-    log.debug("Authenticating token {}...", token.substring(0, Math.min(MAX_TOKEN_LEN_LOG, token.length())));
+    log.debug("Authenticating token {}", JwtTokenProvider.maskToken(token));
     try {
       DecodedJWT jwt = provider.decode(token);
       List<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(

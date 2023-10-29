@@ -55,7 +55,7 @@ class TokenBasedAuthorizationRequestTest {
     String json = request.toString();
 
     assertThat(json, hasJsonPath("$.input"));
-    assertThat(json, hasJsonPath("$.input.api_token", equalTo("tokenA****rtoken")));
+    assertThat(json, hasJsonPath("$.input.api_token", equalTo("tokenAAjwt****othertoken")));
     assertThat(json, hasJsonPath("$.input.resource.method", equalTo("POST")));
     assertThat(json, hasJsonPath("$.input.resource.path", equalTo("/foo/bar")));
   }
