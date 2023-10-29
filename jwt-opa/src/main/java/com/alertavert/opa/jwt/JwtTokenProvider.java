@@ -26,7 +26,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,14 +50,38 @@ import java.util.Map;
 @Component
 @Slf4j
 public class JwtTokenProvider {
-
   public static final String ROLES = "roles";
+  private static final String MASK = "****";
+  private static final int MASKED_TOKEN_LEN = 12;
 
-  @Autowired
-  Algorithm hmac;
+  private final Algorithm hmac;
+  private final TokensProperties tokensProperties;
 
-  @Autowired
-  TokensProperties tokensProperties;
+  public JwtTokenProvider(Algorithm hmac, TokensProperties tokensProperties) {
+    this.hmac = hmac;
+    this.tokensProperties = tokensProperties;
+  }
+
+  /**
+   * This method takes an API Token and masks it by replacing the middle part with {@link #MASK},
+   * and the first and last characters of the token, so that the total length is
+   * {@link #MASKED_TOKEN_LEN}.
+   *
+   * @param token the API Token to mask
+   * @return a masked version of the token
+   */
+  public static String maskToken(String token) {
+    if (token == null) {
+      return "";
+    }
+    var totLen = Math.min(token.length(), MASKED_TOKEN_LEN);
+    if (totLen <= MASK.length()) {
+      return MASK;
+    }
+    int prefixLen = Math.max((totLen - MASK.length()) / 2, 1);
+    return token.substring(0, prefixLen) + MASK
+        + token.substring(token.length() - prefixLen);
+  }
 
   public JWTVerifier verifier() {
     return JWT.require(hmac)

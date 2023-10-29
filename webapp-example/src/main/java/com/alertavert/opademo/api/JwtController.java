@@ -19,15 +19,9 @@
 package com.alertavert.opademo.api;
 
 import com.alertavert.opa.jwt.JwtTokenProvider;
-import com.alertavert.opa.security.crypto.KeypairReader;
 import com.alertavert.opademo.data.ReactiveUsersRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,13 +30,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.security.KeyPair;
 import java.util.List;
 import java.util.Objects;
 
 import static com.alertavert.opa.Constants.API_TOKEN;
 import static com.alertavert.opa.Constants.BEARER_TOKEN;
-import static com.alertavert.opa.Constants.MAX_TOKEN_LEN_LOG;
 
 @Slf4j
 @RestController
@@ -69,8 +61,8 @@ public class JwtController {
         })
         .map(ResponseEntity::ok)
         .doOnSuccess(response -> log.debug(
-            "API Token successfully created, user = {}, token = {}...", user,
-            Objects.requireNonNull(response.getBody()).apiToken.substring(0, MAX_TOKEN_LEN_LOG)))
+            "API Token successfully created, user = {}, token = {}", user,
+            JwtTokenProvider.maskToken(Objects.requireNonNull(response.getBody()).apiToken)))
         .onErrorReturn(Exception.class, ResponseEntity.badRequest().build());
   }
 

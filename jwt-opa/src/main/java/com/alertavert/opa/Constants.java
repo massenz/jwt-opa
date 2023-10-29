@@ -117,7 +117,6 @@ public class Constants {
     @Override public boolean isCredentialsNonExpired() {return false;}
     @Override public boolean isEnabled() {return false;}
   };
-  public static final int MAX_TOKEN_LEN_LOG = 6;
   public static final ObjectMapper MAPPER = new ObjectMapper();
   public static final String PEM_EXT = ".pem";
   public static final String PUB_EXT = ".pub";

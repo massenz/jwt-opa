@@ -38,7 +38,7 @@ ext {
 }
 
 group 'com.alertavert'
-version '0.10.0'
+version '0.11.0'
 
 // OpenJDK 17 LTS is the only Java version supported
 sourceCompatibility = JavaVersion.VERSION_17
@@ -106,7 +106,7 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$tcVersion"
     testImplementation "org.testcontainers:junit-jupiter:$tcVersion"
     testImplementation "org.testcontainers:localstack:$tcVersion"
-    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.326'
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.472'
 }
 
 jacocoTestCoverageVerification {

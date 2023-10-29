@@ -29,7 +29,7 @@ version = "0.4.0"
 repositories {
     // Adding local repository for Gradle to find jwt-opa before it gets published.
     // Use: ./gradlew :jwt-opa:publishToMavenLocal
-    //     mavenLocal()
+    //  mavenLocal()
     mavenCentral()
 }
 
@@ -39,6 +39,7 @@ ext {
     jwtOpaVersion = "0.10.0"
     lombokVersion = "1.18.22"
     tcVersion = "1.15.1"
+    awsSdkVersion = '2.17.102'
 }
 
 bootJar {
@@ -50,7 +51,7 @@ dependencies {
     // as to emulate an actual project using jwt-opa externally.
     // Uncomment the following line (and comment out the one below) to use the local version
     // while developing.
-        implementation project (':jwt-opa')
+         implementation project (':jwt-opa')
 //    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
 
     // For the @PostConstruct annotation
@@ -76,6 +77,14 @@ dependencies {
     // "Raw" JSON at http://localhost:8081/v2/api-docs
     // UI at http://localhost:8081/swagger-ui/ (trailing slash matters)
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
+
+    // AWS Java SDK
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.573'
+
+    // AWS SDK for Secrets Manager,
+    // see: https://docs.aws.amazon.com/code-samples/latest/catalog/code-catalog-javav2-example_code-secretsmanager.html
+    implementation "software.amazon.awssdk:secretsmanager:${awsSdkVersion}"
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

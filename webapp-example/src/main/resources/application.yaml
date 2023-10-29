@@ -30,7 +30,7 @@ opa:
 #
 # NOTE: this is a quirk of Spring Boot: configure this with a comma-separated list
 #       NOT a YAML array, as that will NOT work as expected.
-  headers: x-demoapp-auth, Accept-Encoding
+  headers: x-demoapp-auth, Accept-Encoding, Authorization
 
 db:
   server: localhost
