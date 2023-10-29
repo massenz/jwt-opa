@@ -74,7 +74,7 @@ public class OpaReactiveAuthorizationManager
 
   @PostConstruct
   private void info() {
-    log.info("Configured Headers, headers = {}", requiredHeaders);
+    log.info("Configured headers = {}", requiredHeaders);
   }
 
   /**

@@ -78,7 +78,7 @@ public class JwtTokenProvider {
     if (totLen <= MASK.length()) {
       return MASK;
     }
-    int prefixLen = Math.max(totLen - MASK.length() / 2, 1);
+    int prefixLen = Math.max((totLen - MASK.length()) / 2, 1);
     return token.substring(0, prefixLen) + MASK
         + token.substring(token.length() - prefixLen);
   }

@@ -26,7 +26,9 @@ import java.util.Map;
 import static com.alertavert.opa.Constants.MAPPER;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class TokenBasedAuthorizationRequestTest {
 
@@ -48,15 +50,18 @@ class TokenBasedAuthorizationRequestTest {
   @Test
   void obfuscatesJwt() {
     TokenBasedAuthorizationRequest request = TokenBasedAuthorizationRequest.builder()
-        .input(new AuthRequestBody("tokenAAjwtDEF123456.anothertoken.yetanothertoken",
+        .input(new AuthRequestBody("AAjwtDEF123456.ZZZfere43535.yYYYY98764awarkfajser",
             new TokenBasedAuthorizationRequest.Resource("POST", "/foo/bar", Map.of()))
         )
         .build();
-    String json = request.toString();
-
-    assertThat(json, hasJsonPath("$.input"));
-    assertThat(json, hasJsonPath("$.input.api_token", equalTo("tokenAAjwt****othertoken")));
-    assertThat(json, hasJsonPath("$.input.resource.method", equalTo("POST")));
-    assertThat(json, hasJsonPath("$.input.resource.path", equalTo("/foo/bar")));
+    assertThat(request.toString(), containsString("AAjw****jser"));
+    assertFalse(request.toString().matches(".*AAjwtDEF123456\\.ZZZfere43535\\"
+        + ".yYYYY98764awarkfajser.*"));
+    assertThat(request.toString(), containsString("""
+    "method":"POST",
+    """));
+    assertThat(request.toString(), containsString("""
+        "path":"/foo/bar",
+        """));
   }
 }
