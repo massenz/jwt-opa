@@ -74,7 +74,7 @@ public class OpaReactiveAuthorizationManager
 
   @PostConstruct
   private void info() {
-    log.info("Configured Headers, headers = {}", requiredHeaders);
+    log.info("Configured headers = {}", requiredHeaders);
   }
 
   /**
@@ -142,37 +142,25 @@ public class OpaReactiveAuthorizationManager
   ) {
     Map<String, String> authnHeaders = new HashMap<>();
     HttpHeaders requestHeaders = request.getHeaders();
-    log.debug("Adding headers, request = {}, required = {}", requestHeaders,
+    log.debug("Adding headers, request = {}, required = {}", requestHeaders.keySet(),
         requiredHeaders);
-    if (requestHeaders != null) {
-      requiredHeaders.forEach(key -> {
-        var value = requestHeaders.getFirst(key);
-        if (value != null) {
-          authnHeaders.put(key, value);
-        }
-      });
-    }
+    requiredHeaders.forEach(key -> {
+      var value = requestHeaders.getFirst(key);
+      if (value != null) {
+        authnHeaders.put(key, value);
+      }
+    });
 
     String token = Objects.requireNonNull(credentials).toString();
     return TokenBasedAuthorizationRequest.builder()
         .input(new TokenBasedAuthorizationRequest.AuthRequestBody(token,
                 new TokenBasedAuthorizationRequest.Resource(
-                    request.getMethodValue(),
+                    request.getMethod().name(),
                     request.getPath().toString(),
                     authnHeaders
                 )
             )
         )
         .build();
-  }
-
-  private WebClientResponseException unauthorized() {
-    return WebClientResponseException.create(
-        HttpStatus.UNAUTHORIZED.value(),
-        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-        null,
-        USER_NOT_AUTHORIZED.getBytes(StandardCharsets.UTF_8),
-        StandardCharsets.UTF_8
-    );
   }
 }

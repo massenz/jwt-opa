@@ -106,7 +106,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   }
 
   @Test
-  public void checkUnauthorizedFails() {
+  void checkUnauthorizedFails() {
     Authentication auth = factory.createAuthentication(
         provider.createToken("alice", Lists.list("USER"))
     ).block();
@@ -121,7 +121,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   }
 
   @Test
-  public void checkUnauthenticatedFails() {
+  void checkUnauthenticatedFails() {
     Authentication auth = new UsernamePasswordAuthenticationToken("bob", "pass");
 
     // As this endpoint is not mapped in `routes` (application-test.yaml) it expects by default
@@ -142,7 +142,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
     ServerHttpRequest request = mock(ServerHttpRequest.class);
     RequestPath requestPath = mock(RequestPath.class);
 
-    when(request.getMethodValue()).thenReturn(method.name());
+    when(request.getMethod()).thenReturn(method);
     when(request.getPath()).thenReturn(requestPath);
     when(requestPath.toString()).thenReturn(path);
 
@@ -159,7 +159,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   }
 
   @Test
-  public void authenticatedEndpointBypassesOpa() {
+  void authenticatedEndpointBypassesOpa() {
     AuthorizationContext context = getAuthorizationContext(HttpMethod.GET, "/testauth");
     assertThat(opaReactiveAuthorizationManager.check(
             factory.createAuthentication(
@@ -170,7 +170,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   }
 
   @Test
-  public void authenticatedEndpointMatches() {
+  void authenticatedEndpointMatches() {
     // In the test configuration (application-test.yaml) we have configured the following
     // path matchers: ["/match/*/this", "/match/any/**"].
     // Here we test that an authenticated user gains access to them without needing authorization.
@@ -202,7 +202,7 @@ class OpaReactiveAuthorizationManagerTest extends AbstractTestBaseWithOpaContain
   }
 
   @Test
-  public void testHeaders() {
+  void testHeaders() {
     AuthorizationContext context = getAuthorizationContextWithHeaders(HttpMethod.GET, "/whatever",
         Map.of("x-test-header", "test-value", HttpHeaders.USER_AGENT, "TestAgent"));
     assertThat(opaReactiveAuthorizationManager.check(
