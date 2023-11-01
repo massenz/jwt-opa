@@ -27,7 +27,6 @@ group 'com.alertavert'
 version = "0.5.0"
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
@@ -37,10 +36,8 @@ bootJar {
 
 dependencies {
     // ----- IMPORTANT -----
-    // If you modify the following line, make sure to also update the `build.gradle` file in the
-    // `test-released` branch, so that the CI tests can run against the released version.
-    // We depend here on the the local version here, so we can verify changes while developing:
-    implementation project (':jwt-opa')
+    // This is the only change in this branch, to use the published version of the library.
+    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
     // ----- SECTION ENDS -----
 
     // For the @PostConstruct annotation
