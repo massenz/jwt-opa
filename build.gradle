@@ -10,7 +10,7 @@ ext {
     // For the most recent version of the JWT-OPA library see:
     // https://github.com/massenz/jwt-opa/releases
     // This is likely to be the development, unreleased version.
-    jwtOpaVersion = "0.12.0"
+    jwtOpaVersion = "0.11.0"
 
     awsSdkVersion = '2.17.102'
     jsonpathVersion = "2.5.0"
