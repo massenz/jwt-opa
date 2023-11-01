@@ -1,9 +1,21 @@
 // Copyright (c) 2022 AlertAvert.com.  All rights reserved.
 // Author: Marco Massenzio (marco@alertavert.com)
 
-// Minimalist build file just to get things going.
-// See jwt-opa/build.gradle for the "real" build.
 plugins {
     id 'java'
     id 'jacoco'
+}
+
+ext {
+    // For the most recent version of the JWT-OPA library see:
+    // https://github.com/massenz/jwt-opa/releases
+    // This is likely to be the development, unreleased version.
+    jwtOpaVersion = "0.12.0"
+
+    awsSdkVersion = '2.17.102'
+    jsonpathVersion = "2.5.0"
+    lombokVersion = "1.18.30"
+    minCoverageRatio = 0.80
+    mockitoVersion = "3.6.0"
+    tcVersion = "1.19.1"
 }

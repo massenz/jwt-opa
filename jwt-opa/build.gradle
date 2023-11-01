@@ -17,9 +17,9 @@
  */
 
 plugins {
-    id 'io.spring.dependency-management' version '1.1.3'
     id 'java'
     id 'jacoco'
+    id 'io.spring.dependency-management' version '1.1.3'
     id 'org.springframework.boot' version '3.1.5'
 
     // To upload the Artifact to Maven Central
@@ -28,17 +28,9 @@ plugins {
     id 'signing'
 }
 
-ext {
-    awsSdkVersion = '2.17.102'
-    jsonpathVersion = "2.5.0"
-    lombokVersion = "1.18.22"
-    minCoverageRatio = 0.80
-    mockitoVersion = "3.6.0"
-    tcVersion = "1.15.1"
-}
 
 group 'com.alertavert'
-version '0.11.0'
+version "${jwtOpaVersion}"
 
 // OpenJDK 17 LTS is the only Java version supported
 sourceCompatibility = JavaVersion.VERSION_17

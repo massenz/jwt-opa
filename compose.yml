@@ -6,7 +6,7 @@ services:
   opa:
     container_name: "opa"
     hostname: opa
-    image: openpolicyagent/opa:0.42.2
+    image: openpolicyagent/opa:0.58.0
     command: run --server --addr :8181
     ports:
       - "8181:8181"

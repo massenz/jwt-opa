@@ -19,27 +19,16 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '3.1.5'
     id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.springframework.boot' version '3.1.5'
 }
 
-group 'com.alertavert.opademo'
-version = "0.4.0"
+group 'com.alertavert'
+version = "0.5.0"
 
 repositories {
-    // Adding local repository for Gradle to find jwt-opa before it gets published.
-    // Use: ./gradlew :jwt-opa:publishToMavenLocal
-    //  mavenLocal()
+    mavenLocal()
     mavenCentral()
-}
-
-ext {
-    // This can be changed to an yet-unpublished version by using mavenLocal()
-    // for local tests.
-    jwtOpaVersion = "0.10.0"
-    lombokVersion = "1.18.22"
-    tcVersion = "1.15.1"
-    awsSdkVersion = '2.17.102'
 }
 
 bootJar {
@@ -47,12 +36,12 @@ bootJar {
 }
 
 dependencies {
-    // We use the actual dependency here, instead of depending on the module in the repository so
-    // as to emulate an actual project using jwt-opa externally.
-    // Uncomment the following line (and comment out the one below) to use the local version
-    // while developing.
-         implementation project (':jwt-opa')
-//    implementation "com.alertavert:jwt-opa:${jwtOpaVersion}"
+    // ----- IMPORTANT -----
+    // If you modify the following line, make sure to also update the `build.gradle` file in the
+    // `test-released` branch, so that the CI tests can run against the released version.
+    // We depend here on the the local version here, so we can verify changes while developing:
+    implementation project (':jwt-opa')
+    // ----- SECTION ENDS -----
 
     // For the @PostConstruct annotation
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
